@@ -28,7 +28,7 @@
 
   // Clean.  Danger Will Robinson, don't delete your hard drive please.  The extra path entry is to help ensure we
   // don't delete the wrong screenshots directory somehow.
-  spawnOutput( 'rm', [ '-rf', '../../aqua/screenshots' ], {}, function() {
+  spawnOutput( 'rm', [ '-rf', '../../aqua/screenshots/*.png' ], {}, function() {
 
     // Pull everything
     spawnOutput( 'pull-all.sh', [], { skip: true }, function() {
