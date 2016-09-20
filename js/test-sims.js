@@ -6,9 +6,8 @@
   var webpage = require( 'webpage' );
 
   var simsString = fs.read( '../../chipper/data/active-runnables' );
-  console.log( simsString );
   var simArray = simsString.split( '\n' );
-  console.log( simArray );
+  console.log( 'TESTING: ' + simArray.join( ', ' ) );
   var TEST_TIME = 1000;
 
   var visit = function( index ) {
@@ -26,13 +25,12 @@
         var time = page.evaluate( function() {
           return window.phet && window.phet.joist && window.phet.joist.elapsedTime;
         } );
-        console.log( time );
         if ( time >= TEST_TIME || (time === 0 && tries > 20) || (time === null && tries > 20) ) {
           if ( time === null ) {
             console.log( 'Sim never started' );
           }
           if ( time === 0 ) {
-            console.log( 'Couldnt connect' );
+            console.log( 'Couldn\'t connect' );
           }
           clearInterval( id );
           page.render( '../screenshots/' + sim + '.png' );
