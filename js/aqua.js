@@ -26,8 +26,9 @@
     }
   };
 
-  // Clean.  Danger Will Robinson, don't delete your hard drive please
-  spawnOutput( 'rm', [ '-rf', 'screenshots' ], {}, function() {
+  // Clean.  Danger Will Robinson, don't delete your hard drive please.  The extra path entry is to help ensure we
+  // don't delete the wrong screenshots directory somehow.
+  spawnOutput( 'rm', [ '-rf', '../../aqua/screenshots' ], {}, function() {
 
     // Pull everything
     spawnOutput( 'pull-all.sh', [], { skip: true }, function() {
@@ -36,7 +37,7 @@
       spawnOutput( 'clone-missing-repos.sh', [], {}, function() {
 
         // Run phantom tests
-        spawnOutput( 'phantomjs', [ 'aqua-phantom.js' ], {}, function() {
+        spawnOutput( 'phantomjs', [ 'test-sims.js' ], {}, function() {
           console.log( 'done' );
         } );
       } );
