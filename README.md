@@ -1,2 +1,2 @@
 # aqua
-Automated QUality Assurance
+Automatic QUality Assurance
