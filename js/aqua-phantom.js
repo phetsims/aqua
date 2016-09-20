@@ -5,7 +5,7 @@
   var fs = require( 'fs' );
   var webpage = require( 'webpage' );
 
-  var simsString = fs.read( '../chipper/data/active-runnables' );
+  var simsString = fs.read( '../../chipper/data/active-runnables' );
   console.log( simsString );
   var simArray = simsString.split( '\n' );
   console.log( simArray );
@@ -35,7 +35,7 @@
             console.log( 'Couldnt connect' );
           }
           clearInterval( id );
-          page.render( 'screenshots/' + sim + '.png' );
+          page.render( '../screenshots/' + sim + '.png' );
           var nextIndex = index + 1;
           if ( nextIndex >= simArray.length ) {
             phantom.exit();
