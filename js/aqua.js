@@ -34,7 +34,7 @@
     spawnOutput( 'mkdir', [ '../../aqua/screenshots' ], {}, function() {
 
       // Pull everything
-      spawnOutput( 'pull-all.sh', [], { skip: true }, function() {
+      spawnOutput( 'pull-all.sh', [], { skip: false }, function() {
 
         // Clone any new repos
         spawnOutput( 'clone-missing-repos.sh', [], {}, function() {
