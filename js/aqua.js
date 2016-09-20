@@ -28,17 +28,21 @@
 
   // Clean.  Danger Will Robinson, don't delete your hard drive please.  The extra path entry is to help ensure we
   // don't delete the wrong screenshots directory somehow.
-  spawnOutput( 'rm', [ '-rf', '../../aqua/screenshots/*.png' ], {}, function() {
+  spawnOutput( 'rm', [ '-rf', '../../aqua/screenshots' ], {}, function() {
 
-    // Pull everything
-    spawnOutput( 'pull-all.sh', [], { skip: true }, function() {
+    // Make screenshots directory
+    spawnOutput( 'mkdir', [ '../../aqua/screenshots' ], {}, function() {
 
-      // Clone any new repos
-      spawnOutput( 'clone-missing-repos.sh', [], {}, function() {
+      // Pull everything
+      spawnOutput( 'pull-all.sh', [], { skip: true }, function() {
 
-        // Run phantom tests
-        spawnOutput( 'phantomjs', [ 'test-sims.js' ], {}, function() {
-          console.log( 'done' );
+        // Clone any new repos
+        spawnOutput( 'clone-missing-repos.sh', [], {}, function() {
+
+          // Run phantom tests
+          spawnOutput( 'phantomjs', [ 'test-sims.js' ], {}, function() {
+            console.log( 'done' );
+          } );
         } );
       } );
     } );
