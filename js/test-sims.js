@@ -10,13 +10,20 @@
   console.log( 'TESTING: ' + simArray.join( ', ' ) );
   var TEST_TIME = 1000;
 
+  var safeMessages = [
+    'enabling assert',
+    'Warning: No supported audio formats found, sound will not be played.',
+    'Update check failure: simulation beaker not found'
+  ];
   var visit = function( index ) {
     var sim = simArray[ index ];
     var url = 'http://localhost/' + sim + '/' + sim + '_en.html?ea&brand=phet&fuzzMouse=100';
     var page = webpage.create();
     var tries = 0;
     page.onConsoleMessage = function( msg ) {
-      console.log( '>', msg );
+      if ( safeMessages.indexOf( msg ) < 0 ) {
+        console.log( '>', msg );
+      }
     };
     console.log( 'testing ' + url );
     page.open( url, function( status ) {
@@ -34,12 +41,18 @@
           }
           clearInterval( id );
           page.render( '../screenshots/' + sim + '.png' );
-          var nextIndex = index + 1;
-          if ( nextIndex >= simArray.length ) {
-            phantom.exit();
-          }
+
+          page.onClosing = function( closingPage ) {
+            var nextIndex = index + 1;
+            if ( nextIndex >= simArray.length ) {
+              phantom.exit();
+            }
+            else {
+              visit( index + 1 );
+            }
+          };
           page.close();
-          visit( index + 1 );
+
         }
       }, 200 );
     } );
