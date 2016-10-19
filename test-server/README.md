@@ -10,7 +10,7 @@
 - testTask = 'fuzzMouse' or 'none' (default 'none'). If 'none', it will only wait until the simulation is loaded.
 - testRequirejs = 'true' or 'false' (default 'true'). Whether tests will be run in require.js mode.
 - testBuilt = 'true' or 'false' (default 'true'). Whether tests will be run in built mode (will build the sims first).
-- testSims = (coppa-separated list of sims), defaults to sims in active-runnables
+- testSims = (comma-separated list of sims), defaults to sims in active-runnables
 - testDuration = (milliseconds to keep the simulation open, if testTask != 'none')
 - testFuzzRate = (actions per frame, default 100). Controls how fast the fuzzer operates
 
