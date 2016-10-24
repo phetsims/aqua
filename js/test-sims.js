@@ -45,7 +45,7 @@
           page.onClosing = function( closingPage ) {
             var nextIndex = index + 1;
             if ( nextIndex >= simArray.length ) {
-              phantom.exit();
+              phantom.exit(); // eslint-disable-line no-undef
             }
             else {
               visit( index + 1 );
