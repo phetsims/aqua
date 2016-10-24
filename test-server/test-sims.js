@@ -4,7 +4,7 @@
 
 // Grab all query parameters to pass to the simulation, and add additional ones for receiving messages.
 
-define( function( require ) {
+(function() {
   'use strict';
   var simulationQueryString = window.location.search;
 
@@ -264,4 +264,4 @@ define( function( require ) {
     req.send();
   })();
 
-} )();
+})();

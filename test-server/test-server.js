@@ -1,6 +1,6 @@
 // Copyright 2016, University of Colorado Boulder
 
-define( function( require ) {
+(function() {
   'use strict';
   var http = require( 'http' );
   var child_process = require( 'child_process' );
@@ -97,4 +97,4 @@ define( function( require ) {
 
   console.log( 'running on port ' + port + ' with root directory ' + rootDir );
 
-} )();
+})();
