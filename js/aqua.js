@@ -47,7 +47,7 @@
         spawnOutput( 'clone-missing-repos.sh', [], {}, function() {
 
           // Run phantom tests
-          spawnOutput( 'phantomjs', [ 'test-sims.js' ], {}, function() {
+          spawnOutput( 'phantomjs', [ 'phantom-script.js' ], {}, function() {
             console.log( 'done' );
           } );
         } );
