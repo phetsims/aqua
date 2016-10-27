@@ -1,4 +1,11 @@
 // Copyright 2016, University of Colorado Boulder
+
+/**
+ * Main entry point for automated phantomjs testing.  See README.md for usage instructions.
+ * Mycron.js is a 'cron' clone that just launches `node aqua.js` over and over again.
+ *
+ * @author Sam Reid (PhET Interactive Simulations)
+ */
 (function() {
   'use strict';
 
@@ -31,6 +38,4 @@
       launch();
     }
   }, 100 );
-
-
 })();

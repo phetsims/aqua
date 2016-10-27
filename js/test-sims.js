@@ -1,4 +1,11 @@
 // Copyright 2016, University of Colorado Boulder
+
+/**
+ * This is a phantom-js script used to automatically test the sims.  It is launched by aqua.js (which is launched by
+ * mycron.js) This script is under development and not ready for usage.
+ *
+ * @author Sam Reid (PhET Interactive Simulations)
+ */
 (function() {
   'use strict';
 

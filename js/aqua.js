@@ -1,4 +1,11 @@
 // Copyright 2016, University of Colorado Boulder
+
+/**
+ * Entry point for one automated testing run.  It pulls sims and clones missing repos, then launches the phantom
+ * test-sims.
+ *
+ * @author Sam Reid (PhET Interactive Simulations)
+ */
 (function() {
   'use strict';
 
