@@ -18,9 +18,8 @@
 
   var options = QueryStringMachine.getAll( {
     testTask: {
-      type: 'string',
-      defaultValue: 'none',
-      validValues: [ 'fuzzMouse', 'none' ]
+      type: 'boolean',
+      defaultValue: true
     },
     testRequirejs: {
       type: 'boolean',
@@ -33,10 +32,6 @@
     testDuration: {
       type: 'number',
       defaultValue: 30000 // ms
-    },
-    testFuzzRate: {
-      type: 'number',
-      defaultValue: 100 // actions per frame
     },
     testSims: {
       type: 'array',
@@ -54,11 +49,6 @@
   var simNames; // {Array.<string>} - will be filled in below by an AJAX request
   var testQueue = []; // {Array.<{ simName: {string}, isBuild: {boolean} }>} - Sim test target queue
   var buildQueue = []; // {Array.<string>} - sim names that need to be built
-
-// Add query parameters as necessary for any supported tasks
-  if ( options.testTask === 'fuzzMouse' ) {
-    simulationQueryString += '&fuzzMouse=' + options.testFuzzRate;
-  }
 
   var eventLog = document.createElement( 'div' );
   eventLog.id = 'eventLog';
@@ -196,7 +186,7 @@
       };
     };
 
-    if ( options.testTask === 'none' ) {
+    if ( !options.testTask ) {
       nextSim();
     }
   }

@@ -53,6 +53,7 @@
     } );
     simLog( 'npm update' );
     npmUpdate.stderr.on( 'data', function( data ) {
+      output += data;
       simLog( 'npm update stderr: ' + data );
     } );
     npmUpdate.on( 'close', function( code ) {
@@ -80,6 +81,7 @@
         } );
 
         grunt.stderr.on( 'data', function( data ) {
+          output += data;
           simLog( 'grunt stderr: ' + data );
         } );
 
