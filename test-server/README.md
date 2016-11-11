@@ -13,6 +13,7 @@
 - testSims = (comma-separated list of sims), defaults to sims in active-runnables
 - testDuration = (milliseconds to keep the simulation open, if testTask != 'none')
 - testFuzzRate = (actions per frame, default 100). Controls how fast the fuzzer operates
+- testConcurrentBuilds = (number of current sim builds that should be run at the same time. defaults to 1)
 
 # Legend:
 

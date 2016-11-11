@@ -38,21 +38,25 @@
       }
     }
 
+    function simLog( str ) {
+      console.log( '[' + new Date().toLocaleString() + ' ' + simName + '] ' + str );
+    }
+
     var success = false;
     var output = '';
 
-    console.log( 'building ' + simName );
+    simLog( 'requested' );
 
     // TODO: Why do these more portable versions not work?
     var npmUpdate = spawn( NPM_CMD, [ 'update' ], {
       cwd: rootDir + simName
     } );
-    console.log( 'running npm update on ' + simName );
+    simLog( 'npm update' );
     npmUpdate.stderr.on( 'data', function( data ) {
-      console.log( 'stderr: ' + data );
+      simLog( 'npm update stderr: ' + data );
     } );
     npmUpdate.on( 'close', function( code ) {
-      console.log( 'npm update exit code: ' + code );
+      simLog( 'npm update exit code: ' + code );
 
       // npm update failure
       if ( code !== 0 ) {
@@ -68,7 +72,7 @@
         var grunt = spawn( GRUNT_CMD, [ '--no-color' ], {
           cwd: rootDir + simName
         } );
-        console.log( 'running grunt on ' + simName );
+        simLog( 'grunt' );
 
         // accumulate output, send success response if we detect it
         grunt.stdout.on( 'data', function( data ) {
@@ -76,12 +80,12 @@
         } );
 
         grunt.stderr.on( 'data', function( data ) {
-          console.log( 'stderr: ' + data );
+          simLog( 'grunt stderr: ' + data );
         } );
 
         // if no success has been sent, send a response when closed (failure depending on the code)
         grunt.on( 'close', function( code ) {
-          console.log( 'grunt exited with code ' + code );
+          simLog( 'grunt exited with code ' + code );
           if ( !success ) {
             res.writeHead( 200, jsonHeaders );
             res.end( JSON.stringify( {

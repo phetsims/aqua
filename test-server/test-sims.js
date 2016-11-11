@@ -24,9 +24,11 @@
   var durationOverride = phet.chipper.getQueryParameter( 'testDuration' );
   var fuzzOverride = phet.chipper.getQueryParameter( 'testFuzzRate' );
   var simNamesOverride = phet.chipper.getQueryParameter( 'testSims' );
+  var concurrentBuilds = phet.chipper.getQueryParameter( 'testConcurrentBuilds' );
 
   var DURATION_PER_SIM = durationOverride ? parseInt( durationOverride, 10 ) : 30000; // ms
   var FUZZ_RATE = fuzzOverride ? parseInt( fuzzOverride, 10 ) : 100; // actions per frame
+  var CONCURRENT_BUILDS = concurrentBuilds ? parseInt( concurrentBuilds, 10 ) : 1; // number of builds to run at a time
 
   var simNames; // {Array.<string>} - will be filled in below by an AJAX request
   var testQueue = []; // {Array.<{ simName: {string}, isBuild: {boolean} }>} - Sim test target queue
@@ -257,7 +259,11 @@
 
       // kick off the loops
       nextSim();
-      nextBuild();
+
+      console.log( 'starting builds: ' + CONCURRENT_BUILDS );
+      for ( var k = 0; k < CONCURRENT_BUILDS; k++ ) {
+        nextBuild();
+      }
     };
     // location of active sims
     req.open( 'GET', '../../chipper/data/active-runnables', true );
