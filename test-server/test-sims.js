@@ -16,27 +16,48 @@
   }
   simulationQueryString += 'postMessageOnLoad&postMessageOnError';
 
-// Parse query parameters
-  var task = phet.chipper.getQueryParameter( 'testTask' ) || 'none';
-  assert && assert( task === 'fuzzMouse' || task === 'none' );
-  var useRequirejs = phet.chipper.getQueryParameter( 'testRequirejs' ) !== 'false';
-  var useBuilt = phet.chipper.getQueryParameter( 'testBuilt' ) !== 'false';
-  var durationOverride = phet.chipper.getQueryParameter( 'testDuration' );
-  var fuzzOverride = phet.chipper.getQueryParameter( 'testFuzzRate' );
-  var simNamesOverride = phet.chipper.getQueryParameter( 'testSims' );
-  var concurrentBuilds = phet.chipper.getQueryParameter( 'testConcurrentBuilds' );
-
-  var DURATION_PER_SIM = durationOverride ? parseInt( durationOverride, 10 ) : 30000; // ms
-  var FUZZ_RATE = fuzzOverride ? parseInt( fuzzOverride, 10 ) : 100; // actions per frame
-  var CONCURRENT_BUILDS = concurrentBuilds ? parseInt( concurrentBuilds, 10 ) : 1; // number of builds to run at a time
+  var options = QueryStringMachine.getAll( {
+    testTask: {
+      type: 'string',
+      defaultValue: 'none',
+      validValues: [ 'fuzzMouse', 'none' ]
+    },
+    testRequirejs: {
+      type: 'boolean',
+      defaultValue: true
+    },
+    testBuilt: {
+      type: 'boolean',
+      defaultValue: true
+    },
+    testDuration: {
+      type: 'number',
+      defaultValue: 30000 // ms
+    },
+    testFuzzRate: {
+      type: 'number',
+      defaultValue: 100 // actions per frame
+    },
+    testSims: {
+      type: 'array',
+      defaultValue: [], // will get filled in automatically if left as default
+      elementSchema: {
+        type: 'string'
+      }
+    },
+    testConcurrentBuilds: {
+      type: 'number',
+      defaultValue: 1
+    }
+  } );
 
   var simNames; // {Array.<string>} - will be filled in below by an AJAX request
   var testQueue = []; // {Array.<{ simName: {string}, isBuild: {boolean} }>} - Sim test target queue
   var buildQueue = []; // {Array.<string>} - sim names that need to be built
 
 // Add query parameters as necessary for any supported tasks
-  if ( task === 'fuzzMouse' ) {
-    simulationQueryString += '&fuzzMouse=' + FUZZ_RATE;
+  if ( options.testTask === 'fuzzMouse' ) {
+    simulationQueryString += '&fuzzMouse=' + options.testFuzzRate;
   }
 
   var eventLog = document.createElement( 'div' );
@@ -151,7 +172,7 @@
       var test = testQueue.shift();
       currentTest = test;
       loadSim( test.simName, test.isBuild );
-      timeoutId = setTimeout( nextSim, DURATION_PER_SIM );
+      timeoutId = setTimeout( nextSim, options.testDuration );
     }
     else {
       iframe.src = 'about:blank';
@@ -175,7 +196,7 @@
       };
     };
 
-    if ( task === 'none' ) {
+    if ( options.testTask === 'none' ) {
       nextSim();
     }
   }
@@ -236,15 +257,15 @@
 
       // split string into an array of sim names, ignoring blank lines
       simNames = simListText.trim().replace( /\r/g, '' ).split( '\n' );
-      if ( simNamesOverride ) {
-        simNames = simNamesOverride.split( ',' );
+      if ( options.testSims.length ) {
+        simNames = options.testSims;
       }
 
       simNames.forEach( function( simName ) {
         createStatusElement( simName );
 
         // First, if enabled, put require.js testing on the queue
-        if ( useRequirejs ) {
+        if ( options.testRequirejs ) {
           testQueue.push( {
             simName: simName,
             build: false
@@ -252,7 +273,7 @@
         }
 
         // On the build queue, if enabled, put all sims
-        if ( useBuilt ) {
+        if ( options.testBuilt ) {
           buildQueue.push( simName );
         }
       } );
@@ -260,8 +281,8 @@
       // kick off the loops
       nextSim();
 
-      console.log( 'starting builds: ' + CONCURRENT_BUILDS );
-      for ( var k = 0; k < CONCURRENT_BUILDS; k++ ) {
+      console.log( 'starting builds: ' + options.testConcurrentBuilds );
+      for ( var k = 0; k < options.testConcurrentBuilds; k++ ) {
         nextBuild();
       }
     };
