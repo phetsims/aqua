@@ -24,7 +24,7 @@
   ];
   var visit = function( index ) {
     var sim = simArray[ index ];
-    var url = 'http://localhost/' + sim + '/' + sim + '_en.html?ea&brand=phet&fuzzMouse=100';
+    var url = 'http://localhost/' + sim + '/' + sim + '_en.html?ea&brand=phet&fuzzMouse&fuzzRate=100';
     var page = webpage.create();
     var tries = 0;
     page.onConsoleMessage = function( msg ) {

@@ -6,7 +6,7 @@
 # Query parameters:
 
 - All query parameters will be passed to the simulation. To detect errors, it is recommended to pass at least `?ea`, and
-  for fuzzing, other query parameters (like ?fuzzMouse=100) are recommended.
+  for fuzzing, other query parameters (like ?fuzzMouse) are recommended.
 - testTask {boolean} Whether a tested sim should be left open after loading. If false, it will move to the next
   simulation immediately upon the previous simulation loading. Defaults to true.
 - testRequirejs {boolean} Whether tests will be run in require.js mode. Defaults to true.
