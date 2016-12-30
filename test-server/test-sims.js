@@ -77,7 +77,7 @@
   document.body.appendChild( simListDiv );
 
   var currentTest;
-  var simStatusElements = {}; // map simName {string} => {DOMElement}, which holds the status w/ classes
+  var simStatusElements = {}; // map simName {string} => {HTMLElement}, which holds the status w/ classes
   var timeoutId; // we need to clear the timeout if we bail from a sim early
 
   function createStatusElement( simName ) {
