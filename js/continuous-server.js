@@ -306,13 +306,11 @@
    * @param {Function} errorCallback - errorCallback( message: {string} ) called when unsuccessful
    */
   function npmUpdateRepo( repo, callback, errorCallback ) {
-    debugLog( 'TODO: actually update ' + repo );
-    callback();
-    // execute( NPM_CMD, [ 'update' ], rootDir + '/' + repo, function( stdout, stderr ) {
-    //   callback();
-    // }, function( stdout, stderr, code ) {
-    //   errorCallback( 'Failure to npm update ' + repo + ':\n' + stdout + '\n' + stderr );
-    // } );
+    execute( NPM_CMD, [ 'update' ], rootDir + '/' + repo, function( stdout, stderr ) {
+      callback();
+    }, function( stdout, stderr, code ) {
+      errorCallback( 'Failure to npm update ' + repo + ':\n' + stdout + '\n' + stderr );
+    } );
   }
 
   /**
