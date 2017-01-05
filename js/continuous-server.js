@@ -272,7 +272,7 @@
             }
           }, function( stdout, stderr, code ) {
             errorCallback( 'Failure to check remote ' + repo + ' SHA:\n' + stdout + '\n' + stderr );
-          } ); 
+          } );
         }
         else {
           errorCallback( 'Does not look like current ' + repo + ' SHA: ' + currentSHA );
@@ -295,7 +295,7 @@
     fs.access( rootDir + '/' + repo + '/package.json', function( err ) {
       callback( !err );
     } );
-  } 
+  }
 
   /**
    * Asynchronously updates node modules for a repo.
@@ -453,7 +453,7 @@
                   count: 0,
                   snapshotName: snapshotName,
                   test: [ repo, 'unit-tests', 'require.js' ],
-                  url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + repo + '/tests/qunit/unit-tests.html' )
+                  url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + repo + '/tests/qunit/unit-tests.html' )
                 } );
               } );
 
@@ -642,11 +642,11 @@
         testFail( snapshot, test, message );
       }
       res.writeHead( 200, jsonHeaders );
-      res.end( JSON.stringify( { received: 'true' } ) ); 
+      res.end( JSON.stringify( { received: 'true' } ) );
     }
     if ( requestInfo.pathname === '/results' ) {
       res.writeHead( 200, jsonHeaders );
-      res.end( JSON.stringify( testResults ) ); 
+      res.end( JSON.stringify( testResults ) );
     }
   } ).listen( port );
 
@@ -774,7 +774,7 @@
                 count: 0,
                 snapshotName: snapshot.name,
                 test: [ repo, 'unit-tests', 'built' ],
-                url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + repo + '/tests/qunit/compiled-unit-tests.html' )
+                url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshot.name + '/' + repo + '/tests/qunit/compiled-unit-tests.html' )
               } );
             }
 
