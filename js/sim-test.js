@@ -38,7 +38,7 @@
   var hasLoaded = false;
 
   // Our duration timeout.
-  var timeout = setTimeout( function() {
+  setTimeout( function() {
     if ( !hasErrored ) {
       if ( hasLoaded ) {
         // Only pass the 'run' if it loads AND doesn't error for the entire duration

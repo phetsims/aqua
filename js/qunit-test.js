@@ -30,7 +30,7 @@
   var failed = 0;
   var message = '';
 
-  var timeout = setTimeout( function() {
+  setTimeout( function() {
     message = passed + ' out of ' + ( passed + failed ) + ' tests passed. ' + failed + ' failed.\n' + message;
     if ( passed > 0 && failed === 0 ) {
       aqua.testPass( [], message );

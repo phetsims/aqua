@@ -54,7 +54,7 @@
   var path = require( 'path' );
   var url = require( 'url' );
   var fs = require( 'fs' );
-  var ncp = require( 'ncp' ).ncp;
+  var ncp = require( 'ncp' ).ncp; // eslint-disable-line
   var rimraf = require( 'rimraf' );
 
   var port = 45366;

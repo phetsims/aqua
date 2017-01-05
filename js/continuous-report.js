@@ -15,22 +15,6 @@
   var serverOrigin = window.location.protocol + '//' + window.location.hostname + ':45366';
 
   /**
-   * Returns an array of {TestResult}s given a certain test "path".
-   * @private
-   *
-   * @param {Results} results - The JSON returned from the server's /results.
-   * @param {Array.<string>} path - e.g. [ 'molecule-shapes', 'build' ], describes a location in our {Results} object
-   * @returns {Array.<TestResult>}
-   */
-  function resultsFromPath( results, path ) {
-    path = path.slice();
-    while ( path.length ) {
-      results = results.children[ path.shift() ];
-    }
-    return results.results;
-  }
-
-  /**
    * Returns a CSS class to use given the number of passing results and failing results.
    * @private
    *
@@ -138,7 +122,6 @@
   function recursiveResults( name, resultNode, snapshots, padding, path ) {
     var currentPath = name ? path.concat( name ) : path;
     var results = resultNode.results;
-    var numSelfResults = results.length;
     var passes = results.filter( function( result ) { return result.passed === true; } ).length;
     var fails = results.length - passes;
 
