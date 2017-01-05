@@ -22,7 +22,7 @@
 // root of your GitHub working copy, relative to the name of the directory that the currently-executing script resides in
   var rootDir = path.normalize( __dirname + '/../../' ); // eslint-disable-line no-undef
 
-  http.createServer( function( req, res ) {
+  var server = http.createServer( function( req, res ) {
     var simName = req.url.slice( 1 );
 
     // validate that it is lower-case with hyphens
@@ -99,7 +99,10 @@
         } );
       }
     } );
-  } ).listen( port );
+  } );
+
+  server.setTimeout( 0 );
+  server.listen( port );
 
   console.log( 'running on port ' + port + ' with root directory ' + rootDir );
 
