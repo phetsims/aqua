@@ -6,7 +6,7 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-(function() {
+/* eslint-env node */
   'use strict';
 
   var options = QueryStringMachine.getAll( {
@@ -55,4 +55,3 @@
       }
     }
   } );
-})();

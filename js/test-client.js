@@ -6,62 +6,60 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-(function() {
-  'use strict';
+/* eslint-env node */
+'use strict';
 
-  window.aqua = {
-    /**
-     * Sends a post message.
-     * @private
-     *
-     * @param {Object} message
-     */
-    sendMessage: function( message ) {
-      window.parent && window.parent.postMessage( JSON.stringify( message ), '*' );
-    },
+window.aqua = {
+  /**
+   * Sends a post message.
+   * @private
+   *
+   * @param {Object} message
+   */
+  sendMessage: function( message ) {
+    window.parent && window.parent.postMessage( JSON.stringify( message ), '*' );
+  },
 
-    /**
-     * Sends a test pass.
-     * @public
-     * 
-     * @param {Array.<string>} names - Test names, e.g. [ 'build-a-molecule', 'fuzz', 'require.js' ]
-     * @param {string|undefined} message
-     */
-    testPass: function( names, message ) {
-      aqua.sendMessage( {
-        type: 'test-pass',
-        names: names,
-        message: message
-      } );
-      console.log( '[PASS] ' + names.join( ',' ) + ' - ' + message );
-    },
+  /**
+   * Sends a test pass.
+   * @public
+   *
+   * @param {Array.<string>} names - Test names, e.g. [ 'build-a-molecule', 'fuzz', 'require.js' ]
+   * @param {string|undefined} message
+   */
+  testPass: function( names, message ) {
+    aqua.sendMessage( {
+      type: 'test-pass',
+      names: names,
+      message: message
+    } );
+    console.log( '[PASS] ' + names.join( ',' ) + ' - ' + message );
+  },
 
-    /**
-     * Sends a test failure.
-     * @public
-     * 
-     * @param {Array.<string>} names - Test names, e.g. [ 'build-a-molecule', 'fuzz', 'require.js' ]
-     * @param {string|undefined} message
-     */
-    testFail: function( names, message ) {
-      aqua.sendMessage( {
-        type: 'test-fail',
-        names: names,
-        message: message
-      } );
-      console.log( '[FAIL] ' + names.join( ',' ) + ' - ' + message );
-    },
+  /**
+   * Sends a test failure.
+   * @public
+   *
+   * @param {Array.<string>} names - Test names, e.g. [ 'build-a-molecule', 'fuzz', 'require.js' ]
+   * @param {string|undefined} message
+   */
+  testFail: function( names, message ) {
+    aqua.sendMessage( {
+      type: 'test-fail',
+      names: names,
+      message: message
+    } );
+    console.log( '[FAIL] ' + names.join( ',' ) + ' - ' + message );
+  },
 
-    /**
-     * Sends a request to move to the next test
-     * @public
-     */
-    nextTest: function() {
-      aqua.sendMessage( {
-        type: 'test-next'
-      } );
-      console.log( '[NEXT TEST]' );
-    }
-  };
-
-})();
+  /**
+   * Sends a request to move to the next test
+   * @public
+   */
+  nextTest: function() {
+    aqua.sendMessage( {
+      type: 'test-next'
+    } );
+    console.log( '[NEXT TEST]' );
+  }
+};

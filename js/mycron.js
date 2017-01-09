@@ -6,36 +6,35 @@
  *
  * @author Sam Reid (PhET Interactive Simulations)
  */
-(function() {
-  'use strict';
+/* eslint-env node */
+'use strict';
 
-  // modules
-  var child_process = require( 'child_process' );
+// modules
+var child_process = require( 'child_process' );
 
-  // constants
-  var spawn = child_process.spawn;
+// constants
+var spawn = child_process.spawn;
 
-  var running = false;
+var running = false;
 
-  var launch = function() {
-    console.log( 'MYCRON STARTED.' );
-    running = true;
-    var exec = spawn( 'node', [ 'aqua.js' ] );
+var launch = function() {
+  console.log( 'MYCRON STARTED.' );
+  running = true;
+  var exec = spawn( 'node', [ 'aqua.js' ] );
 
-    exec.stdout.on( 'data', function( data ) {
-      process.stdout.write( data );
-    } );
-    exec.stderr.on( 'data', function( data ) {
-      console.log( 'ERR: ' + data );
-    } );
-    exec.on( 'close', function() {
-      console.log( 'MYCRON FINISHED.' );
-      running = false;
-    } );
-  };
-  setInterval( function() {
-    if ( !running ) {
-      launch();
-    }
-  }, 100 );
-})();
+  exec.stdout.on( 'data', function( data ) {
+    process.stdout.write( data );
+  } );
+  exec.stderr.on( 'data', function( data ) {
+    console.log( 'ERR: ' + data );
+  } );
+  exec.on( 'close', function() {
+    console.log( 'MYCRON FINISHED.' );
+    running = false;
+  } );
+};
+setInterval( function() {
+  if ( !running ) {
+    launch();
+  }
+}, 100 );
