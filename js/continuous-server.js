@@ -334,6 +334,35 @@ function gruntRepo( repo, callback, errorCallback ) {
 }
 
 /**
+ * Asynchronously lints everything
+ * @private
+ *
+ * @param {Snapshot} snapshot - The snapshot to grunt lint-everything
+ * @param {Function} callback - callback(), called when successful
+ * @param {Function} errorCallback - errorCallback( message: {string} ) called when unsuccessful
+ */
+function lintEverything( snapshot, callback, errorCallback ) {
+  execute( GRUNT_CMD, [ 'lint-everything' ], snapshot.name + '/chipper', function( stdout, stderr ) {
+    callback();
+  }, function( stdout, stderr, code ) {
+    errorCallback( 'Failure to lint everything:\n' + stdout + '\n' + stderr );
+  } );
+}
+
+// Kicks off linting of everything
+function testLintEverything( snapshot, callback ) {
+  lintEverything( snapshot, function() {
+    testPass( snapshot, [ 'chipper', 'lint-everything' ] );
+    infoLog( 'lint-everything passed: ' + snapshot.name );
+    callback();
+  }, function( message ) {
+    testFail( snapshot, [ 'chipper', 'lint-everything' ], message );
+    infoLog( 'lint-everything failed: ' + snapshot.name );
+    callback();
+  } );
+}
+
+/**
  * Asynchronously "npm update" all repos that have a package.json
  * @private
  *
@@ -459,6 +488,11 @@ function createSnapshot( callback, errorCallback ) {
                 test: [ repo, 'unit-tests', 'require.js' ],
                 url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + repo + '/tests/qunit/unit-tests.html' )
               } );
+            } );
+
+            // Kick off linting everything once we have a new snapshot
+            testLintEverything( snapshot, function() {
+              // If we have anything else that we want to grunt in chipper, put it here
             } );
 
             // TODO: add other normal tests here (that don't require building)
