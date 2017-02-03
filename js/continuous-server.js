@@ -342,7 +342,7 @@ function gruntRepo( repo, callback, errorCallback ) {
  * @param {Function} errorCallback - errorCallback( message: {string} ) called when unsuccessful
  */
 function lintEverything( snapshot, callback, errorCallback ) {
-  execute( GRUNT_CMD, [ 'lint-everything' ], snapshot.name + '/chipper', function( stdout, stderr ) {
+  execute( GRUNT_CMD, [ 'lint-everything' ], rootDir + '/' + snapshot.name + '/chipper', function( stdout, stderr ) {
     callback();
   }, function( stdout, stderr, code ) {
     errorCallback( 'Failure to lint everything:\n' + stdout + '\n' + stderr );
