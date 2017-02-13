@@ -665,10 +665,10 @@ function testFail( snapshot, test, message ) {
 http.createServer( function( req, res ) {
   var requestInfo = url.parse( req.url, true );
 
-  if ( req.url === '/next-test' ) {
+  if ( req.url === '/aquaserver/next-test' ) {
     randomBrowserTest( res );
   }
-  if ( requestInfo.pathname === '/test-result' ) {
+  if ( requestInfo.pathname === '/aquaserver/test-result' ) {
     var result = JSON.parse( requestInfo.query.result );
     var snapshot = findSnapshot( result.snapshotName );
     var test = result.test;
@@ -682,7 +682,7 @@ http.createServer( function( req, res ) {
     res.writeHead( 200, jsonHeaders );
     res.end( JSON.stringify( { received: 'true' } ) );
   }
-  if ( requestInfo.pathname === '/results' ) {
+  if ( requestInfo.pathname === '/aquaserver/results' ) {
     res.writeHead( 200, jsonHeaders );
     res.end( JSON.stringify( testResults ) );
   }
