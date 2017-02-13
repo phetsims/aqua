@@ -94,7 +94,7 @@ function sendTestResult( names, message, passed ) {
     snapshotName: snapshotName,
     message: message
   };
-  req.open( 'get', serverOrigin + '/test-result?result=' + encodeURIComponent( JSON.stringify( result ) ) );
+  req.open( 'get', serverOrigin + '/aquaserver/test-result?result=' + encodeURIComponent( JSON.stringify( result ) ) );
   req.send();
   resetTimer();
 }
