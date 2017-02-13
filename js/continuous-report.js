@@ -12,7 +12,7 @@
 'use strict';
 
 // Origin for our server (ignoring current port), so that we don't require localhost
-var serverOrigin = window.location.protocol + '//' + window.location.hostname + ':45366';
+var serverOrigin = window.location.protocol + '//' + window.location.hostname;
 
 /**
  * Returns a CSS class to use given the number of passing results and failing results.
@@ -281,6 +281,6 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
     setTimeout( mainLoop, 3000 );
     console.log( 'XHR error?' );
   };
-  req.open( 'get', serverOrigin + '/results', true ); // enable CORS
+  req.open( 'get', serverOrigin + '/aquaserver/results', true ); // enable CORS
   req.send();
 })();

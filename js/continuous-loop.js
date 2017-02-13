@@ -13,7 +13,7 @@
 'use strict';
 
 // Ignore current port, keep protocol and host.
-var serverOrigin = window.location.protocol + '//' + window.location.hostname + ':45366';
+var serverOrigin = window.location.protocol + '//' + window.location.hostname;
 
 // iframe that will contain qunit-test.html/sim-test.html/etc.
 var iframe = document.createElement( 'iframe' );
@@ -73,7 +73,7 @@ function nextTest() {
     // On connection failure, just try again with a delay (don't hammer the server)
     setTimeout( nextTest, 60000 ); // 1min
   };
-  req.open( 'get', serverOrigin + '/next-test', true );
+  req.open( 'get', serverOrigin + '/aquaserver/next-test', true );
   req.send();
   resetTimer();
 }
