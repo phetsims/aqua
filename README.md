@@ -57,6 +57,7 @@ A browser visiting continuous-loop.html will begin an infinite loop of requestin
   - brand
   - eall
   - phet-app
+  - phet-android-app
   - locale
   - profiler
   - rootRenderer (canvas, svg, dom, webgl)
