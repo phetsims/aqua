@@ -478,6 +478,12 @@ function createSnapshot( callback, errorCallback ) {
                 test: [ runnableRepo, 'fuzz', 'require.js' ],
                 url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzMouse' )
               } );
+              snapshot.testQueue.push( {
+                count: 0,
+                snapshotName: snapshotName,
+                test: [ runnableRepo, 'xss-fuzz' ],
+                url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzMouse&stringTest=xss' )
+              } );
             } );
 
             // Unit tests (require.js mode)
@@ -488,6 +494,13 @@ function createSnapshot( callback, errorCallback ) {
                 test: [ repo, 'unit-tests', 'require.js' ],
                 url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + repo + '/tests/qunit/unit-tests.html' )
               } );
+            } );
+
+            snapshot.testQueue.push( {
+              count: 0,
+              snapshotName: snapshotName,
+              test: [ 'phet-io', 'test-iframe-api' ],
+              url: 'qunit-test.html?url=' + encodeURIComponent( '../../phet-io/tests/test-iframe-api/' ) + '&duration=300000'
             } );
 
             // Kick off linting everything once we have a new snapshot

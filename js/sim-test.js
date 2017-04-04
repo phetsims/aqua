@@ -31,13 +31,15 @@ iframe.setAttribute( 'height', 768 / 2 );
 document.body.appendChild( iframe );
 
 // Add those two to our query parameters, so we get load/error messages
-iframe.src = options.url + '?postMessageOnLoad&postMessageOnError' + ( options.simQueryParameters ? '&' + options.simQueryParameters : '' );
+iframe.src = options.url + '?postMessageOnLoad&postMessageOnError&postMessageOnBeforeUnload' + ( options.simQueryParameters ? '&' + options.simQueryParameters : '' );
 
 var hasErrored = false;
 var hasLoaded = false;
+var durationExpired = false;
 
 // Our duration timeout.
 setTimeout( function() {
+  durationExpired = true;
   if ( !hasErrored ) {
     if ( hasLoaded ) {
       // Only pass the 'run' if it loads AND doesn't error for the entire duration
@@ -85,6 +87,21 @@ function onSimError( data ) {
   aqua.nextTest();
 }
 
+function onSimUnload() {
+  console.log( 'unload' );
+
+  if ( !durationExpired && !hasErrored ) {
+    hasErrored = true;
+    console.log( 'Unloaded before duration expired' );
+
+    if ( !hasLoaded ) {
+      aqua.testFail( [ 'load' ], 'Unloaded frame before complete, window.location probably changed' );
+    }
+    aqua.testFail( [ 'run' ], 'Unloaded frame before complete, window.location probably changed' );
+    aqua.nextTest();
+  }
+}
+
 // handling messages from sims
 window.addEventListener( 'message', function( evt ) {
   var data = JSON.parse( evt.data );
@@ -95,5 +112,8 @@ window.addEventListener( 'message', function( evt ) {
   }
   else if ( data.type === 'error' ) {
     onSimError( data );
+  }
+  else if ( data.type === 'beforeUnload' ) {
+    onSimUnload();
   }
 } );
