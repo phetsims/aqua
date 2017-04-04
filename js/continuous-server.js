@@ -246,6 +246,24 @@ function getRunnableRepos( callback, errorCallback ) {
 }
 
 /**
+ * Asynchronously gets a list of phet-io sim repo names
+ * @private
+ *
+ * @param {Function} callback - callback( repos: {Array.<string>} ), called when successful
+ * @param {Function} errorCallback - errorCallback( message: {string} ) called when unsuccessful
+ */
+function getPhetIORepos( callback, errorCallback ) {
+  fs.readFile( rootDir + '/chipper/data/test-phetio', 'utf8', function( err, data ) {
+    if ( err ) {
+      errorCallback( 'Could not open test-phetio: ' + err );
+    }
+    else {
+      callback( data.trim().replace( /\r/g, '' ).split( '\n' ) );
+    }
+  } );
+}
+
+/**
  * Asynchronously checks whether a repo is not up-to-date with origin/master
  * @private
  *
@@ -440,77 +458,100 @@ function createSnapshot( callback, errorCallback ) {
     else {
       getRepos( function( repos ) {
         snapshot.repos = repos;
-        getRunnableRepos( function( runnableRepos ) {
-          snapshot.runnableRepos = runnableRepos;
-          snapshot.buildableRepos = runnableRepos.concat( 'scenery', 'kite', 'dot' );
-          forEachCallback( repos, function( repo, nextCallback, nextErrorCallback ) {
-            debugLog( 'copying ' + repo + ' into ' + snapshotName );
+        getPhetIORepos( function( phetioRepos ) {
+          snapshot.phetioRepos = phetioRepos;
+          getRunnableRepos( function( runnableRepos ) {
+            snapshot.runnableRepos = runnableRepos;
+            snapshot.buildableRepos = runnableRepos.concat( 'scenery', 'kite', 'dot' );
+            forEachCallback( repos, function( repo, nextCallback, nextErrorCallback ) {
+              debugLog( 'copying ' + repo + ' into ' + snapshotName );
 
-            // Copy each directory, skipping node_modules
-            ncp( rootDir + '/' + repo, rootDir + '/' + snapshotName + '/' + repo, {
-              filter: function( path ) {
-                return path.indexOf( 'node_modules' ) < 0;
-              }
-            }, function( err ) {
-              if ( err ) {
-                nextErrorCallback( 'ncp error: ' + err );
-              }
-              else {
-                // Symbolic link node_modules to the base directory
-                fs.symlink( rootDir + '/' + repo + '/node_modules', rootDir + '/' + snapshotName + '/' + repo + '/node_modules', 'dir', function( err ) {
-                  if ( err ) {
-                    nextErrorCallback( 'symlink node_modules error: ' + err );
-                  }
-                  else {
-                    nextCallback();
-                  }
+              // Copy each directory, skipping node_modules
+              ncp( rootDir + '/' + repo, rootDir + '/' + snapshotName + '/' + repo, {
+                filter: function( path ) {
+                  return path.indexOf( 'node_modules' ) < 0;
+                }
+              }, function( err ) {
+                if ( err ) {
+                  nextErrorCallback( 'ncp error: ' + err );
+                }
+                else {
+                  // Symbolic link node_modules to the base directory
+                  fs.symlink( rootDir + '/' + repo + '/node_modules', rootDir + '/' + snapshotName + '/' + repo + '/node_modules', 'dir', function( err ) {
+                    if ( err ) {
+                      nextErrorCallback( 'symlink node_modules error: ' + err );
+                    }
+                    else {
+                      nextCallback();
+                    }
+                  } );
+                }
+              } );
+            }, function() {
+              // final snapshot prep
+
+              // Add require.js tests immediately
+              snapshot.runnableRepos.forEach( function( runnableRepo ) {
+                snapshot.testQueue.push( {
+                  count: 0,
+                  snapshotName: snapshotName,
+                  test: [ runnableRepo, 'fuzz', 'require.js' ],
+                  url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzMouse' )
                 } );
-              }
-            } );
-          }, function() {
-            // final snapshot prep
+                snapshot.testQueue.push( {
+                  count: 0,
+                  snapshotName: snapshotName,
+                  test: [ runnableRepo, 'xss-fuzz' ],
+                  url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzMouse&stringTest=xss' )
+                } );
+              } );
 
-            // Add require.js tests immediately
-            snapshot.runnableRepos.forEach( function( runnableRepo ) {
+              // phet-io brand tests
+              snapshot.phetioRepos.forEach( function( phetioRepo ) {
+                snapshot.testQueue.push( {
+                  count: 0,
+                  snapshotName: snapshotName,
+                  test: [ phetioRepo, 'phet-io-fuzz', 'require.js' ],
+                  url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + phetioRepo + '/' + phetioRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet-io&phetioStandalone&ea&fuzzMouse' )
+                } );
+              } );
+
+              // Unit tests (require.js mode)
+              [ 'scenery', 'kite', 'dot' ].forEach( function( repo ) {
+                snapshot.testQueue.push( {
+                  count: 0,
+                  snapshotName: snapshotName,
+                  test: [ repo, 'unit-tests', 'require.js' ],
+                  url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + repo + '/tests/qunit/unit-tests.html' )
+                } );
+              } );
+
+              // phet-io test-iframe-api
               snapshot.testQueue.push( {
                 count: 0,
                 snapshotName: snapshotName,
-                test: [ runnableRepo, 'fuzz', 'require.js' ],
-                url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzMouse' )
+                test: [ 'phet-io', 'test-iframe-api' ],
+                url: 'qunit-test.html?url=' + encodeURIComponent( '../../phet-io/tests/test-iframe-api/' ) + '&duration=300000'
               } );
+
+              // CCK circuit logic tests
+              // TODO: replace this with something that runs all sim unit tests
               snapshot.testQueue.push( {
                 count: 0,
                 snapshotName: snapshotName,
-                test: [ runnableRepo, 'xss-fuzz' ],
-                url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzMouse&stringTest=xss' )
+                test: [ 'circuit-construction-kit-common', 'unit-tests' ],
+                url: 'qunit-test.html?url=' + encodeURIComponent( '../../circuit-construction-kit-common/tests/qunit/unit-tests.html' )
               } );
-            } );
 
-            // Unit tests (require.js mode)
-            [ 'scenery', 'kite', 'dot' ].forEach( function( repo ) {
-              snapshot.testQueue.push( {
-                count: 0,
-                snapshotName: snapshotName,
-                test: [ repo, 'unit-tests', 'require.js' ],
-                url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + repo + '/tests/qunit/unit-tests.html' )
+              // Kick off linting everything once we have a new snapshot
+              testLintEverything( snapshot, function() {
+                // If we have anything else that we want to grunt in chipper, put it here
               } );
-            } );
 
-            snapshot.testQueue.push( {
-              count: 0,
-              snapshotName: snapshotName,
-              test: [ 'phet-io', 'test-iframe-api' ],
-              url: 'qunit-test.html?url=' + encodeURIComponent( '../../phet-io/tests/test-iframe-api/' ) + '&duration=300000'
-            } );
+              // TODO: add other normal tests here (that don't require building)
 
-            // Kick off linting everything once we have a new snapshot
-            testLintEverything( snapshot, function() {
-              // If we have anything else that we want to grunt in chipper, put it here
-            } );
-
-            // TODO: add other normal tests here (that don't require building)
-
-            callback( snapshot );
+              callback( snapshot );
+            }, errorCallback );
           }, errorCallback );
         }, errorCallback );
       }, errorCallback );

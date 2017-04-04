@@ -15,7 +15,7 @@ var options = QueryStringMachine.getAll( {
   },
   duration: {
     type: 'number',
-    defaultValue: 30000
+    defaultValue: 40000
   },
   simQueryParameters: {
     type: 'string',
