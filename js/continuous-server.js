@@ -531,7 +531,7 @@ function createSnapshot( callback, errorCallback ) {
                 count: 0,
                 snapshotName: snapshotName,
                 test: [ 'phet-io', 'test-iframe-api' ],
-                url: 'qunit-test.html?url=' + encodeURIComponent( '../../phet-io/tests/test-iframe-api/' ) + '&duration=300000'
+                url: 'qunit-test.html?url=' + encodeURIComponent( '../../phet-io/tests/test-iframe-api/' ) + '&duration=250000'
               } );
 
               // CCK circuit logic tests
