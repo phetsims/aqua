@@ -893,7 +893,6 @@ function buildLoop() {
       var repo = buildable.repo;
       var phetio = buildable.phetio;
       var id = repo + ( phetio ? '-phet-io' : '' );
-      var brand = phetio ? 'phet-io' : 'phet';
       var relativePath = snapshot.name + ( phetio ? '-phet-io' : '' ) + '/' + repo;
       var parameters = [];
       if ( phetio ) {
