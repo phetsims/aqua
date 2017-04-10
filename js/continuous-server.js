@@ -28,7 +28,7 @@
  *   buildStatus: {Object} - Keys are repo names, undefined means available to be built. Otherwise it's 'building' or 'built' depending on status
  *   repos: {Array.<string>} - All repository names in active-repos for this snapshot
  *   runnableRepos: {Array.<string>} - All runnable repositories in active-runnables for this snapshot
- *   buildableRepos: {Array.<string>} - Anything we can 'grunt' with normal behavior, typically runnables + scenery/kite/dot
+ *   buildables: {Array.<{repo:{string},phetio:{boolean}}>} - Anything we can 'grunt' with normal behavior, typically runnables + scenery/kite/dot
  * }
  *
  * {TestResult}s have the type: {
@@ -340,11 +340,12 @@ function npmUpdateRepo( repo, callback, errorCallback ) {
  * @private
  *
  * @param {string} repo - Repository name to grunt
+ * @param {Array.<string>} parameters - Parameters passed to grunt
  * @param {Function} callback - callback(), called when successful
  * @param {Function} errorCallback - errorCallback( message: {string} ) called when unsuccessful
  */
-function gruntRepo( repo, callback, errorCallback ) {
-  execute( GRUNT_CMD, [], rootDir + '/' + repo, function( stdout, stderr ) {
+function gruntRepo( repo, parameters, callback, errorCallback ) {
+  execute( GRUNT_CMD, parameters, rootDir + '/' + repo, function( stdout, stderr ) {
     callback();
   }, function( stdout, stderr, code ) {
     errorCallback( 'Failure to grunt ' + repo + ':\n' + stdout + '\n' + stderr );
@@ -428,6 +429,51 @@ function pullRepos( repos, callback, errorCallback ) {
 }
 
 /**
+ * Asynchronously copies a repo to a location, and symbolically links its node_modules to the base node_modules.
+ * @private
+ *
+ * @param {string} repo
+ * @param {string} location - Location for the copy
+ * @param {Function} callback - callback(), called when successful
+ * @param {Function} errorCallback - errorCallback( message: {string} ) called when unsuccessful
+ */
+function copyRepoToLocation( repo, location, callback, errorCallback ) {
+  debugLog( 'copying ' + repo + ' into ' + location );
+
+  // Copy each directory, skipping node_modules
+  ncp( rootDir + '/' + repo, location, {
+    filter: function( path ) {
+      return path.indexOf( 'node_modules' ) < 0;
+    }
+  }, function( err ) {
+    if ( err ) {
+      errorCallback( 'ncp error: ' + err );
+    }
+    else {
+      // Symbolic link node_modules to the base directory
+      fs.symlink( rootDir + '/' + repo + '/node_modules', location + '/node_modules', 'dir', function( err ) {
+        if ( err ) {
+          errorCallback( 'symlink node_modules error: ' + err );
+        }
+        else {
+          callback();
+        }
+      } );
+    }
+  } );
+}
+
+function copyReposToSnapshot( repos, snapshotName, callback, errorCallback ) {
+  forEachCallback( repos, function( repo, nextCallback, nextErrorCallback ) {
+    copyRepoToLocation( repo, rootDir + '/' + snapshotName + '/' + repo, nextCallback, nextErrorCallback );
+  }, function() {
+    forEachCallback( repos, function( repo, nextCallback, nextErrorCallback ) {
+      copyRepoToLocation( repo, rootDir + '/' + snapshotName + '-phet-io/' + repo, nextCallback, nextErrorCallback );
+    }, callback, errorCallback );
+  }, errorCallback );
+}
+
+/**
  * Creates a snapshot object.
  * @private
  *
@@ -448,7 +494,7 @@ function createSnapshot( callback, errorCallback ) {
     },
     repos: [], // Filled in later
     runnableRepos: [], // Filled in later
-    buildableRepos: [] // Filled in later
+    buildables: [] // Filled in later
   };
   infoLog( 'Creating snapshot ' + snapshotName );
   fs.mkdir( rootDir + '/' + snapshotName, function( err ) {
@@ -456,105 +502,98 @@ function createSnapshot( callback, errorCallback ) {
       errorCallback( 'Could not create snapshot dir ' + snapshotName + ': ' + err );
     }
     else {
-      getRepos( function( repos ) {
-        snapshot.repos = repos;
-        getPhetIORepos( function( phetioRepos ) {
-          snapshot.phetioRepos = phetioRepos;
-          getRunnableRepos( function( runnableRepos ) {
-            snapshot.runnableRepos = runnableRepos;
-            snapshot.buildableRepos = runnableRepos.concat( 'scenery', 'kite', 'dot' );
-            forEachCallback( repos, function( repo, nextCallback, nextErrorCallback ) {
-              debugLog( 'copying ' + repo + ' into ' + snapshotName );
+      fs.mkdir( rootDir + '/' + snapshotName + '-phet-io', function( err ) {
+        if ( err ) {
+          errorCallback( 'Could not create phet-io snapshot dir ' + snapshotName + '-phet-io: ' + err );
+        }
+        else {
+          getRepos( function( repos ) {
+            snapshot.repos = repos;
+            getPhetIORepos( function( phetioRepos ) {
+              snapshot.phetioRepos = phetioRepos;
+              getRunnableRepos( function( runnableRepos ) {
+                snapshot.runnableRepos = runnableRepos;
+                snapshot.buildables = runnableRepos.concat( 'scenery', 'kite', 'dot' ).map( function( repo ) {
+                  return {
+                    repo: repo,
+                    phetio: false
+                  };
+                } ).concat( phetioRepos.map( function( repo ) {
+                  return {
+                    repo: repo,
+                    phetio: true
+                  };
+                } ) );
+                copyReposToSnapshot( repos, snapshotName, function() {
+                  // final snapshot prep
 
-              // Copy each directory, skipping node_modules
-              ncp( rootDir + '/' + repo, rootDir + '/' + snapshotName + '/' + repo, {
-                filter: function( path ) {
-                  return path.indexOf( 'node_modules' ) < 0;
-                }
-              }, function( err ) {
-                if ( err ) {
-                  nextErrorCallback( 'ncp error: ' + err );
-                }
-                else {
-                  // Symbolic link node_modules to the base directory
-                  fs.symlink( rootDir + '/' + repo + '/node_modules', rootDir + '/' + snapshotName + '/' + repo + '/node_modules', 'dir', function( err ) {
-                    if ( err ) {
-                      nextErrorCallback( 'symlink node_modules error: ' + err );
-                    }
-                    else {
-                      nextCallback();
-                    }
+                  // Add require.js tests immediately
+                  snapshot.runnableRepos.forEach( function( runnableRepo ) {
+                    snapshot.testQueue.push( {
+                      count: 0,
+                      snapshotName: snapshotName,
+                      test: [ runnableRepo, 'fuzz', 'require.js' ],
+                      url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzMouse' )
+                    } );
+                    snapshot.testQueue.push( {
+                      count: 0,
+                      snapshotName: snapshotName,
+                      test: [ runnableRepo, 'xss-fuzz' ],
+                      url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzMouse&stringTest=xss' )
+                    } );
                   } );
-                }
-              } );
-            }, function() {
-              // final snapshot prep
 
-              // Add require.js tests immediately
-              snapshot.runnableRepos.forEach( function( runnableRepo ) {
-                snapshot.testQueue.push( {
-                  count: 0,
-                  snapshotName: snapshotName,
-                  test: [ runnableRepo, 'fuzz', 'require.js' ],
-                  url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzMouse' )
-                } );
-                snapshot.testQueue.push( {
-                  count: 0,
-                  snapshotName: snapshotName,
-                  test: [ runnableRepo, 'xss-fuzz' ],
-                  url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzMouse&stringTest=xss' )
-                } );
-              } );
+                  // phet-io brand tests
+                  snapshot.phetioRepos.forEach( function( phetioRepo ) {
+                    snapshot.testQueue.push( {
+                      count: 0,
+                      snapshotName: snapshotName,
+                      test: [ phetioRepo, 'phet-io-fuzz', 'require.js' ],
+                      url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + phetioRepo + '/' + phetioRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet-io&phetioStandalone&ea&fuzzMouse' )
+                    } );
+                  } );
 
-              // phet-io brand tests
-              snapshot.phetioRepos.forEach( function( phetioRepo ) {
-                snapshot.testQueue.push( {
-                  count: 0,
-                  snapshotName: snapshotName,
-                  test: [ phetioRepo, 'phet-io-fuzz', 'require.js' ],
-                  url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + phetioRepo + '/' + phetioRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet-io&phetioStandalone&ea&fuzzMouse' )
-                } );
-              } );
+                  // Unit tests (require.js mode)
+                  [ 'scenery', 'kite', 'dot' ].forEach( function( repo ) {
+                    snapshot.testQueue.push( {
+                      count: 0,
+                      snapshotName: snapshotName,
+                      test: [ repo, 'unit-tests', 'require.js' ],
+                      url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + repo + '/tests/qunit/unit-tests.html' )
+                    } );
+                  } );
 
-              // Unit tests (require.js mode)
-              [ 'scenery', 'kite', 'dot' ].forEach( function( repo ) {
-                snapshot.testQueue.push( {
-                  count: 0,
-                  snapshotName: snapshotName,
-                  test: [ repo, 'unit-tests', 'require.js' ],
-                  url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + repo + '/tests/qunit/unit-tests.html' )
-                } );
-              } );
+                  // phet-io test-iframe-api
+                  snapshot.testQueue.push( {
+                    count: 0,
+                    snapshotName: snapshotName,
+                    test: [ 'phet-io', 'test-iframe-api' ],
+                    url: 'qunit-test.html?url=' + encodeURIComponent( '../../phet-io/tests/test-iframe-api/' ) + '&duration=250000'
+                  } );
 
-              // phet-io test-iframe-api
-              snapshot.testQueue.push( {
-                count: 0,
-                snapshotName: snapshotName,
-                test: [ 'phet-io', 'test-iframe-api' ],
-                url: 'qunit-test.html?url=' + encodeURIComponent( '../../phet-io/tests/test-iframe-api/' ) + '&duration=250000'
-              } );
+                  // CCK circuit logic tests
+                  // TODO: replace this with something that runs all sim unit tests
+                  snapshot.testQueue.push( {
+                    count: 0,
+                    snapshotName: snapshotName,
+                    test: [ 'circuit-construction-kit-common', 'unit-tests' ],
+                    url: 'qunit-test.html?url=' + encodeURIComponent( '../../circuit-construction-kit-common/tests/qunit/unit-tests.html' )
+                  } );
 
-              // CCK circuit logic tests
-              // TODO: replace this with something that runs all sim unit tests
-              snapshot.testQueue.push( {
-                count: 0,
-                snapshotName: snapshotName,
-                test: [ 'circuit-construction-kit-common', 'unit-tests' ],
-                url: 'qunit-test.html?url=' + encodeURIComponent( '../../circuit-construction-kit-common/tests/qunit/unit-tests.html' )
-              } );
+                  // Kick off linting everything once we have a new snapshot
+                  testLintEverything( snapshot, function() {
+                    // If we have anything else that we want to grunt in chipper, put it here
+                  } );
 
-              // Kick off linting everything once we have a new snapshot
-              testLintEverything( snapshot, function() {
-                // If we have anything else that we want to grunt in chipper, put it here
-              } );
+                  // TODO: add other normal tests here (that don't require building)
 
-              // TODO: add other normal tests here (that don't require building)
-
-              callback( snapshot );
+                  callback( snapshot );
+                }, errorCallback );
+              }, errorCallback );
             }, errorCallback );
           }, errorCallback );
-        }, errorCallback );
-      }, errorCallback );
+        }
+      } );
     }
   } );
 }
@@ -587,8 +626,15 @@ function removeSnapshot( snapshot, callback, errorCallback ) {
         errorCallback( 'rimraf: ' + err );
       }
       else {
-        snapshot.exists = false;
-        callback();
+        rimraf( rootDir + '/' + snapshot.name + '-phet-io', function( err ) {
+          if ( err ) {
+            errorCallback( 'rimraf phet-io: ' + err );
+          }
+          else {
+            snapshot.exists = false;
+            callback();
+          }
+        } );
       }
     } );
   }, errorCallback );
@@ -843,22 +889,31 @@ function buildLoop() {
   setTimeout( function() {
     if ( snapshots.length > 0 ) {
       var snapshot = snapshots[ 0 ];
-      var repo = snapshot.buildableRepos[ Math.floor( snapshot.buildableRepos.length * Math.random() ) ];
-      if ( snapshot.buildStatus[ repo ] === undefined ) {
-        snapshot.buildStatus[ repo ] = 'building';
+      var buildable = snapshot.buildables[ Math.floor( snapshot.buildables.length * Math.random() ) ];
+      var repo = buildable.repo;
+      var phetio = buildable.phetio;
+      var id = repo + ( phetio ? '-phet-io' : '' );
+      var brand = phetio ? 'phet-io' : 'phet';
+      var relativePath = snapshot.name + ( phetio ? '-phet-io' : '' ) + '/' + repo;
+      var parameters = [];
+      if ( phetio ) {
+        parameters.push( '--brand=phet-io' );
+      }
+      if ( snapshot.buildStatus[ id ] === undefined ) {
+        snapshot.buildStatus[ id ] = 'building';
 
-        infoLog( 'building ' + snapshot.name + '/' + repo );
-        gruntRepo( snapshot.name + '/' + repo, function() {
-          testPass( snapshot, [ repo, 'build' ] );
-          snapshot.buildStatus[ repo ] = 'passed';
-          infoLog( 'build passed: ' + snapshot.name + '/' + repo );
+        infoLog( 'building ' + relativePath );
+        gruntRepo( relativePath, parameters, function() {
+          testPass( snapshot, [ repo, 'build', phetio ? 'phet-io' : 'phet' ] );
+          snapshot.buildStatus[ id ] = 'passed';
+          infoLog( 'build passed: ' + relativePath );
 
           if ( snapshot.runnableRepos.indexOf( repo ) >= 0 ) {
             snapshot.testQueue.push( {
               count: 0,
               snapshotName: snapshot.name,
-              test: [ repo, 'fuzz', 'built' ],
-              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshot.name + '/' + repo + '/build/' + repo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzzMouse' )
+              test: [ repo, 'fuzz', 'built' + ( phetio ? '-phet-io' : '' ) ],
+              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/' + repo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzzMouse' + ( phetio ? '&phetioStandalone' : '' ) )
             } );
           }
           else {
@@ -866,7 +921,7 @@ function buildLoop() {
               count: 0,
               snapshotName: snapshot.name,
               test: [ repo, 'unit-tests', 'built' ],
-              url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshot.name + '/' + repo + '/tests/qunit/compiled-unit-tests.html' )
+              url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/tests/qunit/compiled-unit-tests.html' )
             } );
           }
 
@@ -874,9 +929,9 @@ function buildLoop() {
 
           buildLoop();
         }, function( message ) {
-          testFail( snapshot, [ repo, 'build' ], message );
-          snapshot.buildStatus[ repo ] = 'failed';
-          infoLog( 'build failed: ' + snapshot.name + '/' + repo );
+          testFail( snapshot, [ repo, 'build', phetio ? 'phet-io' : 'phet' ], message );
+          snapshot.buildStatus[ id ] = 'failed';
+          infoLog( 'build failed: ' + relativePath );
           buildLoop();
         } );
       }
