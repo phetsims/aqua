@@ -912,7 +912,7 @@ function buildLoop() {
               count: 0,
               snapshotName: snapshot.name,
               test: [ repo, 'fuzz', 'built' + ( phetio ? '-phet-io' : '' ) ],
-              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/' + repo + '_en' + ( phetio ? '-phetio' + '' ) + '.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzzMouse' + ( phetio ? '&phetioStandalone' : '' ) )
+              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/' + repo + '_en' + ( phetio ? '-phetio' : '' ) + '.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzzMouse' + ( phetio ? '&phetioStandalone' : '' ) )
             } );
           }
           else {
