@@ -554,7 +554,7 @@ function createSnapshot( callback, errorCallback ) {
                   } );
 
                   // Unit tests (require.js mode)
-                  [ 'scenery', 'kite', 'dot' ].forEach( function( repo ) {
+                  [ 'scenery', 'kite', 'dot', 'phetcommon' ].forEach( function( repo ) {
                     snapshot.testQueue.push( {
                       count: 0,
                       snapshotName: snapshotName,
