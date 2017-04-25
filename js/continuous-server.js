@@ -552,26 +552,26 @@ function createSnapshot( callback, errorCallback ) {
           errorCallback( 'Could not create phet-io snapshot dir ' + snapshotName + '-phet-io: ' + err );
         }
         else {
-          npmUpdateRoot( rootDir + '/' + snapshotName, function() {
-            npmUpdateRoot( rootDir + '/' + snapshotName + '-phet-io', function() {
-              getRepos( function( repos ) {
-                snapshot.repos = repos;
-                getPhetIORepos( function( phetioRepos ) {
-                  snapshot.phetioRepos = phetioRepos;
-                  getRunnableRepos( function( runnableRepos ) {
-                    snapshot.runnableRepos = runnableRepos;
-                    snapshot.buildables = runnableRepos.concat( 'scenery', 'kite', 'dot' ).map( function( repo ) {
-                      return {
-                        repo: repo,
-                        phetio: false
-                      };
-                    } ).concat( phetioRepos.map( function( repo ) {
-                      return {
-                        repo: repo,
-                        phetio: true
-                      };
-                    } ) );
-                    copyReposToSnapshot( repos, snapshotName, function() {
+          getRepos( function( repos ) {
+            snapshot.repos = repos;
+            getPhetIORepos( function( phetioRepos ) {
+              snapshot.phetioRepos = phetioRepos;
+              getRunnableRepos( function( runnableRepos ) {
+                snapshot.runnableRepos = runnableRepos;
+                snapshot.buildables = runnableRepos.concat( 'scenery', 'kite', 'dot' ).map( function( repo ) {
+                  return {
+                    repo: repo,
+                    phetio: false
+                  };
+                } ).concat( phetioRepos.map( function( repo ) {
+                  return {
+                    repo: repo,
+                    phetio: true
+                  };
+                } ) );
+                copyReposToSnapshot( repos, snapshotName, function() {
+                  npmUpdateRoot( rootDir + '/' + snapshotName, function() {
+                    npmUpdateRoot( rootDir + '/' + snapshotName + '-phet-io', function() {
                       // final snapshot prep
 
                       // Add require.js tests immediately
