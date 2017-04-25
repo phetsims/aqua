@@ -366,10 +366,18 @@ function doesRepoHaveNodeModules( repo, callback, errorCallback ) {
  * @param {Function} errorCallback - errorCallback( message: {string} ) called when unsuccessful
  */
 function npmUpdateRepoInfo( repoInfo, callback, errorCallback ) {
-  execute( NPM_CMD, [ 'update', '--cache=../npm-caches/' + repoInfo.repo ], repoInfo.base + '/' + repoInfo.repo, function( stdout, stderr ) {
-    callback();
-  }, function( stdout, stderr, code ) {
-    errorCallback( 'Failure to npm update ' + repoInfo.base + '/' + repoInfo.repo + ':\n' + stdout + '\n' + stderr );
+  var dir = repoInfo.base + '/' + repoInfo.repo;
+  fs.access( dir, function( err ) {
+    if ( err ) {
+      errorCallback( 'Could not access directory for npm update: ' + dir );
+    }
+    else {
+      execute( NPM_CMD, [ 'update', '--cache=../npm-caches/' + repoInfo.repo ], repoInfo.base + '/' + repoInfo.repo, function( stdout, stderr ) {
+        callback();
+      }, function( stdout, stderr, code ) {
+        errorCallback( 'Failure to npm update ' + repoInfo.base + '/' + repoInfo.repo + ':\n' + stdout + '\n' + stderr );
+      } );
+    }
   } );
 }
 
