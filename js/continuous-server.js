@@ -136,6 +136,42 @@ function forEachCallback( items, apply, callback, errorCallback ) {
 }
 
 /**
+ * Asynchronous for-each, iterates through the items and applies the function. Assumes callback is called with no arguments.
+ * @private
+ *
+ * Executes in parallel.
+ *
+ * @param {Array.<*>} items - Things that get passed to apply's first param
+ * @param {Function} apply - apply( item: {*}, callback: {Function}, errorCallback: {Function} )
+ * @param {Function} callback - callback()
+ * @param {Function} errorCallback - errorCallback( message: {string} )
+ */
+function forEachCallbackParallel( items, apply, callback, errorCallback ) {
+  var localItems = items.slice();
+
+  var expectedCount = localItems.length;
+  var count = 0;
+  var errored = false;
+
+  function localCallback() {
+    if ( ++count === expectedCount ) {
+      callback();
+    }
+  }
+
+  function localError( message ) {
+    if ( !errored ) {
+      errored = true;
+      errorCallback( message );
+    }
+  }
+
+  localItems.forEach( function( item ) {
+    apply( item, localCallback, localError );
+  } );
+}
+
+/**
  * Asynchronous filter, iterates through the items and applies the predicate (filtering the array). Calls callback with the array of items that the predicate
  * returned true for.
  * @private
@@ -323,15 +359,17 @@ function doesRepoHaveNodeModules( repo, callback, errorCallback ) {
  * Asynchronously updates node modules for a repo.
  * @private
  *
- * @param {string} repo - Repository name to npm update
+ * Make to handle parallel npm updates.
+ *
+ * @param {Object} repoInfo - { base: {string}, repo: {string} }
  * @param {Function} callback - callback(), called when successful
  * @param {Function} errorCallback - errorCallback( message: {string} ) called when unsuccessful
  */
-function npmUpdateRepo( repo, callback, errorCallback ) {
-  execute( NPM_CMD, [ 'update' ], rootDir + '/' + repo, function( stdout, stderr ) {
+function npmUpdateRepoInfo( repoInfo, callback, errorCallback ) {
+  execute( NPM_CMD, [ 'update', '--cache=../npm-caches/' + repoInfo.repo ], repoInfo.base + '/' + repoInfo.repo, function( stdout, stderr ) {
     callback();
   }, function( stdout, stderr, code ) {
-    errorCallback( 'Failure to npm update ' + repo + ':\n' + stdout + '\n' + stderr );
+    errorCallback( 'Failure to npm update ' + repoInfo.base + '/' + repoInfo.repo + ':\n' + stdout + '\n' + stderr );
   } );
 }
 
@@ -385,13 +423,20 @@ function testLintEverything( snapshot, callback ) {
  * Asynchronously "npm update" all repos that have a package.json
  * @private
  *
+ * @param {string} baseDir - The base directory for where all repos should be npm updated
  * @param {Function} callback - callback(), called when successful
  * @param {Function} errorCallback - errorCallback( message: {string} ) called when unsuccessful
  */
-function npmUpdateAll( callback, errorCallback ) {
+function npmUpdateRoot( baseDir, callback, errorCallback ) {
   getRepos( function( repos ) {
     filterCallback( repos, doesRepoHaveNodeModules, function( nodeRepos ) {
-      forEachCallback( nodeRepos, npmUpdateRepo, callback, errorCallback );
+      var nodeDirectories = nodeRepos.map( function( repo ) {
+        return {
+          base: baseDir,
+          repo: repo
+        };
+      } );
+      forEachCallbackParallel( nodeDirectories, npmUpdateRepoInfo, callback, errorCallback );
     }, errorCallback );
   }, errorCallback );
 }
@@ -429,7 +474,7 @@ function pullRepos( repos, callback, errorCallback ) {
 }
 
 /**
- * Asynchronously copies a repo to a location, and symbolically links its node_modules to the base node_modules.
+ * Asynchronously copies a repo to a location.
  * @private
  *
  * @param {string} repo
@@ -450,15 +495,7 @@ function copyRepoToLocation( repo, location, callback, errorCallback ) {
       errorCallback( 'ncp error: ' + err );
     }
     else {
-      // Symbolic link node_modules to the base directory
-      fs.symlink( rootDir + '/' + repo + '/node_modules', location + '/node_modules', 'dir', function( err ) {
-        if ( err ) {
-          errorCallback( 'symlink node_modules error: ' + err );
-        }
-        else {
-          callback();
-        }
-      } );
+      callback();
     }
   } );
 }
@@ -507,87 +544,91 @@ function createSnapshot( callback, errorCallback ) {
           errorCallback( 'Could not create phet-io snapshot dir ' + snapshotName + '-phet-io: ' + err );
         }
         else {
-          getRepos( function( repos ) {
-            snapshot.repos = repos;
-            getPhetIORepos( function( phetioRepos ) {
-              snapshot.phetioRepos = phetioRepos;
-              getRunnableRepos( function( runnableRepos ) {
-                snapshot.runnableRepos = runnableRepos;
-                snapshot.buildables = runnableRepos.concat( 'scenery', 'kite', 'dot' ).map( function( repo ) {
-                  return {
-                    repo: repo,
-                    phetio: false
-                  };
-                } ).concat( phetioRepos.map( function( repo ) {
-                  return {
-                    repo: repo,
-                    phetio: true
-                  };
-                } ) );
-                copyReposToSnapshot( repos, snapshotName, function() {
-                  // final snapshot prep
+          npmUpdateRoot( rootDir + '/' + snapshotName, function() {
+            npmUpdateRoot( rootDir + '/' + snapshotName + '-phet-io', function() {
+              getRepos( function( repos ) {
+                snapshot.repos = repos;
+                getPhetIORepos( function( phetioRepos ) {
+                  snapshot.phetioRepos = phetioRepos;
+                  getRunnableRepos( function( runnableRepos ) {
+                    snapshot.runnableRepos = runnableRepos;
+                    snapshot.buildables = runnableRepos.concat( 'scenery', 'kite', 'dot' ).map( function( repo ) {
+                      return {
+                        repo: repo,
+                        phetio: false
+                      };
+                    } ).concat( phetioRepos.map( function( repo ) {
+                      return {
+                        repo: repo,
+                        phetio: true
+                      };
+                    } ) );
+                    copyReposToSnapshot( repos, snapshotName, function() {
+                      // final snapshot prep
 
-                  // Add require.js tests immediately
-                  snapshot.runnableRepos.forEach( function( runnableRepo ) {
-                    snapshot.testQueue.push( {
-                      count: 0,
-                      snapshotName: snapshotName,
-                      test: [ runnableRepo, 'fuzz', 'require.js' ],
-                      url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzMouse' )
-                    } );
-                    snapshot.testQueue.push( {
-                      count: 0,
-                      snapshotName: snapshotName,
-                      test: [ runnableRepo, 'xss-fuzz' ],
-                      url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzMouse&stringTest=xss' )
-                    } );
-                  } );
+                      // Add require.js tests immediately
+                      snapshot.runnableRepos.forEach( function( runnableRepo ) {
+                        snapshot.testQueue.push( {
+                          count: 0,
+                          snapshotName: snapshotName,
+                          test: [ runnableRepo, 'fuzz', 'require.js' ],
+                          url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzMouse' )
+                        } );
+                        snapshot.testQueue.push( {
+                          count: 0,
+                          snapshotName: snapshotName,
+                          test: [ runnableRepo, 'xss-fuzz' ],
+                          url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzMouse&stringTest=xss' )
+                        } );
+                      } );
 
-                  // phet-io brand tests
-                  snapshot.phetioRepos.forEach( function( phetioRepo ) {
-                    snapshot.testQueue.push( {
-                      count: 0,
-                      snapshotName: snapshotName,
-                      test: [ phetioRepo, 'phet-io-fuzz', 'require.js' ],
-                      url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + phetioRepo + '/' + phetioRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet-io&phetioStandalone&ea&fuzzMouse' )
-                    } );
-                  } );
+                      // phet-io brand tests
+                      snapshot.phetioRepos.forEach( function( phetioRepo ) {
+                        snapshot.testQueue.push( {
+                          count: 0,
+                          snapshotName: snapshotName,
+                          test: [ phetioRepo, 'phet-io-fuzz', 'require.js' ],
+                          url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + phetioRepo + '/' + phetioRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet-io&phetioStandalone&ea&fuzzMouse' )
+                        } );
+                      } );
 
-                  // Unit tests (require.js mode)
-                  [ 'scenery', 'kite', 'dot', 'phetcommon' ].forEach( function( repo ) {
-                    snapshot.testQueue.push( {
-                      count: 0,
-                      snapshotName: snapshotName,
-                      test: [ repo, 'unit-tests', 'require.js' ],
-                      url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + repo + '/tests/qunit/unit-tests.html' )
-                    } );
-                  } );
+                      // Unit tests (require.js mode)
+                      [ 'scenery', 'kite', 'dot', 'phetcommon' ].forEach( function( repo ) {
+                        snapshot.testQueue.push( {
+                          count: 0,
+                          snapshotName: snapshotName,
+                          test: [ repo, 'unit-tests', 'require.js' ],
+                          url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + repo + '/tests/qunit/unit-tests.html' )
+                        } );
+                      } );
 
-                  // phet-io test-iframe-api
-                  snapshot.testQueue.push( {
-                    count: 0,
-                    snapshotName: snapshotName,
-                    test: [ 'phet-io', 'test-iframe-api' ],
-                    url: 'qunit-test.html?url=' + encodeURIComponent( '../../phet-io/tests/test-iframe-api/' ) + '&duration=250000'
-                  } );
+                      // phet-io test-iframe-api
+                      snapshot.testQueue.push( {
+                        count: 0,
+                        snapshotName: snapshotName,
+                        test: [ 'phet-io', 'test-iframe-api' ],
+                        url: 'qunit-test.html?url=' + encodeURIComponent( '../../phet-io/tests/test-iframe-api/' ) + '&duration=250000'
+                      } );
 
-                  // CCK circuit logic tests
-                  // TODO: replace this with something that runs all sim unit tests
-                  snapshot.testQueue.push( {
-                    count: 0,
-                    snapshotName: snapshotName,
-                    test: [ 'circuit-construction-kit-common', 'unit-tests' ],
-                    url: 'qunit-test.html?url=' + encodeURIComponent( '../../circuit-construction-kit-common/tests/qunit/unit-tests.html' )
-                  } );
+                      // CCK circuit logic tests
+                      // TODO: replace this with something that runs all sim unit tests
+                      snapshot.testQueue.push( {
+                        count: 0,
+                        snapshotName: snapshotName,
+                        test: [ 'circuit-construction-kit-common', 'unit-tests' ],
+                        url: 'qunit-test.html?url=' + encodeURIComponent( '../../circuit-construction-kit-common/tests/qunit/unit-tests.html' )
+                      } );
 
-                  // Kick off linting everything once we have a new snapshot
-                  testLintEverything( snapshot, function() {
-                    // If we have anything else that we want to grunt in chipper, put it here
-                  } );
+                      // Kick off linting everything once we have a new snapshot
+                      testLintEverything( snapshot, function() {
+                        // If we have anything else that we want to grunt in chipper, put it here
+                      } );
 
-                  // TODO: add other normal tests here (that don't require building)
+                      // TODO: add other normal tests here (that don't require building)
 
-                  callback( snapshot );
+                      callback( snapshot );
+                    }, errorCallback );
+                  }, errorCallback );
                 }, errorCallback );
               }, errorCallback );
             }, errorCallback );
@@ -608,36 +649,24 @@ function createSnapshot( callback, errorCallback ) {
  */
 function removeSnapshot( snapshot, callback, errorCallback ) {
   infoLog( 'Removing snapshot ' + snapshot.name );
-  forEachCallback( snapshot.repos, function( repo, nextCallback, nextErrorCallback ) {
-    debugLog( 'Unlinking ' + snapshot.name + '/' + repo );
-    fs.unlink( rootDir + '/' + snapshot.name + '/' + repo + '/node_modules', function( err ) {
-      if ( err ) {
-        nextErrorCallback( 'Could not unlink ' + snapshot.name + ':' + repo + ': ' + err );
-      }
-      else {
-        nextCallback();
-      }
-    } );
-  }, function() {
-    // e.g. rm -Rf
-    debugLog( 'Rimraffing ' + snapshot.name );
-    rimraf( rootDir + '/' + snapshot.name, function( err ) {
-      if ( err ) {
-        errorCallback( 'rimraf: ' + err );
-      }
-      else {
-        rimraf( rootDir + '/' + snapshot.name + '-phet-io', function( err ) {
-          if ( err ) {
-            errorCallback( 'rimraf phet-io: ' + err );
-          }
-          else {
-            snapshot.exists = false;
-            callback();
-          }
-        } );
-      }
-    } );
-  }, errorCallback );
+  // e.g. rm -Rf
+  debugLog( 'Rimraffing ' + snapshot.name );
+  rimraf( rootDir + '/' + snapshot.name, function( err ) {
+    if ( err ) {
+      errorCallback( 'rimraf: ' + err );
+    }
+    else {
+      rimraf( rootDir + '/' + snapshot.name + '-phet-io', function( err ) {
+        if ( err ) {
+          errorCallback( 'rimraf phet-io: ' + err );
+        }
+        else {
+          snapshot.exists = false;
+          callback();
+        }
+      } );
+    }
+  } );
 }
 
 /**
@@ -848,29 +877,24 @@ function snapshotLoop() {
       if ( wasStale ) {
         wasStale = false;
         infoLog( 'Stable point reached' );
-        npmUpdateAll( function() {
-          createSnapshot( function( snapshot ) {
-            snapshots.unshift( snapshot );
-            var numActiveSnapshots = 3;
-            if ( snapshots.length > numActiveSnapshots ) {
-              var lastSnapshot = snapshots[ numActiveSnapshots ];
-              removeSnapshot( lastSnapshot, function() {
-                snapshotLoop();
-              }, function( errorMessage ) {
-                errorLog( errorMessage );
-                snapshotLoop();
-              } );
-            }
-            else {
+        createSnapshot( function( snapshot ) {
+          snapshots.unshift( snapshot );
+          var numActiveSnapshots = 3;
+          if ( snapshots.length > numActiveSnapshots ) {
+            var lastSnapshot = snapshots[ numActiveSnapshots ];
+            removeSnapshot( lastSnapshot, function() {
               snapshotLoop();
-            }
-          }, function( errorMessage ) {
-            errorLog( errorMessage );
+            }, function( errorMessage ) {
+              errorLog( errorMessage );
+              snapshotLoop();
+            } );
+          }
+          else {
             snapshotLoop();
-          } );
+          }
         }, function( errorMessage ) {
           errorLog( errorMessage );
-          snapshotLoop(); // try recovering
+          snapshotLoop();
         } );
       }
       else {
