@@ -141,12 +141,13 @@ function forEachCallback( items, apply, callback, errorCallback ) {
  *
  * Executes in parallel.
  *
+ * @param {number} maxConcurrent - THe maximum number of concurrent tasts here that should execute.
  * @param {Array.<*>} items - Things that get passed to apply's first param
  * @param {Function} apply - apply( item: {*}, callback: {Function}, errorCallback: {Function} )
  * @param {Function} callback - callback()
  * @param {Function} errorCallback - errorCallback( message: {string} )
  */
-function forEachCallbackParallel( items, apply, callback, errorCallback ) {
+function forEachCallbackParallel( maxConcurrent, items, apply, callback, errorCallback ) {
   var localItems = items.slice();
 
   var expectedCount = localItems.length;
@@ -157,6 +158,9 @@ function forEachCallbackParallel( items, apply, callback, errorCallback ) {
     if ( ++count === expectedCount ) {
       callback();
     }
+    else if ( !errored ) {
+      launch();
+    }
   }
 
   function localError( message ) {
@@ -166,9 +170,15 @@ function forEachCallbackParallel( items, apply, callback, errorCallback ) {
     }
   }
 
-  localItems.forEach( function( item ) {
-    apply( item, localCallback, localError );
-  } );
+  function launch() {
+    if ( localItems.length ) {
+      apply( localItems.shift(), localCallback, localError );
+    }
+  }
+
+  for ( var i = 0; i < Math.min( expectedCount, maxConcurrent ); i++ ) {
+    launch();
+  }
 }
 
 /**
@@ -444,7 +454,7 @@ function npmUpdateRoot( baseDir, callback, errorCallback ) {
           repo: repo
         };
       } );
-      forEachCallbackParallel( nodeDirectories, npmUpdateRepoInfo, callback, errorCallback );
+      forEachCallbackParallel( 4, nodeDirectories, npmUpdateRepoInfo, callback, errorCallback );
     }, errorCallback );
   }, errorCallback );
 }
