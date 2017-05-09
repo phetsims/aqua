@@ -611,7 +611,7 @@ function createSnapshot( callback, errorCallback ) {
                       } );
 
                       // Unit tests (require.js mode)
-                      [ 'scenery', 'kite', 'dot', 'phetcommon' ].forEach( function( repo ) {
+                      [ 'scenery', 'kite', 'dot', 'phetcommon', 'axon', 'phet-core', 'circuit-construction-kit-common' ].forEach( function( repo ) {
                         snapshot.testQueue.push( {
                           count: 0,
                           snapshotName: snapshotName,
@@ -625,16 +625,15 @@ function createSnapshot( callback, errorCallback ) {
                         count: 0,
                         snapshotName: snapshotName,
                         test: [ 'phet-io', 'test-iframe-api' ],
-                        url: 'qunit-test.html?url=' + encodeURIComponent( '../../phet-io/tests/test-iframe-api/' ) + '&duration=250000'
+                        url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io/tests/test-iframe-api/' ) + '&duration=250000'
                       } );
 
-                      // CCK circuit logic tests
-                      // TODO: replace this with something that runs all sim unit tests
+                      // query-string-machine tests
                       snapshot.testQueue.push( {
                         count: 0,
                         snapshotName: snapshotName,
-                        test: [ 'circuit-construction-kit-common', 'unit-tests' ],
-                        url: 'qunit-test.html?url=' + encodeURIComponent( '../../circuit-construction-kit-common/tests/qunit/unit-tests.html' )
+                        test: [ 'query-string-machine', 'unit-tests', 'require.js' ],
+                        url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/query-string-machine/tests/qunit/test-query-string-machine.html' ) + '&duration=250000'
                       } );
 
                       // Kick off linting everything once we have a new snapshot
