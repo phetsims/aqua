@@ -284,3 +284,39 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
   req.open( 'get', serverOrigin + '/aquaserver/results', true ); // enable CORS
   req.send();
 })();
+
+(function snapshotStatusLoop() {
+  var element = document.getElementById( 'snapshotStatus' );
+
+  var req = new XMLHttpRequest();
+  req.onload = function() {
+    setTimeout( snapshotStatusLoop, 1000 );
+    var data = JSON.parse( req.responseText );
+    element.innerHTML = data.status;
+  };
+  req.onerror = function() {
+    setTimeout( snapshotStatusLoop, 1000 );
+    element.innerHTML = '<span style="color: red;">Could not contact server</span>';
+    console.log( 'XHR error?' );
+  };
+  req.open( 'get', serverOrigin + '/aquaserver/snapshot-status', true ); // enable CORS
+  req.send();
+})();
+
+(function testStatusLoop() {
+  var element = document.getElementById( 'testStatus' );
+
+  var req = new XMLHttpRequest();
+  req.onload = function() {
+    setTimeout( testStatusLoop, 1000 );
+    var data = JSON.parse( req.responseText );
+    element.innerHTML = data.zeroCounts;
+  };
+  req.onerror = function() {
+    setTimeout( testStatusLoop, 1000 );
+    element.innerHTML = '<span style="color: red;">Could not contact server</span>';
+    console.log( 'XHR error?' );
+  };
+  req.open( 'get', serverOrigin + '/aquaserver/test-status', true ); // enable CORS
+  req.send();
+})();
