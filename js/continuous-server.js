@@ -66,6 +66,13 @@ var GRUNT_CMD = IS_WIN ? 'grunt.cmd' : 'grunt'; // needs to be a slightly differ
 var NPM_CMD = IS_WIN ? 'npm.cmd' : 'npm'; // needs to be a slightly different command for Windows
 var CLONE_MISSING_CMD = '/data/share/phet/continuous-testing/chipper/bin/clone-missing-repos.sh';
 
+// Gets update with the current status
+var snapshotStatus = 'Starting up';
+
+function setSnapshotStatus( str ) {
+  snapshotStatus = '[' + new Date().toLocaleString().replace( /^.*, /g, '' ).replace( ' AM', 'am' ).replace( ' PM', 'pm' ) + '] ' + str;
+}
+
 // To improve log visibility
 var ANSI_RED = '\x1b[31m';
 var ANSI_GREEN = '\x1b[32m';
@@ -566,6 +573,7 @@ function createSnapshot( callback, errorCallback ) {
     buildables: [] // Filled in later
   };
   infoLog( 'Creating snapshot ' + snapshotName );
+  setSnapshotStatus( 'Initializing new snapshot' );
   fs.mkdir( rootDir + '/' + snapshotName, function( err ) {
     if ( err ) {
       errorCallback( 'Could not create snapshot dir ' + snapshotName + ': ' + err );
@@ -593,8 +601,11 @@ function createSnapshot( callback, errorCallback ) {
                     phetio: true
                   };
                 } ) );
+                setSnapshotStatus( 'Copying snapshot files' );
                 copyReposToSnapshot( repos, snapshotName, function() {
+                  setSnapshotStatus( 'Running npm update for phet brand' );
                   npmUpdateRoot( rootDir + '/' + snapshotName, function() {
+                    setSnapshotStatus( 'Running npm update for phet-io brand' );
                     npmUpdateRoot( rootDir + '/' + snapshotName + '-phet-io', function() {
                       // final snapshot prep
 
@@ -846,6 +857,18 @@ http.createServer( function( req, res ) {
     res.writeHead( 200, jsonHeaders );
     res.end( JSON.stringify( testResults ) );
   }
+  if ( requestInfo.pathname === '/aquaserver/snapshot-status' ) {
+    res.writeHead( 200, jsonHeaders );
+    res.end( JSON.stringify( {
+      status: snapshotStatus
+    } ) );
+  }
+  if ( requestInfo.pathname === '/aquaserver/test-status' ) {
+    res.writeHead( 200, jsonHeaders );
+    res.end( JSON.stringify( {
+      zeroCounts: snapshots[ 0 ] ? snapshots[ 0 ].testQueue.filter( function( test ) { return test.count === 0; } ).length : 0
+    } ) );
+  }
 } ).listen( port );
 
 infoLog( 'running on port ' + port + ' with root directory ' + rootDir );
@@ -892,10 +915,18 @@ function randomBrowserTest( res ) {
 
 // Main loop that checks SHAs and creates snapshots. Responsible for adding entries to the snapshots array.
 function snapshotLoop() {
+  if ( wasStale ) {
+    setSnapshotStatus( 'Checking for commits (changes detected, waiting for stable SHAs)' );
+  }
+  else {
+    setSnapshotStatus( 'Checking for commits (no changes since last snapshot)' );
+  }
   getStaleRepos( function( staleRepos ) {
     if ( staleRepos.length ) {
       wasStale = true;
       infoLog( 'Stale repos: ' + staleRepos.join( ', ' ) );
+
+      setSnapshotStatus( 'Pulling repos: ' + staleRepos.join( ', ' ) );
       pullRepos( staleRepos, function() {
         cloneMissingRepos( function() {
           snapshotLoop();
@@ -914,6 +945,7 @@ function snapshotLoop() {
         wasStale = false;
         infoLog( 'Stable point reached' );
         createSnapshot( function( snapshot ) {
+          setSnapshotStatus( 'Removing old snapshot files' );
           snapshots.unshift( snapshot );
           var numActiveSnapshots = 3;
           if ( snapshots.length > numActiveSnapshots ) {
