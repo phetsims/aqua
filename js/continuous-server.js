@@ -64,6 +64,7 @@ var IS_WIN = /^win/.test( process.platform );
 var GIT_CMD = 'git';
 var GRUNT_CMD = IS_WIN ? 'grunt.cmd' : 'grunt'; // needs to be a slightly different command for Windows
 var NPM_CMD = IS_WIN ? 'npm.cmd' : 'npm'; // needs to be a slightly different command for Windows
+var CLONE_MISSING_CMD = '/data/share/phet/continuous-testing/chipper/bin/clone-missing-repos.sh';
 
 // To improve log visibility
 var ANSI_RED = '\x1b[31m';
@@ -492,6 +493,19 @@ function pullRepos( repos, callback, errorCallback ) {
 }
 
 /**
+ * Asynchronously clones any missing repositories.
+ * @private
+ *
+ * @param {Function} callback - callback( stdout, stderr ), called when successful
+ * @param {Function} errorCallback - errorCallback( message: {string} ) called when unsuccessful
+ */
+function cloneMissingRepos( callback, errorCallback ) {
+  debugLog( 'Cloning missing repos' );
+
+  execute( CLONE_MISSING_CMD, [], rootDir, callback, errorCallback );
+}
+
+/**
  * Asynchronously copies a repo to a location.
  * @private
  *
@@ -883,7 +897,12 @@ function snapshotLoop() {
       wasStale = true;
       infoLog( 'Stale repos: ' + staleRepos.join( ', ' ) );
       pullRepos( staleRepos, function() {
-        snapshotLoop();
+        cloneMissingRepos( function() {
+          snapshotLoop();
+        }, function( errorMessage ) {
+          errorLog( errorMessage );
+          snapshotLoop(); // try recovering
+        } );
       }, function( errorMessage ) {
         errorLog( errorMessage );
         snapshotLoop(); // try recovering
