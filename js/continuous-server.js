@@ -789,6 +789,20 @@ function addResult( passed, snapshot, test, message ) {
   // TODO: remove stale tests here?
 }
 
+function getCutoffTimestamp() {
+  return Date.now() - 1000 * 60 * 60 * 24 * 2;
+}
+
+function removeResultsForSnapshot( container, snapshot ) {
+  container.results = container.results.filter( function( testResult ) {
+    return testResult.snapshotName !== snapshot.name;
+  } );
+
+  container.children.forEach( function( childContainer ) {
+    removeResultsForSnapshot( childContainer, snapshot );
+  } );
+}
+
 /**
  * Looks up a {Snapshot} given the name.
  * @private
@@ -945,8 +959,14 @@ function snapshotLoop() {
         wasStale = false;
         infoLog( 'Stable point reached' );
         createSnapshot( function( snapshot ) {
-          setSnapshotStatus( 'Removing old snapshot files' );
           snapshots.unshift( snapshot );
+
+          var cutoffTimestamp = getCutoffTimestamp();
+          while ( snapshots[ snapshots.length - 1 ].timestamp < cutoffTimestamp && !snapshots[ snapshots.length - 1 ].exists ) {
+            removeResultsForSnapshot( testResults, snapshots.pop() );
+          }
+
+          setSnapshotStatus( 'Removing old snapshot files' );
           var numActiveSnapshots = 3;
           if ( snapshots.length > numActiveSnapshots ) {
             var lastSnapshot = snapshots[ numActiveSnapshots ];
