@@ -206,7 +206,7 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
                               return '<pre>\n' + message.replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' ) + '\n</pre>';
                             } ).join( '' ) +
                             '</body>' +
-                            '</html>', '_blank' );
+                            '</html>' ), '_blank' );
           } );
           openLink.innerHTML = 'Open in new tab';
           snapshotDialog.appendChild( openLink );
