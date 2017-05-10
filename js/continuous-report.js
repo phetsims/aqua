@@ -195,6 +195,7 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
           snapshotDialog.className = 'dialog element (if any)'; // TODO: WTF is this?
 
           var openLink = document.createElement( 'div' );
+          openLink.class = 'linky';
           openLink.addEventListener( 'click', function( evt ) {
             window.open( 'data:text/html;charset=utf-8,' +
                           encodeURIComponent(
@@ -206,7 +207,7 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
                               return '<pre>\n' + message.replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' ) + '\n</pre>';
                             } ).join( '' ) +
                             '</body>' +
-                            '</html>' ), '_blank' );
+                            '</html>' ) );
           } );
           openLink.innerHTML = 'Open in new tab';
           snapshotDialog.appendChild( openLink );
