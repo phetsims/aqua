@@ -197,17 +197,11 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
           var openLink = document.createElement( 'div' );
           openLink.className = 'linky';
           openLink.addEventListener( 'click', function( evt ) {
-            window.open( 'data:text/html;charset=utf-8,' +
-                          encodeURIComponent(
-                            '<!DOCTYPE html>' +
-                            '<html lang="en">' +
-                            '<head><title>Messages</title></head>' +
-                            '<body style="font-size: 12px;">' +
-                            uniqueMessages.map( function( message ) {
-                              return '<pre>\n' + message.replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' ) + '\n</pre>';
-                            } ).join( '' ) +
-                            '</body>' +
-                            '</html>' ) );
+            var w = window.open();
+            w.document.body.innerHTML =
+              uniqueMessages.map( function( message ) {
+                return '<pre>\n' + message.replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' ) + '\n</pre>';
+              } ).join( '' );
           } );
           openLink.innerHTML = 'Open in new tab';
           snapshotDialog.appendChild( openLink );
