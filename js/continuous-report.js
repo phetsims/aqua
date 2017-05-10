@@ -194,8 +194,9 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
           var snapshotDialog = document.createElement( 'span' );
           snapshotDialog.className = 'dialog element (if any)'; // TODO: WTF is this?
 
-          var openLink = document.createElement( 'a' );
-          openLink.href = 'data:text/html;charset=utf-8,' +
+          var openLink = document.createElement( 'div' );
+          openLink.addEventListener( 'click', function( evt ) {
+            window.open( 'data:text/html;charset=utf-8,' +
                           encodeURIComponent(
                             '<!DOCTYPE html>' +
                             '<html lang="en">' +
@@ -205,7 +206,8 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
                               return '<pre>\n' + message.replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' ) + '\n</pre>';
                             } ).join( '' ) +
                             '</body>' +
-                            '</html>' );
+                            '</html>', '_blank' );
+          } );
           openLink.innerHTML = 'Open in new tab';
           snapshotDialog.appendChild( openLink );
 
