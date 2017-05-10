@@ -179,14 +179,39 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
         snapshotElement.innerHTML = percentString( snapshotPasses[ j ] / ( snapshotPasses[ j ] + snapshotFails[ j ] ) );
         var messages = snapshotMessages[ j ];
 
+        var uniqueMessages = [];
+        var uniqueMessageMap = {};
+        messages.forEach( function( message ) {
+          if ( !uniqueMessageMap[ message ] ) {
+            uniqueMessages.push( message );
+          }
+          uniqueMessageMap[ message ] = true;
+        } );
+
         // if we have messages, construct the dialog and hook up listeners
-        if ( messages.length ) {
+        if ( uniqueMessages.length ) {
           snapshotElement.style.border = '1px solid black';
           var snapshotDialog = document.createElement( 'span' );
-          snapshotDialog.className = 'dialog element (if any)';
-          for ( var m = 0; m < messages.length; m++ ) {
+          snapshotDialog.className = 'dialog element (if any)'; // TODO: WTF is this?
+
+          var openLink = document.createElement( 'a' );
+          openLink.href = 'data:text/html;charset=utf-8,' +
+                          encodeURIComponent(
+                            '<!DOCTYPE html>' +
+                            '<html lang="en">' +
+                            '<head><title>Messages</title></head>' +
+                            '<body style="font-size: 12px;">' +
+                            uniqueMessages.map( function( message ) {
+                              return '<pre>\n' + message.replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' ) + '\n</pre>';
+                            } ).join( '' ) +
+                            '</body>' +
+                            '</html>' );
+          openLink.innerHTML = 'Open in new tab';
+          snapshotDialog.appendChild( openLink );
+
+          for ( var m = 0; m < uniqueMessages.length; m++ ) {
             var pre = document.createElement( 'pre' );
-            pre.appendChild( document.createTextNode( messages[ m ] ) );
+            pre.appendChild( document.createTextNode( uniqueMessages[ m ] ) );
             snapshotDialog.appendChild( pre );
           }
           // absorb events so they don't trigger the document.body listener
