@@ -829,6 +829,9 @@ function findSnapshot( snapshotName ) {
  * @param {string|undefined} message
  */
 function testPass( snapshot, test, message ) {
+  if ( snapshot === null ) {
+    throw new Error( 'Snapshot null: ' + JSON.stringify( test ) + ' + ' + JSON.stringify( message ) );
+  }
   infoLog( '[PASS] ' + snapshot.name + ' ' + test.join( ',' ) + ': ' + message );
   addResult( true, snapshot, test, message );
 }
