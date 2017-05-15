@@ -798,7 +798,7 @@ function removeResultsForSnapshot( container, snapshot ) {
     return testResult.snapshotName !== snapshot.name;
   } );
 
-  container.children.forEach( function( childContainer ) {
+  container.children && container.children.forEach( function( childContainer ) {
     removeResultsForSnapshot( childContainer, snapshot );
   } );
 }
