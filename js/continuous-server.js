@@ -93,8 +93,8 @@ var rootDir = path.normalize( __dirname + '/../../' ); // eslint-disable-line no
  * @param {string} str
  */
 function debugLog( str ) {
-  var line = '[DEBUG] ' + str;
-  console.log( new Date().toISOString() + ' ' + line );
+  // var line = '[DEBUG] ' + str;
+  // console.log( new Date().toISOString() + ' ' + line );
 }
 
 /**
