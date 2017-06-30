@@ -307,9 +307,9 @@ function getRunnableRepos( callback, errorCallback ) {
  * @param {Function} errorCallback - errorCallback( message: {string} ) called when unsuccessful
  */
 function getPhetIORepos( callback, errorCallback ) {
-  fs.readFile( rootDir + '/chipper/data/test-phetio', 'utf8', function( err, data ) {
+  fs.readFile( rootDir + '/chipper/data/phet-io', 'utf8', function( err, data ) {
     if ( err ) {
-      errorCallback( 'Could not open test-phetio: ' + err );
+      errorCallback( 'Could not open phet-io: ' + err );
     }
     else {
       callback( data.trim().replace( /\r/g, '' ).split( '\n' ) );
