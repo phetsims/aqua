@@ -51,6 +51,8 @@ function resetTimer() {
  * @private
  */
 function nextTest() {
+  iframe.src = 'about:blank';
+
   var req = new XMLHttpRequest();
   req.onload = function() {
     try {
@@ -116,7 +118,6 @@ window.addEventListener( 'message', function( evt ) {
     sendTestResult( data.names, data.message, false );
   }
   else if ( data.type === 'test-next' ) {
-    iframe.src = 'about:blank';
     nextTest();
   }
 } );
