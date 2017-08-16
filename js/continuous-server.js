@@ -971,7 +971,7 @@ function snapshotLoop() {
           snapshots.unshift( snapshot );
 
           var cutoffTimestamp = getCutoffTimestamp();
-          while ( snapshots[ snapshots.length - 1 ].timestamp < cutoffTimestamp && !snapshots[ snapshots.length - 1 ].exists ) {
+          while ( snapshots.length > 70 || snapshots[ snapshots.length - 1 ].timestamp < cutoffTimestamp && !snapshots[ snapshots.length - 1 ].exists ) {
             removeResultsForSnapshot( testResults, snapshots.pop() );
           }
 
