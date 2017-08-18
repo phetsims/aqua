@@ -9,13 +9,27 @@
 'use strict';
 
 var options = QueryStringMachine.getAll( {
+  // TODO: use this?
   url: {
     type: 'string',
     defaultValue: ''
   },
+  simSeed: {
+    type: 'number',
+    defaultValue: 4 // Ideal constant taken from https://xkcd.com/221/, DO NOT CHANGE, it's random!
+  },
+  simWidth: {
+    type: 'number',
+    defaultValue: 1024 / 4
+  },
+  simHeight: {
+    type: 'number',
+    defaultValue: 768 / 4
+  },
+  // Note: always assumed to be something?
   simQueryParameters: {
     type: 'string',
-    defaultValue: ''
+    defaultValue: 'brand=phet&ea'
   },
   numFrames: {
     type: 'number',
@@ -26,12 +40,12 @@ var options = QueryStringMachine.getAll( {
 var iframe = document.createElement( 'iframe' );
 iframe.setAttribute( 'frameborder', '0' );
 iframe.setAttribute( 'seamless', '1' );
-iframe.setAttribute( 'width', 1024 / 2 );
-iframe.setAttribute( 'height', 768 / 2 );
+iframe.setAttribute( 'width', options.simWidth );
+iframe.setAttribute( 'height', options.simHeight );
 document.body.appendChild( iframe );
 
-var queryParams = 'audioVolume=0&randomSeed=5&playbackMode=true&postMessageOnLoad&postMessageOnError&postMessageOnReady';
-iframe.src = '../../molarity/molarity_en.html?brand=phet&ea&' + queryParams;
+var queryParameters = 'audioVolume=0&randomSeed=' + options.simSeed + '&playbackMode=true&postMessageOnLoad&postMessageOnError&postMessageOnReady';
+iframe.src = '../../molarity/molarity_en.html?' + options.simQueryParameters + '&' + queryParameters;
 
 var isMouseDown = false;
 var mouseLastMoved = false;
@@ -72,7 +86,7 @@ function sendMouseMoveEvent() {
   mouseY = Math.floor( random.nextDouble() * iframe.contentWindow.phet.joist.display.height );
 
   // our move event
-  var domEvent = document.createEvent( 'MouseEvent' ); // not 'MouseEvents' according to DOM Level 3 spec
+  var domEvent = iframe.contentWindow.document.createEvent( 'MouseEvent' ); // not 'MouseEvents' according to DOM Level 3 spec
 
   // technically deprecated, but DOM4 event constructors not out yet. people on #whatwg said to use it
   domEvent.initMouseEvent( 'mousemove', true, true, iframe.contentWindow, 0, // click count
@@ -128,13 +142,22 @@ function handleFrame() {
     }
 
     getScreenshot( function( url ) {
+      var hashedURL = hash( url );
+
+      window.parent && window.parent.postMessage( JSON.stringify( {
+        type: 'screenshot',
+        number: count - 1,
+        url: url,
+        hash: hashedURL
+      } ), '*' );
+
       received = true;
-      screenshotHashes += hash( url );
+      screenshotHashes += hashedURL;
       if ( count === options.numFrames ) {
         var fullHash = hash( screenshotHashes );
 
         window.parent && window.parent.postMessage( JSON.stringify( {
-          type: 'snapshotHash',
+          type: 'snapshot',
           hash: fullHash,
           url: window.location.href
         } ), '*' );
