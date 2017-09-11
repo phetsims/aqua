@@ -49,13 +49,13 @@
 /* eslint-env node */
 'use strict';
 
-var http = require( 'http' );
 var child_process = require( 'child_process' );
-var path = require( 'path' );
-var url = require( 'url' );
 var fs = require( 'fs' );
+var http = require( 'http' );
 var ncp = require( 'ncp' ).ncp; // eslint-disable-line
+var path = require( 'path' );
 var rimraf = require( 'rimraf' );
+var url = require( 'url' );
 
 var port = 45366;
 
