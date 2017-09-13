@@ -12,7 +12,7 @@ var options = QueryStringMachine.getAll( {
   // TODO: use this?
   url: {
     type: 'string',
-    defaultValue: ''
+    defaultValue: '../../molecule-shapes/molecule-shapes_en.html'
   },
   simSeed: {
     type: 'number',
@@ -44,8 +44,8 @@ iframe.setAttribute( 'width', options.simWidth );
 iframe.setAttribute( 'height', options.simHeight );
 document.body.appendChild( iframe );
 
-var queryParameters = 'audioVolume=0&randomSeed=' + options.simSeed + '&playbackMode=true&postMessageOnLoad&postMessageOnError&postMessageOnReady';
-iframe.src = '../../molarity/molarity_en.html?' + options.simQueryParameters + '&' + queryParameters;
+var queryParameters = 'preserveDrawingBuffer&audioVolume=0&randomSeed=' + options.simSeed + '&playbackMode=true&postMessageOnLoad&postMessageOnError&postMessageOnReady';
+iframe.src = options.url + '?' + options.simQueryParameters + '&' + queryParameters;
 
 var isMouseDown = false;
 var mouseLastMoved = false;
@@ -133,7 +133,6 @@ function handleFrame() {
 
   if ( loaded && received && count < options.numFrames ) {
     count++;
-    console.log( 'screenshot ' + count );
     received = false;
 
     for ( var i = 0; i < 10; i++ ) {
@@ -143,6 +142,7 @@ function handleFrame() {
 
     getScreenshot( function( url ) {
       var hashedURL = hash( url );
+      console.log( count, hashedURL );
 
       window.parent && window.parent.postMessage( JSON.stringify( {
         type: 'screenshot',
@@ -198,6 +198,12 @@ window.addEventListener( 'message', function( evt ) {
     loaded = true;
   }
   else if ( data.type === 'error' ) {
-    console.log( 'error' );
+    console.log( 'error snapshot.js' );
+
+    window.parent && window.parent.postMessage( JSON.stringify( {
+      type: 'error',
+      message: data.message,
+      stack: data.stack
+    } ), '*' );
   }
 } );
