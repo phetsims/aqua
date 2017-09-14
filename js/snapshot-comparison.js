@@ -56,6 +56,76 @@ function setup( simNames ) {
     }
   } );
 
+  function imageToContext( image ) {
+    var canvas = document.createElement( 'canvas' );
+    var context = canvas.getContext( '2d' );
+    canvas.width = options.simWidth;
+    canvas.height = options.simHeight;
+    context.drawImage( image, 0, 0 );
+    return context;
+  }
+  function contextToData( context ) {
+    return context.getImageData( 0, 0, options.simWidth, options.simHeight );
+  }
+  function dataToCanvas( data ) {
+    var canvas = document.createElement( 'canvas' );
+    var context = canvas.getContext( '2d' );
+    canvas.width = options.simWidth;
+    canvas.height = options.simHeight;
+    context.putImageData( data, 0, 0 );
+    return canvas;
+  }
+  function compare( imageA, imageB, msg ) {
+    // var threshold = 0;
+
+    var a = contextToData( imageToContext( imageA ) );
+    var b = contextToData( imageToContext( imageB ) );
+
+    var largestDifference = 0;
+    var totalDifference = 0;
+    var colorDiffData = document.createElement( 'canvas' ).getContext( '2d' ).createImageData( a.width, a.height );
+    var alphaDiffData = document.createElement( 'canvas' ).getContext( '2d' ).createImageData( a.width, a.height );
+    for ( var i = 0; i < a.data.length; i++ ) {
+      var diff = Math.abs( a.data[ i ] - b.data[ i ] );
+      if ( i % 4 === 3 ) {
+        colorDiffData.data[ i ] = 255;
+        alphaDiffData.data[ i ] = 255;
+        alphaDiffData.data[ i - 3 ] = diff; // red
+        alphaDiffData.data[ i - 2 ] = diff; // green
+        alphaDiffData.data[ i - 1 ] = diff; // blue
+      }
+      else {
+        colorDiffData.data[ i ] = diff;
+      }
+      var alphaIndex = ( i - ( i % 4 ) + 3 );
+      // grab the associated alpha channel and multiply it times the diff
+      var alphaMultipliedDiff = ( i % 4 === 3 ) ? diff : diff * ( a.data[ alphaIndex ] / 255 ) * ( b.data[ alphaIndex ] / 255 );
+
+      totalDifference += alphaMultipliedDiff;
+      // if ( alphaMultipliedDiff > threshold ) {
+        // console.log( message + ': ' + Math.abs( a.data[i] - b.data[i] ) );
+      largestDifference = Math.max( largestDifference, alphaMultipliedDiff );
+        // isEqual = false;
+        // break;
+      // }
+    }
+
+    var averageDifference = totalDifference / ( 4 * a.width * a.height );
+
+    // if ( averageDifference > threshold ) {
+      var container = document.createElement( 'div' );
+      comparisonDiv.appendChild( container );
+
+      container.appendChild( document.createTextNode( msg + ', largest: ' + largestDifference + ', average: ' + averageDifference ) );
+      container.appendChild( document.createElement( 'br' ) );
+
+      container.appendChild( dataToCanvas( a ) );
+      container.appendChild( dataToCanvas( b ) );
+      container.appendChild( dataToCanvas( colorDiffData ) );
+      // container.appendChild( dataToCanvas( alphaDiffData ) );
+    // }
+  }
+
   var iframe = document.createElement( 'iframe' );
   iframe.setAttribute( 'frameborder', '0' );
   iframe.setAttribute( 'seamless', '1' );
@@ -67,6 +137,9 @@ function setup( simNames ) {
   snapshotButton.textContent = 'Start Snapshot';
   snapshotButton.style.display = 'block';
   document.body.appendChild( snapshotButton );
+
+  var comparisonDiv = document.createElement( 'div' );
+  document.body.appendChild( comparisonDiv );
 
   var rowMap = {};
   var table = document.createElement( 'table' );
@@ -121,13 +194,38 @@ function setup( simNames ) {
     }
     else if ( data.type === 'snapshot' ) {
       // basically hash
-      currentSnapshot[ currentSim ].hash = data.hash;
+      var sim = currentSim;
+      var snapshot = currentSnapshot;
+
+      snapshot[ sim ].hash = data.hash;
       var td = document.createElement( 'td' );
       td.textContent = data.hash.slice( 0, 6 );
-      if ( snapshots.length > 1 && data.hash !== snapshots[ snapshots.length - 2 ][ currentSim ].hash ) {
+      if ( snapshots.length > 1 && data.hash !== snapshots[ snapshots.length - 2 ][ sim ].hash ) {
         td.style.fontWeight = 'bold';
+        td.addEventListener( 'click', function() {
+          var newScreenshots = snapshot[ sim ].screenshots;
+          var oldScreenshots = snapshots[ snapshots.indexOf( snapshot ) - 1 ][ sim ].screenshots;
+
+          var nextIndex = 0;
+          function run() {
+            var index = nextIndex++;
+            if ( index < newScreenshots.length && index < oldScreenshots.length ) {
+              var newImage = document.createElement( 'img' );
+              newImage.addEventListener( 'load', function() {
+                var oldImage = document.createElement( 'img' );
+                oldImage.addEventListener( 'load', function() {
+                  compare( oldImage, newImage, 'Snapshot ' + index );
+                  run();
+                } );
+                oldImage.src = oldScreenshots[ index ].url;
+              } );
+              newImage.src = newScreenshots[ index ].url;
+            }
+          }
+          run();
+        } );
       }
-      rowMap[ currentSim ].appendChild( td );
+      rowMap[ sim ].appendChild( td );
       nextSim();
     }
     else if ( data.type === 'error' ) {
