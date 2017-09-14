@@ -169,6 +169,23 @@ function handleFrame() {
 }
 handleFrame();
 
+// Because of course direct calls to this go through this window object instead.
+window.addEventListener( 'error', function( a ) {
+  var message = '';
+  var stack = '';
+  if ( a && a.message ) {
+    message = a.message;
+  }
+  if ( a && a.error && a.error.stack ) {
+    stack = a.error.stack;
+  }
+  window.parent && window.parent.postMessage( JSON.stringify( {
+    type: 'error',
+    message: message,
+    stack: stack
+  } ), '*' );
+} );
+
 // handling messages from sims
 window.addEventListener( 'message', function( evt ) {
   var data = JSON.parse( evt.data );
@@ -196,14 +213,5 @@ window.addEventListener( 'message', function( evt ) {
     console.log( 'loaded' );
     sendStep( 0.016 );
     loaded = true;
-  }
-  else if ( data.type === 'error' ) {
-    console.log( 'error snapshot.js' );
-
-    window.parent && window.parent.postMessage( JSON.stringify( {
-      type: 'error',
-      message: data.message,
-      stack: data.stack
-    } ), '*' );
   }
 } );
