@@ -336,7 +336,7 @@ function isRepoStale( repo, callback, errorCallback ) {
         execute( GIT_CMD, [ 'ls-remote', 'https://github.com/phetsims/' + repo + '.git', 'refs/heads/master' ], rootDir + '/' + repo, function( stdout, stderr ) {
           var remoteSHA = stdout.slice( 0, stdout.indexOf( '\t' ) );
           if ( remoteSHA.length === 40 ) {
-            debugLog( 'SHAs equal: ' + ( currentSHA === remoteSHA ) );
+            debugLog( 'SHAs equal: ' + (currentSHA === remoteSHA) );
             var isStale = currentSHA !== remoteSHA;
             if ( isStale ) {
               infoLog( repo + ' stale' );
@@ -495,6 +495,7 @@ function pullRepo( repo, callback, errorCallback ) {
     errorCallback( 'Failure to pull ' + repo + ':\n' + stdout + '\n' + stderr );
   } );
 }
+
 function pullRepos( repos, callback, errorCallback ) {
   forEachCallback( repos, pullRepo, callback, errorCallback );
 }
@@ -648,6 +649,18 @@ function createSnapshot( callback, errorCallback ) {
                           snapshotName: snapshotName,
                           test: [ repo, 'unit-tests', 'require.js' ],
                           url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + repo + '/tests/qunit/unit-tests.html' )
+                        } );
+                      } );
+
+                      // top-level Unit tests (require.js mode)
+                      [ '', '?ea', '?brand=phet-io', '?ea&brand=phet-io' ].forEach( function( queryString ) {
+                        [ 'axon' ].forEach( function( repo ) {
+                          snapshot.testQueue.push( {
+                            count: 0,
+                            snapshotName: snapshotName,
+                            test: [ repo, 'top-level-unit-tests', 'require.js' + queryString ], // TODO: I wasn't sure what to put here
+                            url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + repo + '/' + repo + '-tests.html' + queryString )
+                          } );
                         } );
                       } );
 
@@ -1003,6 +1016,7 @@ function snapshotLoop() {
     snapshotLoop(); // try recovering
   } );
 }
+
 snapshotLoop();
 
 // Main build loop. Call once for every build "thread"
@@ -1013,8 +1027,8 @@ function buildLoop() {
       var buildable = snapshot.buildables[ Math.floor( snapshot.buildables.length * Math.random() ) ];
       var repo = buildable.repo;
       var phetio = buildable.phetio;
-      var id = repo + ( phetio ? '-phet-io' : '' );
-      var relativePath = snapshot.name + ( phetio ? '-phet-io' : '' ) + '/' + repo;
+      var id = repo + (phetio ? '-phet-io' : '');
+      var relativePath = snapshot.name + (phetio ? '-phet-io' : '') + '/' + repo;
       var parameters = [];
       if ( phetio ) {
         parameters.push( '--brand=phet-io' );
@@ -1032,8 +1046,8 @@ function buildLoop() {
             snapshot.testQueue.push( {
               count: 0,
               snapshotName: snapshot.name,
-              test: [ repo, 'fuzz', 'built' + ( phetio ? '-phet-io' : '' ) ],
-              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/' + repo + '_en' + ( phetio ? '-phetio' : '' ) + '.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzzMouse' + ( phetio ? '&phetioStandalone' : '' ) )
+              test: [ repo, 'fuzz', 'built' + (phetio ? '-phet-io' : '') ],
+              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/' + repo + '_en' + (phetio ? '-phetio' : '') + '.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzzMouse' + (phetio ? '&phetioStandalone' : '') )
             } );
           }
           else {
@@ -1064,6 +1078,7 @@ function buildLoop() {
     }
   }, 50 );
 }
+
 buildLoop();
 buildLoop();
 buildLoop();
