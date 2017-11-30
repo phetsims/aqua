@@ -34,16 +34,22 @@ var passed = 0;
 var failed = 0;
 var message = '';
 
-setTimeout( function() {
-  message = passed + ' out of ' + ( passed + failed ) + ' tests passed. ' + failed + ' failed.\n' + message;
-  if ( passed > 0 && failed === 0 ) {
-    aqua.testPass( [], message );
+var done = function() {
+  if ( id !== null ) {
+    message = passed + ' out of ' + ( passed + failed ) + ' tests passed. ' + failed + ' failed.\n' + message;
+    if ( passed > 0 && failed === 0 ) {
+      aqua.testPass( [], message );
+    }
+    else {
+      aqua.testFail( [], message );
+    }
+    id = null;
+    aqua.nextTest();
   }
-  else {
-    aqua.testFail( [], message );
-  }
-  aqua.nextTest();
-}, options.duration );
+};
+
+// Supports old tests (which do not know when they are done)
+var id = setTimeout( done, options.duration );
 
 window.addEventListener( 'message', function( evt ) {
   var data = JSON.parse( evt.data );
@@ -56,6 +62,18 @@ window.addEventListener( 'message', function( evt ) {
     else {
       failed++;
       message += data.module + ': ' + data.name + ' failed:\n' + data.message + '\n' + data.source + '\n\n';
+    }
+  }
+
+  else if ( data.type === 'qunit-done' ) {
+
+    // Supports new tests, which know when they are done
+    failed = data.failed;
+    passed = data.passed;
+
+    if ( id !== null ) {
+      clearTimeout( id );
+      done();
     }
   }
 } );
