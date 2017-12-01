@@ -643,7 +643,7 @@ function createSnapshot( callback, errorCallback ) {
                       } );
 
                       // top-level Unit tests (require.js mode)
-                      [ 'axon', 'circuit-construction-kit-common', 'dot', 'kite', 'phetcommon', 'phet-core', 'phet-io', 'scenery' ].forEach( function( repo ) {
+                      [ 'axon', 'circuit-construction-kit-common', 'dot', 'kite', 'phetcommon', 'phet-core', 'phet-io', 'query-string-machine', 'scenery' ].forEach( function( repo ) {
                         [ '', '?ea', '?brand=phet-io', '?ea&brand=phet-io' ].forEach( function( queryString ) {
                           snapshot.testQueue.push( {
                             count: 0,
@@ -660,14 +660,6 @@ function createSnapshot( callback, errorCallback ) {
                         snapshotName: snapshotName,
                         test: [ 'phet-io', 'test-iframe-api' ],
                         url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io/tests/test-iframe-api/' ) + '&duration=250000'
-                      } );
-
-                      // query-string-machine tests
-                      snapshot.testQueue.push( {
-                        count: 0,
-                        snapshotName: snapshotName,
-                        test: [ 'query-string-machine', 'unit-tests', 'require.js' ],
-                        url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/query-string-machine/tests/qunit/test-query-string-machine.html' ) + '&duration=250000'
                       } );
 
                       // Kick off linting everything once we have a new snapshot
