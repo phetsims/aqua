@@ -643,7 +643,7 @@ function createSnapshot( callback, errorCallback ) {
                       } );
 
                       // Unit tests (require.js mode)
-                      [ 'scenery', 'kite', 'dot', 'phetcommon', 'phet-core', 'circuit-construction-kit-common' ].forEach( function( repo ) {
+                      [ 'scenery', 'kite', 'phetcommon', 'phet-core', 'circuit-construction-kit-common' ].forEach( function( repo ) {
                         snapshot.testQueue.push( {
                           count: 0,
                           snapshotName: snapshotName,
@@ -653,7 +653,7 @@ function createSnapshot( callback, errorCallback ) {
                       } );
 
                       // top-level Unit tests (require.js mode)
-                      [ 'axon' ].forEach( function( repo ) {
+                      [ 'axon', 'dot' ].forEach( function( repo ) {
                         [ '', '?ea', '?brand=phet-io', '?ea&brand=phet-io' ].forEach( function( queryString ) {
                           snapshot.testQueue.push( {
                             count: 0,
