@@ -642,18 +642,8 @@ function createSnapshot( callback, errorCallback ) {
                         } );
                       } );
 
-                      // Unit tests (require.js mode)
-                      [ 'circuit-construction-kit-common' ].forEach( function( repo ) {
-                        snapshot.testQueue.push( {
-                          count: 0,
-                          snapshotName: snapshotName,
-                          test: [ repo, 'unit-tests', 'require.js' ],
-                          url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + repo + '/tests/qunit/unit-tests.html' )
-                        } );
-                      } );
-
                       // top-level Unit tests (require.js mode)
-                      [ 'axon', 'dot', 'kite', 'phetcommon', 'phet-core', 'scenery' ].forEach( function( repo ) {
+                      [ 'axon', 'circuit-construction-kit-common', 'dot', 'kite', 'phetcommon', 'phet-core', 'scenery' ].forEach( function( repo ) {
                         [ '', '?ea', '?brand=phet-io', '?ea&brand=phet-io' ].forEach( function( queryString ) {
                           snapshot.testQueue.push( {
                             count: 0,
