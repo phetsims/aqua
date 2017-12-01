@@ -643,7 +643,7 @@ function createSnapshot( callback, errorCallback ) {
                       } );
 
                       // Unit tests (require.js mode)
-                      [ 'scenery', 'kite', 'dot', 'phetcommon', 'axon', 'phet-core', 'circuit-construction-kit-common' ].forEach( function( repo ) {
+                      [ 'scenery', 'kite', 'dot', 'phetcommon', 'phet-core', 'circuit-construction-kit-common' ].forEach( function( repo ) {
                         snapshot.testQueue.push( {
                           count: 0,
                           snapshotName: snapshotName,
