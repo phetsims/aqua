@@ -653,8 +653,8 @@ function createSnapshot( callback, errorCallback ) {
                       } );
 
                       // top-level Unit tests (require.js mode)
-                      [ '', '?ea', '?brand=phet-io', '?ea&brand=phet-io' ].forEach( function( queryString ) {
-                        [ 'axon' ].forEach( function( repo ) {
+                      [ 'axon' ].forEach( function( repo ) {
+                        [ '', '?ea', '?brand=phet-io', '?ea&brand=phet-io' ].forEach( function( queryString ) {
                           snapshot.testQueue.push( {
                             count: 0,
                             snapshotName: snapshotName,
