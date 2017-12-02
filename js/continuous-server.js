@@ -654,6 +654,18 @@ function createSnapshot( callback, errorCallback ) {
                         } );
                       } );
 
+                      // top-level Unit tests (require.js mode)
+                      [ 'phet-io-wrappers' ].forEach( function( repo ) {
+                        [ '' ].forEach( function( queryString ) {
+                          snapshot.testQueue.push( {
+                            count: 0,
+                            snapshotName: snapshotName,
+                            test: [ repo, 'top-level-unit-tests', 'require.js' + queryString ], // TODO: I wasn't sure what to put here
+                            url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + repo + '/' + repo + '-tests.html' + queryString )
+                          } );
+                        } );
+                      } );
+
                       // phet-io test-iframe-api
                       snapshot.testQueue.push( {
                         count: 0,
