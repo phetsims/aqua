@@ -666,14 +666,6 @@ function createSnapshot( callback, errorCallback ) {
                         } );
                       } );
 
-                      // phet-io test-iframe-api
-                      snapshot.testQueue.push( {
-                        count: 0,
-                        snapshotName: snapshotName,
-                        test: [ 'phet-io', 'test-iframe-api' ],
-                        url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io/tests/test-iframe-api/' ) + '&duration=250000'
-                      } );
-
                       // Kick off linting everything once we have a new snapshot
                       testLintEverything( snapshot, function() {
                         // If we have anything else that we want to grunt in chipper, put it here
