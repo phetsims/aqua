@@ -644,6 +644,8 @@ function createSnapshot( callback, errorCallback ) {
 
                       // top-level Unit tests (require.js mode)
                       [ 'axon', 'circuit-construction-kit-common', 'dot', 'kite', 'phetcommon', 'phet-core', 'phet-io', 'query-string-machine', 'scenery' ].forEach( function( repo ) {
+
+                        // All tests should work with no query parameters, with assertions enables and also in phet-io brand
                         [ '', '?ea', '?brand=phet-io', '?ea&brand=phet-io' ].forEach( function( queryString ) {
                           snapshot.testQueue.push( {
                             count: 0,
@@ -654,9 +656,11 @@ function createSnapshot( callback, errorCallback ) {
                         } );
                       } );
 
-                      // top-level Unit tests (require.js mode)
+                      // Tests that do not accept ?brand=phet-io
                       [ 'phet-io-wrappers' ].forEach( function( repo ) {
-                        [ '' ].forEach( function( queryString ) {
+
+                        // Run wrapper tests with and without assertions
+                        [ '', '?ea' ].forEach( function( queryString ) {
                           snapshot.testQueue.push( {
                             count: 0,
                             snapshotName: snapshotName,
