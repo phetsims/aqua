@@ -642,7 +642,7 @@ function createSnapshot( callback, errorCallback ) {
                         } );
                       } );
 
-                      // top-level Unit tests (require.js mode)
+                      // repo-specific Unit tests (require.js mode) from `grunt generate-test-harness`
                       [ 'axon', 'circuit-construction-kit-common', 'dot', 'kite', 'phetcommon', 'phet-core', 'phet-io', 'query-string-machine', 'scenery' ].forEach( function( repo ) {
 
                         // All tests should work with no query parameters, with assertions enables and also in phet-io brand
