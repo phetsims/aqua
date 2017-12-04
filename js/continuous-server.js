@@ -271,7 +271,7 @@ function execute( cmd, args, cwd, callback, errorCallback ) {
  * @param {Function} errorCallback - errorCallback( message: {string} ) called when unsuccessful
  */
 function getRepos( callback, errorCallback ) {
-  fs.readFile( rootDir + '/chipper/data/active-repos', 'utf8', function( err, data ) {
+  fs.readFile( rootDir + '/perennial/data/active-repos', 'utf8', function( err, data ) {
     if ( err ) {
       errorCallback( 'Could not open active-repos: ' + err );
     }
@@ -289,7 +289,7 @@ function getRepos( callback, errorCallback ) {
  * @param {Function} errorCallback - errorCallback( message: {string} ) called when unsuccessful
  */
 function getRunnableRepos( callback, errorCallback ) {
-  fs.readFile( rootDir + '/chipper/data/active-runnables', 'utf8', function( err, data ) {
+  fs.readFile( rootDir + '/perennial/data/active-runnables', 'utf8', function( err, data ) {
     if ( err ) {
       errorCallback( 'Could not open active-runnables: ' + err );
     }
@@ -307,7 +307,7 @@ function getRunnableRepos( callback, errorCallback ) {
  * @param {Function} errorCallback - errorCallback( message: {string} ) called when unsuccessful
  */
 function getPhetIORepos( callback, errorCallback ) {
-  fs.readFile( rootDir + '/chipper/data/phet-io', 'utf8', function( err, data ) {
+  fs.readFile( rootDir + '/perennial/data/phet-io', 'utf8', function( err, data ) {
     if ( err ) {
       errorCallback( 'Could not open phet-io: ' + err );
     }
