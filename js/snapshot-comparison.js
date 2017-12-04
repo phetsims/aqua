@@ -17,7 +17,7 @@
     setup( simListText.trim().replace( /\r/g, '' ).split( '\n' ) );
   };
   // location of active sims
-  req.open( 'GET', '../../chipper/data/active-runnables', true );
+  req.open( 'GET', '../../perennial/data/active-runnables', true );
   req.send();
 })();
 

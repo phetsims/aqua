@@ -12,7 +12,7 @@
 var fs = require( 'fs' );
 var webpage = require( 'webpage' );
 
-var simsString = fs.read( '../../chipper/data/active-runnables' );
+var simsString = fs.read( '../../perennial/data/active-runnables' );
 var simArray = simsString.split( '\n' );
 console.log( 'TESTING: ' + simArray.join( ', ' ) );
 var TEST_TIME = 1000;
