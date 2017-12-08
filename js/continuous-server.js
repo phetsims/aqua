@@ -1031,26 +1031,6 @@ function buildLoop() {
           testPass( snapshot, [ repo, 'build', phetio ? 'phet-io' : 'phet' ] );
           snapshot.buildStatus[ id ] = 'passed';
           infoLog( 'build passed: ' + relativePath );
-
-          if ( snapshot.runnableRepos.indexOf( repo ) >= 0 ) {
-            snapshot.testQueue.push( {
-              count: 0,
-              snapshotName: snapshot.name,
-              test: [ repo, 'fuzz', 'built' + ( phetio ? '-phet-io' : '' ) ],
-              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/' + repo + '_en' + ( phetio ? '-phetio' : '' ) + '.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzzMouse' + ( phetio ? '&phetioStandalone' : '' ) )
-            } );
-          }
-          else {
-            snapshot.testQueue.push( {
-              count: 0,
-              snapshotName: snapshot.name,
-              test: [ repo, 'unit-tests', 'built' ],
-              url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/tests/qunit/compiled-unit-tests.html' )
-            } );
-          }
-
-          // TODO: add other tests that can only run after being built here
-
           buildLoop();
         }, function( message ) {
           testFail( snapshot, [ repo, 'build', phetio ? 'phet-io' : 'phet' ], message );
