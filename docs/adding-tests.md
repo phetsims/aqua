@@ -1,10 +1,14 @@
 # How to add unit tests to a repo with no unit tests
 
+Presuming you are using chipper 2.0 or later
+
 ```
 cd repo
-grunt generate-test-harness
+grunt generate-test-html
 ```
 Then populate js/{{REPO}}-tests.js with tests, see `dot/js/dot-tests.js` for a good example.
+
+Point your browser to {{REPO}}-tests.html to see the QUnit page.
 
 Tests should be placed adjacent to the file they test (if applicable). For example, Vector2Tests.js is adjacent to Vector2.js.
 
