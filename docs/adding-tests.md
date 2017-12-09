@@ -19,7 +19,7 @@ To add a new repo for testing on Bayes, add it to the list in `continuous-server
 [ 'axon', 'circuit-construction-kit-common', 'dot', 'kite', 'phetcommon', 'phet-core', 'phet-io', 'query-string-machine', 'scenery' ].forEach( function( repo ) {
 ```
 
-Then make a request to @jonathanolson to restart bayes. @jonathan will be automating this as part of https://github.com/phetsims/aqua/issues/29
+Then make a request to @jonathanolson to restart bayes. @jonathan will be automating this step as part of https://github.com/phetsims/aqua/issues/29
 
 # How to add unit tests to a repo that already has unit tests
 
