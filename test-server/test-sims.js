@@ -17,6 +17,7 @@
   simulationQueryString += 'postMessageOnLoad&postMessageOnError';
 
   var options = QueryStringMachine.getAll( {
+    
     // Whether the sim should be left open for the testDuration. If false, once a sim loads, it will change to the next sim.
     testTask: {
       type: 'boolean',
