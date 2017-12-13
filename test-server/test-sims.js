@@ -17,22 +17,31 @@
   simulationQueryString += 'postMessageOnLoad&postMessageOnError';
 
   var options = QueryStringMachine.getAll( {
+    // Whether the sim should be left open for the testDuration. If false, once a sim loads, it will change to the next sim.
     testTask: {
       type: 'boolean',
       defaultValue: true
     },
+
+    // Whether sims should be tested in require.js mode
     testRequirejs: {
       type: 'boolean',
       defaultValue: true
     },
+
+    // Whether sims should be tested that are built. test-server.js should be launched to be able to build the sims.
     testBuilt: {
       type: 'boolean',
       defaultValue: true
     },
+
+    // Will move to the next simulation after this number of milliseconds since launching the simulation.
     testDuration: {
       type: 'number',
       defaultValue: 30000 // ms
     },
+
+    // A list of simulation/runnable names to be included in the test. Will default to perennial/data/active-runnables
     testSims: {
       type: 'array',
       defaultValue: [], // will get filled in automatically if left as default
@@ -40,6 +49,8 @@
         type: 'string'
       }
     },
+
+    // How many simulations to built at once (if testBuilt is selected). Uses test-server.js (which should be launched with Node.js)
     testConcurrentBuilds: {
       type: 'number',
       defaultValue: 1
