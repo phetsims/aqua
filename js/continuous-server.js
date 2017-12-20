@@ -64,7 +64,7 @@ var IS_WIN = /^win/.test( process.platform );
 var GIT_CMD = 'git';
 var GRUNT_CMD = IS_WIN ? 'grunt.cmd' : 'grunt'; // needs to be a slightly different command for Windows
 var NPM_CMD = IS_WIN ? 'npm.cmd' : 'npm'; // needs to be a slightly different command for Windows
-var CLONE_MISSING_CMD = '/data/share/phet/continuous-testing/chipper/bin/clone-missing-repos.sh';
+var CLONE_MISSING_CMD = '/data/share/phet/continuous-testing/perennial/bin/clone-missing-repos.sh';
 
 // Gets update with the current status
 var snapshotStatus = 'Starting up';
