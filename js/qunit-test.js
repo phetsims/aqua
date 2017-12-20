@@ -16,7 +16,7 @@ var options = QueryStringMachine.getAll( {
   },
   duration: {
     type: 'number',
-    defaultValue: 40000
+    defaultValue: 400000
   }
 } );
 
