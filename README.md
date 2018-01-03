@@ -11,6 +11,8 @@ Automatic QUality Assurance
 
 ### How to use
 
+For detailed instructions, particularly how it is running on bayes.colorado.edu, see docs/continuous-testing-management.md. Otherwise:
+
 1. Check out all active-repos
 2. `npm install` in aqua
 3. `node js/continuous-server.js` in aqua (in Administrator mode in Windows, so it can make symbolic links for node_modules)
