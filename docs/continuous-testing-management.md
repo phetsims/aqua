@@ -1,7 +1,9 @@
 
 # How to manage continuous testing (on bayes)
 
-Everything in this document is intended to be run on bayes.colorado.edu while logged in as user phet-admin. There are currently two separate pieces that need to run for it to behave as expected: the server, and chrome processes doing browser tests.
+_Everything in this document is intended to be run on bayes.colorado.edu while logged in as user phet-admin._ 
+
+There are currently two separate pieces that need to run for it to behave as expected: the server, and chrome processes doing browser tests.
 
 # The server
 
@@ -9,7 +11,7 @@ Continuous testing has all of our repositories checked out at `/data/share/phet/
 
 The main server code is contained in `aqua/js/continuous-server.js`. So far, we've used pm2 (https://github.com/Unitech/pm2) to handle running the server process (handling automatic restarting, logging, etc.).
 
-Typically, once logged into the phet-admin user, you can run `pm2 list` to display the running processes, and it will display something like:
+Typically, you can run `pm2 list` to display the running processes, and it will display something like:
 ```
 ┌───────────────────┬────┬──────┬───────┬────────┬─────────┬────────┬─────┬───────────┬──────────┐
 │ App name          │ id │ mode │ pid   │ status │ restart │ uptime │ cpu │ mem       │ watching │
@@ -34,7 +36,7 @@ It may not remember GitHub credentials across reboots also, so if the following 
 0|continuo |
 0|continuo | fatal: could not read Username for 'https://github.com': No such device or address
 ```
-then `cd` into a private repo directory (with the phet-admin user), `git pull`, and put in the phet-dev credentials (username: phet-dev, password is in the PhET credentials document). The credential helper should then remember the password for future pulls.
+then `cd` into a private repo directory, `git pull`, and put in the phet-dev credentials (username: phet-dev, password is in the PhET credentials document). The credential helper should then remember the password for future pulls.
 
 Additionally, if the server crashes, it currently doesn't clear the snapshot directories that it was using. Currently if I restart the server, I'll typically wipe `/data/share/phet/continuous-testing/snapshot-1*` so that we won't run out of disk space. Can be skipped for a while if restarting a lot. Also should hopefully be improved in the future if we continue to run into this.
 
@@ -44,7 +46,7 @@ To test in-browser things (like fuzzing sims or unit tests), the server provides
 
 Since we still don't have actual devices set up and running tests, we have a semi-sufficient solution of running headless Chrome processes server-side. I'll typically run 9 processes or so (running too much more actually taxes things too much, and can cause "failed to load in time" errors and such).
 
-Again on the phet-admin user, I'll typically have 9 screens (see https://www.gnu.org/software/screen/manual/screen.html) open, so I can get console output and restart things. Rebooting resets everything.
+I'll typically have 9 screens (see https://www.gnu.org/software/screen/manual/screen.html) open, so I can get console output and restart things. Rebooting resets everything.
 
 To create a screen with a name (and enter it):
 ```sh
@@ -70,7 +72,7 @@ This process should leave 9 chrome processes (think more like processes per tab,
 
 # Debugging
 
-Usually, inspect `pm2 logs` (phet-admin user on bayes) to see if something is going on. If it's scrolled past an error, you can tail the actual file that the logs stream to. Typically it might be a missing repo, a private repo that it can't resolve, or sometimes you'll need to re-clone a repo if there was a history-changing operation. (Since bayes is constantly pulling, if someone pushes a history change and then reverts it or something like that, a `git pull` won't work and recloning will be necessary).
+Usually, inspect `pm2 logs` to see if something is going on. If it's scrolled past an error, you can tail the actual file that the logs stream to. Typically it might be a missing repo, a private repo that it can't resolve, or sometimes you'll need to re-clone a repo if there was a history-changing operation. (Since bayes is constantly pulling, if someone pushes a history change and then reverts it or something like that, a `git pull` won't work and recloning will be necessary).
 
 Because pm2 stores logs under `/home/phet-admin/.pm2/logs`, it's filled up the partition for `/home` before. We've increased the size for that, but it may be an issue in the future.
 
