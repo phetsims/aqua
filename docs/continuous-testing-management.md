@@ -3,7 +3,7 @@
 
 _Everything in this document is intended to be run on bayes.colorado.edu while logged in as user phet-admin._ 
 
-There are currently two separate pieces that need to run for it to behave as expected: the server, and chrome processes doing browser tests.
+There are currently two separate pieces that need to run for it to behave as expected: the server, and Chrome processes doing browser tests.
 
 # The server
 
