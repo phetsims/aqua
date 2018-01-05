@@ -1,7 +1,7 @@
 
 # How to manage continuous testing (on bayes)
 
-All continuous testing parts run on bayes.colorado.edu under the phet-admin user. There are currently two separate pieces that need to run for it to behave as expected: the server, and chrome processes doing browser tests.
+Everything in this document is intended to be run on bayes.colorado.edu while logged in as user phet-admin. There are currently two separate pieces that need to run for it to behave as expected: the server, and chrome processes doing browser tests.
 
 # The server
 
