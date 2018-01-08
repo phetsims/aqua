@@ -1,5 +1,5 @@
 
-# How to manage continuous testing (on bayes)
+# How to manage Continuous Testing (CT) service
 
 _Everything in this document is intended to be run on bayes.colorado.edu while logged in as user phet-admin._ 
 
@@ -21,7 +21,9 @@ Typically, you can run `pm2 list` to display the running processes, and it will 
  Use `pm2 show <id|name>` to get more details about an app
 ```
 
-`pm2 start continuous-server` and `pm2 stop continuous-server` will start and stop the process. `pm2 logs` will show recent log lines (stored in files), and will show a stream of logs from that point on (exit with CTRL-C). `pm2 logs` should be used to diagnose any issues with the server process.
+`pm2 start continuous-server` and `pm2 stop continuous-server` will start and stop the process. Be patient after starting CT; it make take 15 minutes for data to appear at https://bayes.colorado.edu/continuous-testing.  
+
+`pm2 logs` will show recent log lines (stored in files), and will show a stream of logs from that point on (exit with CTRL-C). `pm2 logs` should be used to diagnose any issues with the server process.
 
 Sometimes on a system reboot, pm2 will forget about everything (we may need to set it up differently, or use an alternative). In that case:
 ```sh
