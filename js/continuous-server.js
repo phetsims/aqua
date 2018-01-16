@@ -1021,7 +1021,10 @@ function buildLoop() {
       var relativePath = snapshot.name + ( phetio ? '-phet-io' : '' ) + '/' + repo;
       var parameters = [];
       if ( phetio ) {
-        parameters.push( '--brand=phet-io' );
+        parameters.push( '--brands=phet,phet-io' );
+      }
+      else {
+        parameters.push( '--brands=phet' );
       }
       if ( snapshot.buildStatus[ id ] === undefined ) {
         snapshot.buildStatus[ id ] = 'building';
