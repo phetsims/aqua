@@ -425,7 +425,7 @@ function gruntRepo( repo, parameters, callback, errorCallback ) {
  * @param {Function} errorCallback - errorCallback( message: {string} ) called when unsuccessful
  */
 function lintEverything( snapshot, callback, errorCallback ) {
-  execute( GRUNT_CMD, [ 'lint-everything' ], rootDir + '/' + snapshot.name + '/chipper', function( stdout, stderr ) {
+  execute( GRUNT_CMD, [ 'lint-everything' ], rootDir + '/' + snapshot.name + '/perennial', function( stdout, stderr ) {
     callback();
   }, function( stdout, stderr, code ) {
     errorCallback( 'Failure to lint everything:\n' + stdout + '\n' + stderr );
@@ -435,11 +435,11 @@ function lintEverything( snapshot, callback, errorCallback ) {
 // Kicks off linting of everything
 function testLintEverything( snapshot, callback ) {
   lintEverything( snapshot, function() {
-    testPass( snapshot, [ 'chipper', 'lint-everything' ] );
+    testPass( snapshot, [ 'perennial', 'lint-everything' ] );
     infoLog( 'lint-everything passed: ' + snapshot.name );
     callback();
   }, function( message ) {
-    testFail( snapshot, [ 'chipper', 'lint-everything' ], message );
+    testFail( snapshot, [ 'perennial', 'lint-everything' ], message );
     infoLog( 'lint-everything failed: ' + snapshot.name );
     callback();
   } );
