@@ -699,7 +699,7 @@ function createSnapshot( callback, errorCallback ) {
                             '', // the root URL
                             'tests/',
                             'tests/playground.html',
-                            'tests/renderer-comparison.html',
+                            'tests/renderer-comparison.html?renderers=canvas,svg,dom',
                             'tests/text-quality-test.html'
                           ]
                         }
