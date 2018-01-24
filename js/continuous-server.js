@@ -1110,7 +1110,7 @@ function buildLoop() {
                 'examples/nodes.html',
                 'examples/shapes.html',
                 'examples/sprites.html',
-                'examples/webglnode.html',
+                // 'examples/webglnode.html', // currently disabled, since it fails without webgl
                 'tests/text-bounds-comparison.html'
               ]
             };
