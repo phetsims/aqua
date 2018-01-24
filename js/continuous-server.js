@@ -49,22 +49,22 @@
 /* eslint-env node */
 'use strict';
 
-var child_process = require( 'child_process' );
-var fs = require( 'fs' );
-var http = require( 'http' );
-var ncp = require( 'ncp' ).ncp; // eslint-disable-line
-var path = require( 'path' );
-var rimraf = require( 'rimraf' );
-var url = require( 'url' );
+const child_process = require( 'child_process' );
+const fs = require( 'fs' );
+const http = require( 'http' );
+const ncp = require( 'ncp' ).ncp; // eslint-disable-line
+const path = require( 'path' );
+const rimraf = require( 'rimraf' );
+const url = require( 'url' );
 
-var port = 45366;
+const port = 45366;
 
 // constants
-var IS_WIN = /^win/.test( process.platform );
-var GIT_CMD = 'git';
-var GRUNT_CMD = IS_WIN ? 'grunt.cmd' : 'grunt'; // needs to be a slightly different command for Windows
-var NPM_CMD = IS_WIN ? 'npm.cmd' : 'npm'; // needs to be a slightly different command for Windows
-var CLONE_MISSING_CMD = '/data/share/phet/continuous-testing/perennial/bin/clone-missing-repos.sh';
+const IS_WIN = /^win/.test( process.platform );
+const GIT_CMD = 'git';
+const GRUNT_CMD = IS_WIN ? 'grunt.cmd' : 'grunt'; // needs to be a slightly different command for Windows
+const NPM_CMD = IS_WIN ? 'npm.cmd' : 'npm'; // needs to be a slightly different command for Windows
+const CLONE_MISSING_CMD = '/data/share/phet/continuous-testing/perennial/bin/clone-missing-repos.sh';
 
 // Gets update with the current status
 var snapshotStatus = 'Starting up';
@@ -675,6 +675,46 @@ function createSnapshot( callback, errorCallback ) {
                         // If we have anything else that we want to grunt in chipper, put it here
                       } );
 
+                      // Page-load tests
+                      [
+                        {
+                          repo: 'dot',
+                          urls: [
+                            '', // the root URL
+                            'tests/',
+                            'tests/playground.html'
+                          ]
+                        },
+                        {
+                          repo: 'kite',
+                          urls: [
+                            '', // the root URL
+                            'tests/playground.html',
+                            'tests/visual-shape-test.html'
+                          ]
+                        },
+                        {
+                          repo: 'scenery',
+                          urls: [
+                            '', // the root URL
+                            'tests/',
+                            'tests/playground.html',
+                            'tests/renderer-comparison.html',
+                            'tests/text-quality-test.html'
+                          ]
+                        }
+                      ].forEach( ( { repo, urls } ) => {
+                        urls.forEach( pageloadRelativeURL => {
+                          var relativePath = snapshot.name + '/' + repo;
+                          snapshot.testQueue.push( {
+                            count: 0,
+                            snapshotName: snapshot.name,
+                            test: [ repo, 'pageload', pageloadRelativeURL ],
+                            url: 'pageload-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/' + pageloadRelativeURL )
+                          } );
+                        } );
+                      } );
+
                       // TODO: add other normal tests here (that don't require building)
 
                       callback( snapshot );
@@ -1034,6 +1074,57 @@ function buildLoop() {
           testPass( snapshot, [ repo, 'build', phetio ? 'phet-io' : 'phet' ] );
           snapshot.buildStatus[ id ] = 'passed';
           infoLog( 'build passed: ' + relativePath );
+          if ( snapshot.runnableRepos.indexOf( repo ) >= 0 ) {
+            snapshot.testQueue.push( {
+              count: 0,
+              snapshotName: snapshot.name,
+              test: [ repo, 'fuzz', 'built' + ( phetio ? '-phet-io' : '' ) ],
+              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/' + repo + '_en' + ( phetio ? '-phetio' : '' ) + '.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzzMouse' + ( phetio ? '&phetioStandalone' : '' ) )
+            } );
+          }
+          // Pageload built tests (once per repo, so not including with phetio mode)
+          if ( !phetio ) {
+            const testURLs = {
+              dot: [
+                'doc/',
+                'examples/',
+                'examples/convex-hull-2.html'
+              ],
+              kite: [
+                'doc/',
+                'examples/'
+              ],
+              scenery: [
+                'doc/',
+                'doc/a-tour-of-scenery.html',
+                'doc/accessibility.html',
+                'doc/implementation-notes.html',
+                'doc/user-input.html',
+                'examples/',
+                'examples/cursors.html',
+                'examples/hello-world.html',
+                'examples/input-multiple-displays.html',
+                'examples/input.html',
+                'examples/mouse-wheel.html',
+                'examples/multi-touch.html',
+                'examples/nodes.html',
+                'examples/shapes.html',
+                'examples/sprites.html',
+                'examples/webglnode.html',
+                'tests/text-bounds-comparison.html'
+              ]
+            };
+            if ( testURLs[ repo ] ) {
+              testURLs[ repo ].forEach( pageloadRelativeURL => {
+                snapshot.testQueue.push( {
+                  count: 0,
+                  snapshotName: snapshot.name,
+                  test: [ repo, 'pageload', pageloadRelativeURL ],
+                  url: 'pageload-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/' + pageloadRelativeURL )
+                } );
+              } );
+            }
+          }
           buildLoop();
         }, function( message ) {
           testFail( snapshot, [ repo, 'build', phetio ? 'phet-io' : 'phet' ], message );
