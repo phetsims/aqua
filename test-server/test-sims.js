@@ -158,7 +158,7 @@
 
 // loads a sim into the iframe
   function loadSim( simName, isBuild ) {
-    iframe.src = '../../' + simName + '/' + ( isBuild ? 'build/' : '' ) + simName + '_en.html' + simulationQueryString;
+    iframe.src = '../../' + simName + '/' + ( isBuild ? 'build/phet/' : '' ) + simName + '_en' + ( isBuild ? '_phet' : '' ) + '.html' + simulationQueryString;
     simStatusElements[ simName ].classList.add( 'loading-' + ( isBuild ? 'build' : 'dev' ) );
   }
 
