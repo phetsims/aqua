@@ -239,7 +239,12 @@
     function simNameFromURL( url ) {
       // url like http://localhost/phet/git/molecule-shapes/molecule-shapes_en.html?ea&postMessageOnLoad&postMessageOnError
       // output molecule-shapes
-      return url.slice( 0, url.lastIndexOf( '_en.html' ) ).slice( url.lastIndexOf( '/' ) + 1 );
+      if ( url.indexOf( '_en_phet.html' ) >= 0 ) {
+        return url.slice( 0, url.lastIndexOf( '_en_phet.html' ) ).slice( url.lastIndexOf( '/' ) + 1 );
+      }
+      else {
+        return url.slice( 0, url.lastIndexOf( '_en.html' ) ).slice( url.lastIndexOf( '/' ) + 1 );
+      }
     }
 
     // var simName;
