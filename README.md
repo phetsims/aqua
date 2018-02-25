@@ -1,12 +1,6 @@
 # aqua
 Automatic QUality Assurance
 
-## PhantomJS-based Quick Start Guide
-1. Clone aqua
-1. Install phantomjs
-2. cd js/
-3. node mycron.js
-
 ## Continuous testing prototype (browser-based)
 
 ### How to use
