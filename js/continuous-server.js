@@ -642,25 +642,23 @@ function createSnapshot( callback, errorCallback ) {
                         } );
                       } );
 
+                      // phet-io wrappers tests for each PhET-iO Sim
+                      snapshot.phetioRepos.forEach( function( phetioRepo ) {
+                        snapshot.testQueue.push( {
+                          count: 0,
+                          snapshotName: snapshotName,
+                          test: [ phetioRepo, 'phet-io-tests' ],
+
+                          // Use the QUnit harness since errors are reported to QUnit
+                          url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io-wrappers/phet-io-wrappers-tests.html?sim=' + phetioRepo )
+                        } );
+                      } );
+
                       // repo-specific Unit tests (require.js mode) from `grunt generate-test-harness`
                       [ 'axon', 'circuit-construction-kit-common', 'dot', 'kite', 'phetcommon', 'phet-core', 'phet-io', 'query-string-machine', 'scenery', 'tandem' ].forEach( function( repo ) {
 
                         // All tests should work with no query parameters, with assertions enables and also in phet-io brand
                         [ '', '?ea', '?brand=phet-io', '?ea&brand=phet-io' ].forEach( function( queryString ) {
-                          snapshot.testQueue.push( {
-                            count: 0,
-                            snapshotName: snapshotName,
-                            test: [ repo, 'top-level-unit-tests', 'require.js' + queryString ], // TODO: I wasn't sure what to put here
-                            url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + repo + '/' + repo + '-tests.html' + queryString )
-                          } );
-                        } );
-                      } );
-
-                      // Tests that do not accept ?brand=phet-io
-                      [ 'phet-io-wrappers' ].forEach( function( repo ) {
-
-                        // Run wrapper tests with and without assertions
-                        [ '', '?ea' ].forEach( function( queryString ) {
                           snapshot.testQueue.push( {
                             count: 0,
                             snapshotName: snapshotName,
