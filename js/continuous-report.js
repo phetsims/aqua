@@ -131,17 +131,17 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
   var snapshotFullCoverage = []; // Whether there is full test coverage for this snapshot
 
   // Initialize out counts for passes/fails/messages/coverage
-  snapshots.forEach( function( snapshot ) {
-    var snapshotResults = results.filter( function( result ) { return result.snapshotName === snapshot.name; } );
+  if ( snapshots.length > 0 ) {
+    var snapshotResults = results.filter( function( result ) { return result.snapshotName === snapshots[0].name; } );
     var currentPasses = snapshotResults.filter( function( result ) { return result.passed === true; } ).length;
     var currentFails = snapshotResults.length - currentPasses;
     snapshotPasses.push( currentPasses );
     snapshotFails.push( currentFails );
-    snapshotMessages.push( results.filter( function( result ) { return !!result.message && result.snapshotName === snapshot.name; } ).map( function( result ) {
+    snapshotMessages.push( results.filter( function( result ) { return !!result.message && result.snapshotName === snapshots[0].name; } ).map( function( result ) {
       return currentPath.join( ' : ' ) + '\n' + result.message + '\nApproximately ' + new Date( result.snapshotTimestamp ).toLocaleString();
     } ) );
     snapshotFullCoverage.push( ( passes + fails > 0 ) ? ( currentPasses + currentFails > 0 ) : true );
-  } );
+  }
 
   // {Array.<HTMLElement>} - Part of our return value, will be constructed
   var domElements = [];
