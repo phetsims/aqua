@@ -284,6 +284,8 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
   return {
     passes: passes,
     fails: fails,
+    recentPasses: recentPasses,
+    recentFails: recentFails,
     snapshotPasses: snapshotPasses,
     snapshotFails: snapshotFails,
     snapshotMessages: snapshotMessages,
