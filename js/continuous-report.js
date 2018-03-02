@@ -105,6 +105,8 @@ collapsedCheckbox.addEventListener( 'change', function() {
  * {
    *   passes: {number} - Total number of passed tests in the subtree
    *   fails: {number} - Total number of failed tests in the subtree
+   *   recentPasses: {number} - Passed tests in the subtree for the latest snapshot
+   *   recentFails: {number} - Failed tests in the subtree for the latest snapshot
    *   snapshotPasses: {Array.<number>} - Total number of passed tests in the subtree, indexed by the snapshot index.
    *   snapshotFails: {Array.<number>} - Total number of failed tests in the subtree, indexed by the snapshot index.
    *   snapshotMessages: {Array.<string>} - Concatenated messages recorded by tests, indexed by the snapshot index.
@@ -124,6 +126,9 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
   var results = resultNode.results;
   var passes = results.filter( function( result ) { return result.passed === true; } ).length;
   var fails = results.length - passes;
+  var recentResults = results.filter( function( result ) { return result.snapshotName === snapshots[ 0 ].name; } );
+  var recentPasses = recentResults.filter( function( result ) { return result.passed === true; } ).length;
+  var recentFails = recentResults.length - recentPasses;
 
   var snapshotPasses = [];
   var snapshotFails = [];
@@ -131,17 +136,17 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
   var snapshotFullCoverage = []; // Whether there is full test coverage for this snapshot
 
   // Initialize out counts for passes/fails/messages/coverage
-  if ( snapshots.length > 0 ) {
-    var snapshotResults = results.filter( function( result ) { return result.snapshotName === snapshots[0].name; } );
+  snapshots.forEach( function( snapshot ) {
+    var snapshotResults = results.filter( function( result ) { return result.snapshotName === snapshot.name; } );
     var currentPasses = snapshotResults.filter( function( result ) { return result.passed === true; } ).length;
     var currentFails = snapshotResults.length - currentPasses;
     snapshotPasses.push( currentPasses );
     snapshotFails.push( currentFails );
-    snapshotMessages.push( results.filter( function( result ) { return !!result.message && result.snapshotName === snapshots[0].name; } ).map( function( result ) {
+    snapshotMessages.push( results.filter( function( result ) { return !!result.message && result.snapshotName === snapshot.name; } ).map( function( result ) {
       return currentPath.join( ' : ' ) + '\n' + result.message + '\nApproximately ' + new Date( result.snapshotTimestamp ).toLocaleString();
     } ) );
     snapshotFullCoverage.push( ( passes + fails > 0 ) ? ( currentPasses + currentFails > 0 ) : true );
-  }
+  } );
 
   // {Array.<HTMLElement>} - Part of our return value, will be constructed
   var domElements = [];
@@ -152,6 +157,8 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
     var childResult = recursiveResults( childName, resultNode.children[ childName ], snapshots, name ? ( padding + '&nbsp;&nbsp;&nbsp;&nbsp;' ) : padding, currentPath );
     passes += childResult.passes;
     fails += childResult.fails;
+    recentPasses += childResult.recentPasses;
+    recentFails += childResult.recentFails;
     for ( var i = 0; i < snapshots.length; i++ ) {
       snapshotPasses[ i ] += childResult.snapshotPasses[ i ];
       snapshotFails[ i ] += childResult.snapshotFails[ i ];
@@ -168,7 +175,7 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
     // left-most column (our name)
     var leftElement = document.createElement( 'td' );
     leftElement.innerHTML = padding + name;
-    leftElement.className = passFailClass( passes, fails );
+    leftElement.className = passFailClass( recentPasses, recentFails );
     selfElements.push( leftElement );
 
     // main table cells
