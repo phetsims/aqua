@@ -29,7 +29,7 @@ Sometimes on a system reboot, pm2 will forget about everything (we may need to s
 ```sh
 pm2 list # see if it is started, and also starts the pm2 daemon if it wasn't running
 cd /data/share/phet/continuous-testing/aqua
-pm2 start js/continuous-server # starts the process, and adds it to the list seen in pm2 list
+pm2 start js/continuous-server.js # starts the process, and adds it to the list seen in pm2 list
 ```
 
 It may not remember GitHub credentials across reboots also, so if the following error message happens (or similar):
