@@ -38,7 +38,7 @@ It may not remember GitHub credentials across reboots also, so if the following 
 0|continuo |
 0|continuo | fatal: could not read Username for 'https://github.com': No such device or address
 ```
-then `cd` into a private repo directory, `git pull`, and put in the phet-dev credentials (username: phet-dev, password is in the PhET credentials document). The credential helper should then remember the password for future pulls.
+then `cd` into a private repo directory, `git pull`, and put in the phet-dev credentials (username: phet-dev, password is in the PhET credentials document for "GitHub Machine User"). The credential helper should then remember the password for future pulls.
 
 Additionally, if the server crashes, it currently doesn't clear the snapshot directories that it was using. Currently if I restart the server, I'll typically wipe `/data/share/phet/continuous-testing/snapshot-1*` so that we won't run out of disk space. Can be skipped for a while if restarting a lot. Also should hopefully be improved in the future if we continue to run into this.
 
