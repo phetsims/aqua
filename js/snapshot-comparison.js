@@ -76,7 +76,7 @@ function setup( simNames ) {
     return canvas;
   }
   function compare( imageA, imageB, msg ) {
-    // var threshold = 0;
+    var threshold = 0;
 
     var a = contextToData( imageToContext( imageA ) );
     var b = contextToData( imageToContext( imageB ) );
@@ -112,7 +112,7 @@ function setup( simNames ) {
 
     var averageDifference = totalDifference / ( 4 * a.width * a.height );
 
-    // if ( averageDifference > threshold ) {
+    if ( averageDifference > threshold ) {
       var container = document.createElement( 'div' );
       comparisonDiv.appendChild( container );
 
@@ -123,7 +123,7 @@ function setup( simNames ) {
       container.appendChild( dataToCanvas( b ) );
       container.appendChild( dataToCanvas( colorDiffData ) );
       // container.appendChild( dataToCanvas( alphaDiffData ) );
-    // }
+    }
   }
 
   var iframe = document.createElement( 'iframe' );
