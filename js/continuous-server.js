@@ -655,7 +655,7 @@ function createSnapshot( callback, errorCallback ) {
                       } );
 
                       // repo-specific Unit tests (require.js mode) from `grunt generate-test-harness`
-                      [ 'axon', 'circuit-construction-kit-common', 'dot', 'kite', 'phetcommon', 'phet-core', 'phet-io', 'query-string-machine', 'scenery', 'tandem' ].forEach( function( repo ) {
+                      [ 'axon', 'balloons-and-static-electricity', 'circuit-construction-kit-common', 'dot', 'kite', 'phetcommon', 'phet-core', 'phet-io', 'query-string-machine', 'scenery', 'tandem' ].forEach( function( repo ) {
 
                         // All tests should work with no query parameters, with assertions enables and also in phet-io brand
                         [ '', '?ea', '?brand=phet-io', '?ea&brand=phet-io' ].forEach( function( queryString ) {
