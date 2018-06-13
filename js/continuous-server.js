@@ -675,16 +675,16 @@ function createSnapshot( callback, errorCallback ) {
                         } );
 
                         // phet-io wrappers tests for each PhET-iO Sim
-                        snapshot.phetioRepos.forEach( function( phetioRepo ) {
-                          snapshot.testQueue.push( {
-                            count: 0,
-                            snapshotName: snapshotName,
-                            test: [ phetioRepo, 'phet-io-tests' ],
+                        // snapshot.phetioRepos.forEach( function( phetioRepo ) {
+                        //   snapshot.testQueue.push( {
+                        //     count: 0,
+                        //     snapshotName: snapshotName,
+                        //     test: [ phetioRepo, 'phet-io-tests' ],
 
-                            // Use the QUnit harness since errors are reported to QUnit
-                            url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io-wrappers/phet-io-wrappers-tests.html?sim=' + phetioRepo )
-                          } );
-                        } );
+                        //     // Use the QUnit harness since errors are reported to QUnit
+                        //     url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io-wrappers/phet-io-wrappers-tests.html?sim=' + phetioRepo )
+                        //   } );
+                        // } );
 
                         // repo-specific Unit tests (require.js mode) from `grunt generate-test-harness`
                         [ 'axon', 'balloons-and-static-electricity', 'circuit-construction-kit-common', 'dot', 'kite', 'phetcommon', 'phet-core', 'phet-io', 'query-string-machine', 'scenery', 'tandem' ].forEach( function( repo ) {
