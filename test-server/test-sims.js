@@ -4,7 +4,7 @@
 
 // Grab all query parameters to pass to the simulation, and add additional ones for receiving messages.
 
-(function() {
+( function() {
   'use strict';
   var simulationQueryString = window.location.search;
 
@@ -17,7 +17,7 @@
   simulationQueryString += 'postMessageOnLoad&postMessageOnError';
 
   var options = QueryStringMachine.getAll( {
-    
+
     // Whether the sim should be left open for the testDuration. If false, once a sim loads, it will change to the next sim.
     testTask: {
       type: 'boolean',
@@ -234,6 +234,9 @@
 
 // handling messages from sims
   window.addEventListener( 'message', function( evt ) {
+    if ( !evt.data ) {
+      return;
+    }
     var data = JSON.parse( evt.data );
 
     function simNameFromURL( url ) {
@@ -257,7 +260,7 @@
   } );
 
 // load the list of sims before kicking things off
-  (function() {
+  ( function() {
     var req = new XMLHttpRequest();
     req.onload = function() {
       var simListText = req.responseText;
@@ -296,6 +299,6 @@
     // location of active sims
     req.open( 'GET', '../../perennial/data/active-runnables', true );
     req.send();
-  })();
+  } )();
 
-})();
+} )();
