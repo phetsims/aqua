@@ -65,6 +65,7 @@ const GIT_CMD = 'git';
 const GRUNT_CMD = IS_WIN ? 'grunt.cmd' : 'grunt'; // needs to be a slightly different command for Windows
 const NPM_CMD = IS_WIN ? 'npm.cmd' : 'npm'; // needs to be a slightly different command for Windows
 const CLONE_MISSING_CMD = '/data/share/phet/continuous-testing/perennial/bin/clone-missing-repos.sh';
+const NUMBER_OF_DAYS_TO_KEEP_SNAPSHOTS = 2; // in days, any shapshots that are older will be removed from the continous report
 
 // Gets update with the current status
 var snapshotStatus = 'Starting up';
@@ -870,7 +871,7 @@ function addResult( passed, snapshot, test, message ) {
 }
 
 function getCutoffTimestamp() {
-  return Date.now() - 1000 * 60 * 60 * 24 * 2;
+  return Date.now() - 1000 * 60 * 60 * 24 * NUMBER_OF_DAYS_TO_KEEP_SNAPSHOTS;
 }
 
 function removeResultsForSnapshot( container, snapshot ) {
