@@ -665,7 +665,7 @@ function createSnapshot( callback, errorCallback ) {
                           } );
                         } );
 
-                        // phet-io brand tests
+                        // accessible tests
                         snapshot.accessibleRepos.forEach( function( accessibleRepo ) {
                           snapshot.testQueue.push( {
                             count: 0,
@@ -688,7 +688,7 @@ function createSnapshot( callback, errorCallback ) {
                         } );
 
                         // repo-specific Unit tests (require.js mode) from `grunt generate-test-harness`
-                        [ 'axon', 'balloons-and-static-electricity', 'circuit-construction-kit-common', 'dot', 'kite', 'phetcommon', 'phet-core', 'phet-io', 'query-string-machine', 'scenery', 'tandem' ].forEach( function( repo ) {
+                        [ 'axon', 'balloons-and-static-electricity', 'circuit-construction-kit-common', 'dot', 'kite', 'phetcommon', 'phet-core', 'query-string-machine', 'scenery', 'tandem' ].forEach( function( repo ) {
 
                           // All tests should work with no query parameters, with assertions enables and also in phet-io brand
                           [ '', '?ea', '?brand=phet-io', '?ea&brand=phet-io' ].forEach( function( queryString ) {
@@ -698,6 +698,16 @@ function createSnapshot( callback, errorCallback ) {
                               test: [ repo, 'top-level-unit-tests', 'require.js' + queryString ], // TODO: I wasn't sure what to put here
                               url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + repo + '/' + repo + '-tests.html' + queryString )
                             } );
+                          } );
+                        } );
+
+                        // phet-io unit tests
+                        [ '?brand=phet-io', '?ea&brand=phet-io' ].forEach( function( queryString ) {
+                          snapshot.testQueue.push( {
+                            count: 0,
+                            snapshotName: snapshotName,
+                            test: [ 'phet-io', 'top-level-unit-tests', 'require.js' + queryString ], // TODO: I wasn't sure what to put here
+                            url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io/phet-io-tests.html' + queryString )
                           } );
                         } );
 
