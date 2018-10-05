@@ -44,7 +44,7 @@ iframe.setAttribute( 'width', options.simWidth );
 iframe.setAttribute( 'height', options.simHeight );
 document.body.appendChild( iframe );
 
-var queryParameters = 'preserveDrawingBuffer&audioVolume=0&randomSeed=' + options.simSeed + '&playbackMode=true&postMessageOnLoad&postMessageOnError&postMessageOnReady';
+var queryParameters = 'preserveDrawingBuffer&audioVolume=0&sound=disabled&randomSeed=' + options.simSeed + '&playbackMode=true&postMessageOnLoad&postMessageOnError&postMessageOnReady';
 iframe.src = options.url + '?' + options.simQueryParameters + '&' + queryParameters;
 
 var isMouseDown = false;
