@@ -48,9 +48,6 @@ const fs = require( 'fs' );
   // Find repos that have qunit tests by searching for them
   const unitTests = activeRepos.filter( repo => fs.existsSync( getUnitTestFile( repo ) ) ).map( getUnitTestURL );
 
-  console.log( unitTests );
-  console.log( 'found ' + unitTests.length + ' repos with unit tests' );
-
   const timeout = 10000;
   let passed = 0;
   let failed = 0;
@@ -72,7 +69,7 @@ const fs = require( 'fs' );
   testablePhetIO.forEach( sim => tests.push( { name: sim, type: 'Fuzz Studio', run: () => runPage( browser, `http://localhost/phet-io-wrappers/studio/?sim=${sim}&phetioThrowSimErrors&fuzzMouse`, timeout ) } ) );
   testablePhetIO.forEach( sim => tests.push( { name: sim, type: 'Fuzz Mirror Inputs', run: () => runPage( browser, `http://localhost/phet-io-wrappers/mirror-inputs/?sim=${sim}&phetioThrowSimErrors&fuzzMouse`, timeout ) } ) );
   testablePhetIO.forEach( sim => tests.push( { name: sim, type: 'Fuzz State', run: () => runPage( browser, `http://localhost/phet-io-wrappers/state/?sim=${sim}&phetioThrowSimErrors&fuzzMouse&numberOfMillisecondsBetweenUpdates=50`, timeout ) } ) );
-  testablePhetIO.forEach( sim => tests.push( { name: sim, type: 'PhET-iO Wrapper Tests', run: () => runPage( browser, `http://localhost/phet-io-wrappers/phet-io-wrappers-tests.html/?sim=${sim}`, timeout ) } ) );
+  testablePhetIO.forEach( sim => tests.push( { name: sim, type: 'PhET-iO Wrapper Tests', run: () => runPage( browser, `http://localhost/phet-io-wrappers/phet-io-wrappers-tests.html?sim=${sim}&testWrappers=false`, timeout ) } ) );
   // @formatter:on
 
   console.log( 'enumerated ' + tests.length + ' tests' );

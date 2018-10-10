@@ -15,7 +15,7 @@ module.exports = function( browser, targetURL, timeout ) {
         resolve( result );
       }
     };
-
+    // page.on( 'console', msg => console.log( 'PAGE LOG:', msg.text() ) );
     page.on( 'error', msg => end( { ok: false, result: 'error', message: msg } ) );
     page.on( 'pageerror', msg => end( { ok: false, result: 'pageerror', message: msg } ) );
 
