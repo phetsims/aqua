@@ -13,7 +13,7 @@ const fs = require( 'fs' );
    */
   function shuffle( a ) {
     var j;
-    var x
+    var x;
     var i;
     for ( i = a.length - 1; i > 0; i-- ) {
       j = Math.floor( Math.random() * ( i + 1 ) );
@@ -63,7 +63,6 @@ const fs = require( 'fs' );
     else {
       failed++;
     }
-    var total = passed + failed;
     console.log( 'Passed: ' + passed + '/' + tests.length + ', Failed: ' + failed + '/' + tests.length );
   };
 
