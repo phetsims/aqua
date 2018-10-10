@@ -66,36 +66,14 @@ const fs = require( 'fs' );
     console.log( 'Passed: ' + passed + '/' + tests.length + ', Failed: ' + failed + '/' + tests.length );
   };
 
-  unitTests.forEach( test => tests.push( {
-    name: test,
-    type: 'Unit Test',
-    run: () => runUnitTests( browser, test )
-  } ) );
-  testableRunnables.forEach( test => tests.push( {
-    name: test,
-    type: 'Fuzz Test',
-    run: () => runPage( browser, `http://localhost/${test}/${test}_en.html?brand=phet&ea&fuzzMouse`, timeout )
-  } ) );
-  testablePhetIO.forEach( sim => tests.push( {
-    name: sim,
-    type: 'Fuzz Studio',
-    run: () => runPage( browser, `http://localhost/phet-io-wrappers/studio/?sim=${sim}&phetioThrowSimErrors&fuzzMouse`, timeout )
-  } ) );
-  testablePhetIO.forEach( sim => tests.push( {
-    name: sim,
-    type: 'Fuzz Mirror Inputs',
-    run: () => runPage( browser, `http://localhost/phet-io-wrappers/mirror-inputs/?sim=${sim}&phetioThrowSimErrors&fuzzMouse`, timeout )
-  } ) );
-  testablePhetIO.forEach( sim => tests.push( {
-    name: sim,
-    type: 'Fuzz State',
-    run: () => runPage( browser, `http://localhost/phet-io-wrappers/state/?sim=${sim}&phetioThrowSimErrors&fuzzMouse&numberOfMillisecondsBetweenUpdates=50`, timeout )
-  } ) );
-  testablePhetIO.forEach( sim => tests.push( {
-    name: sim,
-    type: 'PhET-iO Wrapper Tests',
-    run: () => runPage( browser, `http://localhost/phet-io-wrappers/phet-io-wrappers-tests.html/?sim=${sim}`, timeout )
-  } ) );
+  // @formatter:off
+  unitTests.forEach( test => tests.push( { name: test, type: 'Unit Test', run: () => runUnitTests( browser, test ) } ) );
+  testableRunnables.forEach( test => tests.push( { name: test, type: 'Fuzz Test', run: () => runPage( browser, `http://localhost/${test}/${test}_en.html?brand=phet&ea&fuzzMouse`, timeout ) } ) );
+  testablePhetIO.forEach( sim => tests.push( { name: sim, type: 'Fuzz Studio', run: () => runPage( browser, `http://localhost/phet-io-wrappers/studio/?sim=${sim}&phetioThrowSimErrors&fuzzMouse`, timeout ) } ) );
+  testablePhetIO.forEach( sim => tests.push( { name: sim, type: 'Fuzz Mirror Inputs', run: () => runPage( browser, `http://localhost/phet-io-wrappers/mirror-inputs/?sim=${sim}&phetioThrowSimErrors&fuzzMouse`, timeout ) } ) );
+  testablePhetIO.forEach( sim => tests.push( { name: sim, type: 'Fuzz State', run: () => runPage( browser, `http://localhost/phet-io-wrappers/state/?sim=${sim}&phetioThrowSimErrors&fuzzMouse&numberOfMillisecondsBetweenUpdates=50`, timeout ) } ) );
+  testablePhetIO.forEach( sim => tests.push( { name: sim, type: 'PhET-iO Wrapper Tests', run: () => runPage( browser, `http://localhost/phet-io-wrappers/phet-io-wrappers-tests.html/?sim=${sim}`, timeout ) } ) );
+  // @formatter:on
 
   console.log( 'enumerated ' + tests.length + ' tests' );
   tests = shuffle( tests );
