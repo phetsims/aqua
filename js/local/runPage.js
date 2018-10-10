@@ -9,17 +9,17 @@ module.exports = function( browser, targetURL ) {
     page.on( 'error', msg => {
       page.close();
       clearTimeout( id );
-      resolve( { result: 'error', message: msg } );
+      resolve( { ok: false, result: 'error', message: msg } );
     } );
     page.on( 'pageerror', msg => {
       page.close();
       clearTimeout( id );
-      resolve( { result: 'pageerror', message: msg } );
+      resolve( { ok: false, result: 'pageerror', message: msg } );
     } );
     await page.goto( targetURL );
     var id = setTimeout( async function() {
       await page.close();
-      resolve( { result: 'success' } );
+      resolve( { ok: true } );
     }, 5000 );
   } );
 };

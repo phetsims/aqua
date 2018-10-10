@@ -8,9 +8,12 @@ const puppeteer = require( 'puppeteer' );
 
   const browser = await puppeteer.launch();
 
-  var x = await runUnitTests( browser, 'http://localhost/axon/axon-tests.html' );
-  console.log( x );
-  var z = await runPage( browser, 'http://localhost/faradays-law/faradays-law_en.html?brand=phet&ea&fuzzMouse' );
-  console.log( z );
+  console.log( 'running unit test: ' + 'http://localhost/axon/axon-tests.html' );
+  var result1 = await runUnitTests( browser, 'http://localhost/axon/axon-tests.html' );
+  console.log( result1 );
+
+  console.log( 'running page: ' + 'http://localhost/faradays-law/faradays-law_en.html?brand=phet&ea&fuzzMouse' );
+  var result2 = await runPage( browser, 'http://localhost/faradays-law/faradays-law_en.html?brand=phet&ea&fuzzMouse' );
+  console.log( result2 );
   browser.close();
 } )();
