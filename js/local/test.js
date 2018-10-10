@@ -7,6 +7,23 @@ const fs = require( 'fs' );
 ( async () => {
   'use strict';
 
+  /**
+   * Shuffles array in place.
+   * @param {Array} a items An array containing the items.
+   */
+  function shuffle( a ) {
+    var j;
+    var x
+    var i;
+    for ( i = a.length - 1; i > 0; i-- ) {
+      j = Math.floor( Math.random() * ( i + 1 ) );
+      x = a[ i ];
+      a[ i ] = a[ j ];
+      a[ j ] = x;
+    }
+    return a;
+  }
+
   const browser = await puppeteer.launch();
   const readList = filename => fs.readFileSync( '../perennial/data/' + filename, 'utf8' ).split( '\n' ).filter( name => name.length > 0 );
 
@@ -37,6 +54,7 @@ const fs = require( 'fs' );
   const timeout = 10000;
   let passed = 0;
   let failed = 0;
+  var tests = [];
   const tallyTest = result => {
     console.log( result );
     if ( result.ok ) {
@@ -46,10 +64,9 @@ const fs = require( 'fs' );
       failed++;
     }
     var total = passed + failed;
-    console.log( 'Passed: ' + passed + '/' + total + ', Failed: ' + failed + '/' + total );
+    console.log( 'Passed: ' + passed + '/' + tests.length + ', Failed: ' + failed + '/' + tests.length );
   };
 
-  var tests = [];
   unitTests.forEach( test => tests.push( {
     name: test,
     type: 'Unit Test',
@@ -63,26 +80,26 @@ const fs = require( 'fs' );
   testablePhetIO.forEach( sim => tests.push( {
     name: sim,
     type: 'Fuzz Studio',
-    run: runPage( browser, `http://localhost/phet-io-wrappers/studio/?sim=${sim}&phetioThrowSimErrors&fuzzMouse`, timeout )
+    run: () => runPage( browser, `http://localhost/phet-io-wrappers/studio/?sim=${sim}&phetioThrowSimErrors&fuzzMouse`, timeout )
   } ) );
   testablePhetIO.forEach( sim => tests.push( {
     name: sim,
     type: 'Fuzz Mirror Inputs',
-    run: runPage( browser, `http://localhost/phet-io-wrappers/mirror-inputs/?sim=${sim}&phetioThrowSimErrors&fuzzMouse`, timeout )
+    run: () => runPage( browser, `http://localhost/phet-io-wrappers/mirror-inputs/?sim=${sim}&phetioThrowSimErrors&fuzzMouse`, timeout )
   } ) );
   testablePhetIO.forEach( sim => tests.push( {
     name: sim,
     type: 'Fuzz State',
-    run: runPage( browser, `http://localhost/phet-io-wrappers/state/?sim=${sim}&phetioThrowSimErrors&fuzzMouse&numberOfMillisecondsBetweenUpdates=50`, timeout )
+    run: () => runPage( browser, `http://localhost/phet-io-wrappers/state/?sim=${sim}&phetioThrowSimErrors&fuzzMouse&numberOfMillisecondsBetweenUpdates=50`, timeout )
   } ) );
   testablePhetIO.forEach( sim => tests.push( {
     name: sim,
     type: 'PhET-iO Wrapper Tests',
-    run: runPage( browser, `http://localhost/phet-io-wrappers/phet-io-wrappers-tests.html/?sim=${sim}`, timeout )
+    run: () => runPage( browser, `http://localhost/phet-io-wrappers/phet-io-wrappers-tests.html/?sim=${sim}`, timeout )
   } ) );
 
   console.log( 'enumerated ' + tests.length + ' tests' );
-
+  tests = shuffle( tests );
   for ( const test of tests ) {
     console.log( `Starting ${test.type}: ${test.name}` );
     const result = await test.run();
