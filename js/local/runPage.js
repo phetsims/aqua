@@ -18,9 +18,15 @@ module.exports = function( browser, targetURL ) {
 
     page.on( 'error', msg => end( { ok: false, result: 'error', message: msg } ) );
     page.on( 'pageerror', msg => end( { ok: false, result: 'pageerror', message: msg } ) );
-    await page.goto( targetURL );
-    var id = setTimeout( async function() {
-      end( { ok: true } );
-    }, 5000 );
+
+    try {
+      await page.goto( targetURL );
+      var id = setTimeout( async function() {
+        end( { ok: true } );
+      }, 5000 );
+    }
+    catch( e ) {
+      end( { ok: false, message: 'caught exception ' + e } );
+    }
   } );
 };

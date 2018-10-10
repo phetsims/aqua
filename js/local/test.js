@@ -15,18 +15,24 @@ const fs = require( 'fs' );
   // const testablePhetIO = readList( 'testable-phet-io' );
   const activeRepos = readList( 'active-repos' );
 
+  // Omit phet-io-wrappers because it yields a "Calling `done` after test has completed" error.
+  var index = activeRepos.indexOf( 'phet-io-wrappers' );
+  activeRepos.splice( index, 1 );
+
   const getUnitTestFile = repo => `../${repo}/${repo}-tests.html`;
-  const getUnitTestURL = repo => `http://localhost/${repo}/${repo}-tests.html`; // TODO: support arbitrary prefix
+  const getUnitTestURL = repo => {
+    let suffix = '';
+    if ( repo === 'phet-io' ) {
+      suffix = '?brand=phet-io';
+    }
+    return `http://localhost/${repo}/${repo}-tests.html${suffix}`;
+  }; // TODO: support arbitrary prefix for localhost
 
   // Find repos that have qunit tests by searching for them
   var unitTests = activeRepos.filter( repo => fs.existsSync( getUnitTestFile( repo ) ) ).map( getUnitTestURL );
 
   console.log( unitTests );
   console.log( 'found ' + unitTests.length + ' repos with unit tests' );
-
-  // console.log( 'running unit test: ' + 'http://localhost/axon/axon-tests.html' );
-  // var result1 = await runUnitTests( browser, 'http://localhost/axon/axon-tests.html' );
-  // console.log( result1 );
 
   for ( const unitTest of unitTests ) {
     console.log( 'running unit test: ' + unitTest );
