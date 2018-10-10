@@ -1,6 +1,6 @@
 // Copyright 2018, University of Colorado Boulder
 
-module.exports = function( browser, targetURL ) {
+module.exports = function( browser, targetURL, timeout ) {
   'use strict';
 
   return new Promise( async function( resolve, reject ) {
@@ -23,7 +23,7 @@ module.exports = function( browser, targetURL ) {
       await page.goto( targetURL );
       var id = setTimeout( async function() {
         end( { ok: true } );
-      }, 5000 );
+      }, timeout );
     }
     catch( e ) {
       end( { ok: false, message: 'caught exception ' + e } );

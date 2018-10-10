@@ -11,12 +11,12 @@ const fs = require( 'fs' );
   const readList = filename => fs.readFileSync( '../perennial/data/' + filename, 'utf8' ).split( '\n' ).filter( name => name.length > 0 );
 
   // TODO: why do we have the "testable" lists?
-  // const testableRunnables = readList( 'testable-runnables' );
-  // const testablePhetIO = readList( 'testable-phet-io' );
+  const testableRunnables = readList( 'testable-runnables' );
+  const testablePhetIO = readList( 'testable-phet-io' );
   const activeRepos = readList( 'active-repos' );
 
   // Omit phet-io-wrappers because it yields a "Calling `done` after test has completed" error.
-  var index = activeRepos.indexOf( 'phet-io-wrappers' );
+  const index = activeRepos.indexOf( 'phet-io-wrappers' );
   activeRepos.splice( index, 1 );
 
   const getUnitTestFile = repo => `../${repo}/${repo}-tests.html`;
@@ -29,20 +29,61 @@ const fs = require( 'fs' );
   }; // TODO: support arbitrary prefix for localhost
 
   // Find repos that have qunit tests by searching for them
-  var unitTests = activeRepos.filter( repo => fs.existsSync( getUnitTestFile( repo ) ) ).map( getUnitTestURL );
+  const unitTests = activeRepos.filter( repo => fs.existsSync( getUnitTestFile( repo ) ) ).map( getUnitTestURL );
 
   console.log( unitTests );
   console.log( 'found ' + unitTests.length + ' repos with unit tests' );
 
+  const timeout = 10000;
+  let passed = 0;
+  let failed = 0;
+  const tallyTest = result => {
+    console.log( result );
+    if ( result.ok ) {
+      passed++;
+    }
+    else {
+      failed++;
+    }
+    var total = passed + failed;
+    console.log( 'Passed: ' + passed + '/' + total + ', Failed: ' + failed + '/' + total );
+  };
+
   for ( const unitTest of unitTests ) {
     console.log( 'running unit test: ' + unitTest );
-    var result = await runUnitTests( browser, unitTest );
-    console.log( result );
+    const result = await runUnitTests( browser, unitTest );
+    tallyTest( result );
   }
 
-  console.log( 'running page: ' + 'http://localhost/faradays-law/faradays-law_en.html?brand=phet&ea&fuzzMouse' );
-  var result2 = await runPage( browser, 'http://localhost/faradays-law/faradays-law_en.html?brand=phet&ea&fuzzMouse' );
-  console.log( result2 );
+  for ( const activeRunnable of testableRunnables ) {
+    console.log( 'running page: ' + activeRunnable );
+    const result = await runPage( browser, `http://localhost/${activeRunnable}/${activeRunnable}_en.html?brand=phet&ea&fuzzMouse`, timeout );
+    tallyTest( result );
+  }
+
+  for ( const sim of testablePhetIO ) {
+    console.log( 'running testable phet-io: ' + sim );
+    const result = await runPage( browser, `http://localhost/phet-io-wrappers/studio/?sim=${sim}&phetioThrowSimErrors&fuzzMouse`, timeout );
+    tallyTest( result );
+  }
+
+  for ( const sim of testablePhetIO ) {
+    console.log( 'running testable phet-io: ' + sim );
+    const result = await runPage( browser, `http://localhost/phet-io-wrappers/mirror-inputs/?sim=${sim}&phetioThrowSimErrors&fuzzMouse`, timeout );
+    tallyTest( result );
+  }
+
+  for ( const sim of testablePhetIO ) {
+    console.log( 'running testable phet-io: ' + sim );
+    const result = await runPage( browser, `http://localhost/phet-io-wrappers/state/?sim=${sim}&phetioThrowSimErrors&fuzzMouse&numberOfMillisecondsBetweenUpdates=50`, timeout );
+    tallyTest( result );
+  }
+
+  for ( const sim of testablePhetIO ) {
+    console.log( 'running testable phet-io: ' + sim );
+    const result = await runPage( browser, `http://localhost/phet-io-wrappers/phet-io-wrappers-tests.html/?sim=${sim}`, timeout );
+    tallyTest( result );
+  }
 
   await browser.close();
 } )();
