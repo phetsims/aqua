@@ -307,7 +307,7 @@ function getRunnableRepos( callback, errorCallback ) {
  * @param {Function} callback - callback( repos: {Array.<string>} ), called when successful
  * @param {Function} errorCallback - errorCallback( message: {string} ) called when unsuccessful
  */
-function getPhetIORepos( callback, errorCallback ) {
+function getPhetioRepos( callback, errorCallback ) {
   fs.readFile( rootDir + '/perennial/data/testable-phet-io', 'utf8', function( err, data ) {
     if ( err ) {
       errorCallback( 'Could not open phet-io: ' + err );
@@ -607,7 +607,7 @@ function createSnapshot( callback, errorCallback ) {
           // TODO: async/await
           getRepos( function( repos ) {
             snapshot.repos = repos;
-            getPhetIORepos( function( phetioRepos ) {
+            getPhetioRepos( function( phetioRepos ) {
               snapshot.phetioRepos = phetioRepos;
               getRunnableRepos( function( runnableRepos ) {
                 snapshot.runnableRepos = runnableRepos;
