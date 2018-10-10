@@ -6,20 +6,21 @@ module.exports = function( browser, targetURL ) {
   return new Promise( async function( resolve, reject ) {
 
     const page = await browser.newPage();
-    page.on( 'error', msg => {
-      page.close();
-      clearTimeout( id );
-      resolve( { ok: false, result: 'error', message: msg } );
-    } );
-    page.on( 'pageerror', msg => {
-      page.close();
-      clearTimeout( id );
-      resolve( { ok: false, result: 'pageerror', message: msg } );
-    } );
+    let ended = false;
+    const end = async function( result ) {
+      if ( !ended ) {
+        ended = true;
+        await page.close();
+        clearTimeout( id );
+        resolve( result );
+      }
+    };
+
+    page.on( 'error', msg => end( { ok: false, result: 'error', message: msg } ) );
+    page.on( 'pageerror', msg => end( { ok: false, result: 'pageerror', message: msg } ) );
     await page.goto( targetURL );
     var id = setTimeout( async function() {
-      await page.close();
-      resolve( { ok: true } );
+      end( { ok: true } );
     }, 5000 );
   } );
 };
