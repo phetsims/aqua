@@ -9,7 +9,7 @@ const fs = require( 'fs' );
 
   /**
    * Shuffles array in place.
-   * @param {Array} a items An array containing the items.
+   * @param {Array} a - items An array containing the items.
    */
   function shuffle( a ) {
     var j;
