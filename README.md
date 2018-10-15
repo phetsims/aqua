@@ -10,8 +10,8 @@ For detailed instructions, particularly how it is running on bayes.colorado.edu,
 1. Check out all active-repos
 2. `npm install` in aqua
 3. `node js/continuous-server.js` in aqua (in Administrator mode in Windows, so it can make symbolic links for node_modules)
-4. Visit aqua/html/continuous-loop.html in various test browsers (they will run tests continuously)
-5. Visit aqua/html/continuous-report.html to view current status
+4. Visit `aqua/html/continuous-loop.html?id={{SOME_IDENTIFIER_HERE}}` in various test browsers (they will run tests continuously)
+5. Visit `aqua/html/continuous-report.html` to view current status
 
 ### Top-level documentation
 
