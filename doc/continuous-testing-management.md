@@ -44,7 +44,7 @@ Additionally, if the server crashes, it currently doesn't clear the snapshot dir
 
 # Chrome processes
 
-To test in-browser things (like fuzzing sims or unit tests), the server provides a page at https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-loop.html that will continuously request tests from the server, run them, and report back results in a loop. It should still work while the server is down, and will "reconnect" once the server comes back up.
+To test in-browser things (like fuzzing sims or unit tests), the server provides a page at https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-loop.html that will continuously request tests from the server, run them, and report back results in a loop. It should still work while the server is down, and will "reconnect" once the server comes back up. It takes a query parameter `id` that will be shown with the testing results.
 
 Since we still don't have actual devices set up and running tests, we have a semi-sufficient solution of running headless Chrome processes server-side. I'll typically run 9 processes or so (running too much more actually taxes things too much, and can cause "failed to load in time" errors and such).
 
@@ -64,7 +64,7 @@ To exit a screen, CTRL-A then CTRL-D (it will stay running in the background).
 
 So typically to start things up, I'll `screen -S chrome-1` (chrome-1 through chrome-9) to create the screen, and then in it run:
 ```sh
-google-chrome-unstable --headless --disable-gpu --remote-debugging-port=9221 https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-loop.html
+google-chrome-unstable --headless --disable-gpu --remote-debugging-port=9221 https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-loop.html?id=Bayes%20Chrome
 ```
 and exit (leaving it still running). I'll do this for all 9, changing the debugging port to match so it doesn't run into more issues (so usually debugging port 9221 through 9229).
 
