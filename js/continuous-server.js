@@ -951,7 +951,7 @@ http.createServer( function( req, res ) {
     var result = JSON.parse( requestInfo.query.result );
     var snapshot = findSnapshot( result.snapshotName );
     var test = result.test;
-    var message = ( result.message || '' ) + '\nId: ' + result.id;
+    var message = ( result.message ? ( result.message + '\n' ) : '' ) + 'Id: ' + result.id;
     if ( result.passed ) {
       testPass( snapshot, test, message );
     }
