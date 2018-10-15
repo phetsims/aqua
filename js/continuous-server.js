@@ -954,7 +954,7 @@ http.createServer( function( req, res ) {
     var snapshot = findSnapshot( result.snapshotName );
     var test = result.test;
     var message = result.message;
-    if ( message.indexOf( 'errors.html#timeout' ) < 0 ) {
+    if ( !message || message.indexOf( 'errors.html#timeout' ) < 0 ) {
       if ( !result.passed ) {
         message = ( result.message ? ( result.message + '\n' ) : '' ) + 'id: ' + result.id;
       }
