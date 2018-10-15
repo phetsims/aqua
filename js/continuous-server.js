@@ -954,14 +954,16 @@ http.createServer( function( req, res ) {
     var snapshot = findSnapshot( result.snapshotName );
     var test = result.test;
     var message = result.message;
-    if ( !result.passed ) {
-      message = ( result.message ? ( result.message + '\n' ) : '' ) + 'id: ' + result.id;
-    }
-    if ( result.passed ) {
-      testPass( snapshot, test, message );
-    }
-    else {
-      testFail( snapshot, test, message );
+    if ( message.indexOf( 'errors.html#timeout' ) < 0 ) {
+      if ( !result.passed ) {
+        message = ( result.message ? ( result.message + '\n' ) : '' ) + 'id: ' + result.id;
+      }
+      if ( result.passed ) {
+        testPass( snapshot, test, message );
+      }
+      else {
+        testFail( snapshot, test, message );
+      }
     }
     res.writeHead( 200, jsonHeaders );
     res.end( JSON.stringify( { received: 'true' } ) );
