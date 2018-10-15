@@ -15,6 +15,12 @@
 /* eslint-env node */
 'use strict';
 
+var options = QueryStringMachine.getAll( {
+  id: {
+    type: 'string'
+  }
+} );
+
 // Ignore current port, keep protocol and host.
 var serverOrigin = window.location.protocol + '//' + window.location.hostname;
 
@@ -97,7 +103,8 @@ function sendTestResult( names, message, passed ) {
     passed: passed,
     test: test.concat( names ),
     snapshotName: snapshotName,
-    message: message
+    message: message,
+    id: options.id
   };
   req.open( 'get', serverOrigin + '/aquaserver/test-result?result=' + encodeURIComponent( JSON.stringify( result ) ) );
   req.send();
