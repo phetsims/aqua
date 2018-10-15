@@ -639,19 +639,19 @@ function createSnapshot( callback, errorCallback ) {
                             count: 0,
                             snapshotName: snapshotName,
                             test: [ runnableRepo, 'fuzz', 'require.js' ],
-                            url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzMouse&fuzzTouch' )
+                            url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz' )
                           } );
                           snapshot.testQueue.push( {
                             count: 0,
                             snapshotName: snapshotName,
                             test: [ runnableRepo, 'fuzz', 'require.js-canvas' ],
-                            url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzMouse&fuzzTouch&rootRenderer=canvas' )
+                            url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz&rootRenderer=canvas' )
                           } );
                           snapshot.testQueue.push( {
                             count: 0,
                             snapshotName: snapshotName,
                             test: [ runnableRepo, 'xss-fuzz' ],
-                            url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzMouse&fuzzTouch&stringTest=xss' )
+                            url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz&stringTest=xss' )
                           } );
                         } );
 
@@ -661,7 +661,7 @@ function createSnapshot( callback, errorCallback ) {
                             count: 0,
                             snapshotName: snapshotName,
                             test: [ phetioRepo, 'phet-io-fuzz', 'require.js' ],
-                            url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + phetioRepo + '/' + phetioRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet-io&phetioStandalone&ea&fuzzMouse&fuzzTouch' )
+                            url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + phetioRepo + '/' + phetioRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet-io&phetioStandalone&ea&ffuzz' )
                           } );
                         } );
 
@@ -671,7 +671,7 @@ function createSnapshot( callback, errorCallback ) {
                             count: 0,
                             snapshotName: snapshotName,
                             test: [ accessibleRepo, 'accessibility-fuzz', 'require.js' ],
-                            url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + accessibleRepo + '/' + accessibleRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzMouse&fuzzTouch&accessibility' )
+                            url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + accessibleRepo + '/' + accessibleRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz&accessibility' )
                           } );
                         } );
 
@@ -1121,7 +1121,7 @@ function buildLoop() {
               count: 0,
               snapshotName: snapshot.name,
               test: [ repo, 'fuzz', 'built' + ( phetio ? '-phet-io' : '' ) ],
-              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/' + ( phetio ? 'phet-io' : 'phet' ) + '/' + repo + ( phetio ? '_all_phet-io' : '_en_phet' ) + '.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzzMouse&fuzzTouch' + ( phetio ? '&phetioStandalone' : '' ) )
+              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/' + ( phetio ? 'phet-io' : 'phet' ) + '/' + repo + ( phetio ? '_all_phet-io' : '_en_phet' ) + '.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzz' + ( phetio ? '&phetioStandalone' : '' ) )
             } );
           }
           if ( snapshot.accessibleRepos.indexOf( repo ) >= 0 && !phetio ) {
@@ -1129,7 +1129,7 @@ function buildLoop() {
               count: 0,
               snapshotName: snapshot.name,
               test: [ repo, 'accessibility-fuzz', 'built' + ( phetio ? '-phet-io' : '' ) ],
-              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/phet/' + repo + '_en_phet.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzzMouse&fuzzTouch&accessibility' )
+              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/phet/' + repo + '_en_phet.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzz&accessibility' )
             } );
           }
           // Pageload built tests (once per repo, so not including with phetio mode)
