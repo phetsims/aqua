@@ -44,11 +44,14 @@ window.aqua = {
    * @param {string|undefined} message
    */
   testFail: function( names, message ) {
-    aqua.sendMessage( {
-      type: 'test-fail',
-      names: names,
-      message: message
-    } );
+    // Don't send timeouts as failures, since it doesn't usually indicate an underlying problem
+    if ( message.indexOf( 'errors.html#timeout' ) < 0 ) {
+      aqua.sendMessage( {
+        type: 'test-fail',
+        names: names,
+        message: message
+      } );
+    }
     console.log( '[FAIL] ' + names.join( ',' ) + ' - ' + message );
   },
 

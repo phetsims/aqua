@@ -18,6 +18,9 @@
 var options = QueryStringMachine.getAll( {
   id: {
     type: 'string'
+  },
+  old: {
+    type: 'flag'
   }
 } );
 
@@ -84,7 +87,7 @@ function nextTest() {
     // On connection failure, just try again with a delay (don't hammer the server)
     setTimeout( nextTest, 60000 ); // 1min
   };
-  req.open( 'get', serverOrigin + '/aquaserver/next-test', true );
+  req.open( 'get', serverOrigin + '/aquaserver/next-test?old=' + options.old, true );
   req.send();
   resetTimer();
 }

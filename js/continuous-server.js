@@ -18,6 +18,7 @@
  *   snapshotName: {string} - Name of a snapshot (see {Snapshot}).
  *   test: {Array.<string>} - The 'path' of the test, e.g. [ 'build-a-molecule', 'fuzz', 'require.js' ]
  *   url: {string} - The url to load in an iframe to execute this test.
+ *   old: [{boolean}] - Whether this test can be run on "older" browsers without full ES6 support or compilation
  * }
  *
  * {Snapshot}s have the type: {
@@ -944,14 +945,18 @@ function testFail( snapshot, test, message ) {
 http.createServer( function( req, res ) {
   var requestInfo = url.parse( req.url, true );
 
-  if ( req.url === '/aquaserver/next-test' ) {
-    randomBrowserTest( res );
+  if ( requestInfo.pathname === '/aquaserver/next-test' ) {
+    // ?old=true or ?old=false, determines whether ES6 or other newer features can be run directly in the browser
+    randomBrowserTest( res, requestInfo.query.old === 'true' );
   }
   if ( requestInfo.pathname === '/aquaserver/test-result' ) {
     var result = JSON.parse( requestInfo.query.result );
     var snapshot = findSnapshot( result.snapshotName );
     var test = result.test;
-    var message = ( result.message ? ( result.message + '\n' ) : '' ) + 'Id: ' + result.id;
+    var message = result.message;
+    if ( !result.passed ) {
+      message = ( result.message ? ( result.message + '\n' ) : '' ) + 'id: ' + result.id;
+    }
     if ( result.passed ) {
       testPass( snapshot, test, message );
     }
@@ -986,13 +991,19 @@ infoLog( 'running on port ' + port + ' with root directory ' + rootDir );
  * @private
  *
  * @param {ServerResponse} res
+ * @param {boolean} - Whether 
  */
-function randomBrowserTest( res ) {
+function randomBrowserTest( res, isOld ) {
   if ( snapshots.length > 0 ) {
     // Pick from one of the first two snapshots
     var queue = snapshots[ 0 ].testQueue;
     if ( snapshots.length > 1 ) {
       queue = queue.concat( snapshots[ 1 ].testQueue );
+    }
+
+    // Only give "old" tests to browsers that can't handle require.js mode
+    if ( isOld ) {
+      queue = queue.filter( test => test.old );
     }
 
     var lowestCount = Infinity;
@@ -1121,7 +1132,8 @@ function buildLoop() {
               count: 0,
               snapshotName: snapshot.name,
               test: [ repo, 'fuzz', 'built' + ( phetio ? '-phet-io' : '' ) ],
-              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/' + ( phetio ? 'phet-io' : 'phet' ) + '/' + repo + ( phetio ? '_all_phet-io' : '_en_phet' ) + '.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzz' + ( phetio ? '&phetioStandalone' : '' ) )
+              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/' + ( phetio ? 'phet-io' : 'phet' ) + '/' + repo + ( phetio ? '_all_phet-io' : '_en_phet' ) + '.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzz' + ( phetio ? '&phetioStandalone' : '' ) ),
+              old: true
             } );
           }
           if ( snapshot.accessibleRepos.indexOf( repo ) >= 0 && !phetio ) {
@@ -1129,7 +1141,8 @@ function buildLoop() {
               count: 0,
               snapshotName: snapshot.name,
               test: [ repo, 'accessibility-fuzz', 'built' + ( phetio ? '-phet-io' : '' ) ],
-              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/phet/' + repo + '_en_phet.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzz&accessibility' )
+              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/phet/' + repo + '_en_phet.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzz&accessibility' ),
+              old: true
             } );
           }
           // Pageload built tests (once per repo, so not including with phetio mode)
@@ -1170,7 +1183,8 @@ function buildLoop() {
                   count: 0,
                   snapshotName: snapshot.name,
                   test: [ repo, 'pageload', '/' + pageloadRelativeURL ],
-                  url: 'pageload-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/' + pageloadRelativeURL )
+                  url: 'pageload-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/' + pageloadRelativeURL ),
+                  old: true
                 } );
               } );
             }
