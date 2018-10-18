@@ -1,7 +1,7 @@
 
 # How to manage Continuous Testing (CT) service
 
-_Everything in this document is intended to be run on bayes.colorado.edu while logged in as user phet-admin._ 
+_Everything in this document is intended to be run on bayes.colorado.edu while logged in as user phet-admin._
 
 There are currently two separate pieces that need to run for it to behave as expected: the server, and Chrome processes doing browser tests.
 
@@ -21,7 +21,7 @@ Typically, you can run `pm2 list` to display the running processes, and it will 
  Use `pm2 show <id|name>` to get more details about an app
 ```
 
-`pm2 start continuous-server` and `pm2 stop continuous-server` will start and stop the process. Be patient after starting CT; it make take 15 minutes for data to appear at https://bayes.colorado.edu/continuous-testing.  
+`pm2 start continuous-server` and `pm2 stop continuous-server` will start and stop the process. Be patient after starting CT; it make take 15 minutes for data to appear at https://bayes.colorado.edu/continuous-testing.
 
 `pm2 logs` will show recent log lines (stored in files), and will show a stream of logs from that point on (exit with CTRL-C). `pm2 logs` should be used to diagnose any issues with the server process.
 
@@ -64,9 +64,10 @@ To exit a screen, CTRL-A then CTRL-D (it will stay running in the background).
 
 So typically to start things up, I'll `screen -S chrome-1` (chrome-1 through chrome-9) to create the screen, and then in it run:
 ```sh
-google-chrome-unstable --headless --disable-gpu --remote-debugging-port=9221 https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-loop.html?id=Bayes%20Chrome
+cd /data/share/phet/continuous-testing/aqua/scripts
+./bayes-chrome.sh {{NUMBER}}
 ```
-and exit (leaving it still running). I'll do this for all 9, changing the debugging port to match so it doesn't run into more issues (so usually debugging port 9221 through 9229).
+and exit (leaving it still running). Replace `{{NUMBER}}` with the number 1 through 9 (whichever session it is).
 
 If I need to come back and inspect the chrome instance (see if it is erroring out, etc.), `screen -r chrome-1` will re-enter the screen.
 
