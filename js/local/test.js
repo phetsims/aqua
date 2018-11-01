@@ -1,8 +1,8 @@
 // Copyright 2018, University of Colorado Boulder
-const runUnitTests = require( './runUnitTests' );
-const runPage = require( './runPage' );
-const puppeteer = require( 'puppeteer' );
 const fs = require( 'fs' );
+const puppeteer = require( 'puppeteer' );
+const runPage = require( './runPage' );
+const runUnitTests = require( './runUnitTests' );
 
 ( async () => {
   'use strict';
