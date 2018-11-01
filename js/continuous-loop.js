@@ -35,6 +35,9 @@ iframe.setAttribute( 'width', 1024 * 0.75 );
 iframe.setAttribute( 'height', 768 * 0.75 );
 document.body.appendChild( iframe );
 
+var infoElement = document.createElement( 'pre' );
+document.body.appendChild( infoElement );
+
 // {Array.<string>} - Information about the current test, filled in later.
 var test = null;
 
@@ -73,6 +76,9 @@ function nextTest() {
       // record test information
       test = data.test;
       snapshotName = data.snapshotName;
+
+      infoElement.textContent = JSON.stringify( data, null, 2 );
+      document.title = 'Continuous Testing loop for: ' + test.join( ' : ' );
     }
     catch( e ) {
       console.log( 'parse error?' );
