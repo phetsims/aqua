@@ -687,10 +687,18 @@ function createSnapshot( callback, errorCallback ) {
                           snapshot.testQueue.push( {
                             count: 0,
                             snapshotName: snapshotName,
-                            test: [ phetioRepo, 'phet-io-tests' ],
+                            test: [ phetioRepo, 'phet-io-tests', 'no-assert' ],
 
                             // Use the QUnit harness since errors are reported to QUnit
                             url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io-wrappers/phet-io-wrappers-tests.html?sim=' + phetioRepo )
+                          } );
+                          snapshot.testQueue.push( {
+                            count: 0,
+                            snapshotName: snapshotName,
+                            test: [ phetioRepo, 'phet-io-tests', 'assert' ],
+
+                            // Use the QUnit harness since errors are reported to QUnit
+                            url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io-wrappers/phet-io-wrappers-tests.html?sim=' + phetioRepo + '&ea' )
                           } );
                         } );
 
