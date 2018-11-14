@@ -698,7 +698,7 @@ function createSnapshot( callback, errorCallback ) {
                             test: [ phetioRepo, 'phet-io-tests', 'assert' ],
 
                             // Use the QUnit harness since errors are reported to QUnit
-                            url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io-wrappers/phet-io-wrappers-tests.html?sim=' + phetioRepo + '&ea' )
+                            url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io-wrappers/phet-io-wrappers-tests.html?sim=' + phetioRepo + '&phetioDebug' )
                           } );
                         } );
 
