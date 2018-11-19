@@ -144,7 +144,7 @@ function handleFrame() {
       var hashedURL = hash( url );
       console.log( count, hashedURL );
 
-      window.parent && window.parent.postMessage( JSON.stringify( {
+      ( window.parent !== window.top ) && window.parent.postMessage( JSON.stringify( {
         type: 'screenshot',
         number: count - 1,
         url: url,
@@ -156,7 +156,7 @@ function handleFrame() {
       if ( count === options.numFrames ) {
         var fullHash = hash( screenshotHashes );
 
-        window.parent && window.parent.postMessage( JSON.stringify( {
+        ( window.parent !== window.top ) && window.parent.postMessage( JSON.stringify( {
           type: 'snapshot',
           hash: fullHash,
           url: window.location.href
@@ -179,7 +179,7 @@ window.addEventListener( 'error', function( a ) {
   if ( a && a.error && a.error.stack ) {
     stack = a.error.stack;
   }
-  window.parent && window.parent.postMessage( JSON.stringify( {
+  ( window.parent !== window.top ) && window.parent.postMessage( JSON.stringify( {
     type: 'error',
     message: message,
     stack: stack
