@@ -206,7 +206,7 @@ window.addEventListener( 'message', function( evt ) {
 
     random = new iframe.contentWindow.phet.dot.Random( { seed: 2.3 } );
 
-    iframe.contentWindow.phetLaunchSimulation();
+    iframe.contentWindow.phet.joist.launchSimulation();
     iframe.contentWindow.phet.joist.sim.display.interactive = false;
   }
   else if ( data.type === 'load' ) {
