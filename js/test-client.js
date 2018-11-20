@@ -17,7 +17,7 @@ window.aqua = {
    * @param {Object} message
    */
   sendMessage: function( message ) {
-    ( window.parent !== window.top ) && window.parent.postMessage( JSON.stringify( message ), '*' );
+    ( window.parent !== window ) && window.parent.postMessage( JSON.stringify( message ), '*' );
   },
 
   /**
