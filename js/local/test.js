@@ -42,7 +42,7 @@ const _ = require( '../../../sherpa/lib/lodash-4.17.4.js' ); // eslint-disable-l
            repo !== 'faradays-law'; // Broken at the moment, see https://github.com/phetsims/faradays-law/issues/147
   } ).map( getUnitTestURL );
 
-  const timeout = 5000;
+  const timeout = 6000; // Timed so it takes about the same length of time as unit tests and linting, at least on my machine!
   const allTests = [];
   const pairs = [];
 
