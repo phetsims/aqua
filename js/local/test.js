@@ -35,21 +35,8 @@ const _ = require( '../../../sherpa/lib/lodash-4.17.4.js' ); // eslint-disable-l
   } ).map( getUnitTestURL );
 
   const timeout = 5000;
-  let passed = 0;
-  let failed = 0;
-  var tests = [];
+  const tests = [];
   const pairs = [];
-  const tallyTest = ( test, result ) => {
-    console.log( result );
-    if ( result.ok ) {
-      passed++;
-    }
-    else {
-      failed++;
-    }
-    console.log( 'Passed: ' + passed + '/' + tests.length + ', Failed: ' + failed + '/' + tests.length );
-    pairs.push( { test, result } );
-  };
 
   // Run all unit tests
   unitTests.forEach( test => tests.push( {
@@ -59,8 +46,6 @@ const _ = require( '../../../sherpa/lib/lodash-4.17.4.js' ); // eslint-disable-l
   } ) );
 
   // Randomly pick a subset of sims to fuzz test
-  console.log( testableRunnables );
-  console.log( _.sample( testableRunnables, 1 ) );
   [ _.sample( testableRunnables, 1 ) ].forEach( test => tests.push( {
     name: test,
     type: 'Fuzz Test',
@@ -75,15 +60,13 @@ const _ = require( '../../../sherpa/lib/lodash-4.17.4.js' ); // eslint-disable-l
   // const simsToTest = ['graphing-quadratics'];
   // simsToTest.forEach( test => tests.push( { name: test, type: 'Fuzz Test', run: () => runPage( browser, `http://localhost/${test}/${test}_en.html?brand=phet&ea&fuzz`, timeout ) } ) );
 
-  console.log( 'enumerated ' + tests.length + ' tests' );
-  // tests = shuffle( tests );
+  console.log( 'Running ' + tests.length + ' tests' );
   for ( const test of tests ) {
-    console.log( `Starting ${test.type}: ${test.name}` );
     const result = await test.run();
-    tallyTest( test, result );
+    pairs.push( { test, result } );
   }
-  var passedPairs = pairs.filter( pair => pair.result.ok );
-  var failedPairs = pairs.filter( pair => !pair.result.ok );
+  const passedPairs = pairs.filter( pair => pair.result.ok );
+  const failedPairs = pairs.filter( pair => !pair.result.ok );
 
   console.log();
   console.log( `passed (${passedPairs.length})\n${passedPairs.map( pair => pair.test.type + ': ' + pair.test.name ).join( '\n' )}\n` );
