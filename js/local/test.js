@@ -36,7 +36,10 @@ const _ = require( '../../../sherpa/lib/lodash-4.17.4.js' ); // eslint-disable-l
 
   // Find repos that have qunit tests by searching for them
   const unitTests = activeRepos.filter( repo => {
-    return fs.existsSync( getUnitTestFile( repo ) ) && repo !== 'scenery' && repo !== 'scenery-phet';
+    return fs.existsSync( getUnitTestFile( repo ) ) &&
+           repo !== 'scenery' && // Takes too long
+           repo !== 'scenery-phet' && // Takes too long
+           repo !== 'faradays-law'; // Broken at the moment, see https://github.com/phetsims/faradays-law/issues/147
   } ).map( getUnitTestURL );
 
   const timeout = 5000;
