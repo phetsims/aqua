@@ -79,7 +79,6 @@ const _ = require( '../../../sherpa/lib/lodash-4.17.4.js' ); // eslint-disable-l
   // const passedPairs = pairs.filter( pair => pair.result.ok );
   const failedPairs = pairs.filter( pair => !pair.result.ok );
 
-  // console.log();
   // console.log( `passed (${passedPairs.length})\n${passedPairs.map( pair => pair.test.type + ': ' + pair.test.name ).join( '\n' )}\n` );
   if ( failedPairs.length > 0 ) {
     console.log( `failed (${failedPairs.length})\n${failedPairs.map( pair => pair.test.type + ': ' + pair.test.name ).join( '\n' )}\n` );
