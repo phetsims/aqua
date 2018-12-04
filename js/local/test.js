@@ -38,8 +38,7 @@ const _ = require( '../../../sherpa/lib/lodash-4.17.4.js' ); // eslint-disable-l
   const unitTests = activeRepos.filter( repo => {
     return fs.existsSync( getUnitTestFile( repo ) ) &&
            repo !== 'scenery' && // Takes too long
-           repo !== 'scenery-phet' && // Takes too long
-           repo !== 'faradays-law'; // Broken at the moment, see https://github.com/phetsims/faradays-law/issues/147
+           repo !== 'scenery-phet';// Takes too long
   } ).map( getUnitTestURL );
 
   const timeout = 6000; // Timed so it takes about the same length of time as unit tests and linting, at least on my machine!
