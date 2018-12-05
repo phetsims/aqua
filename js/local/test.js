@@ -29,9 +29,9 @@ const _ = require( '../../../sherpa/lib/lodash-4.17.4.js' ); // eslint-disable-l
   const getUnitTestURL = repo => {
     let suffix = '';
     if ( repo === 'phet-io' ) {
-      suffix = '?brand=phet-io';
+      suffix = '&brand=phet-io';
     }
-    return `http://localhost/${repo}/${repo}-tests.html${suffix}`;
+    return `http://localhost/${repo}/${repo}-tests.html?ea${suffix}`;
   }; // TODO: support arbitrary prefix for localhost
 
   // Find repos that have qunit tests by searching for them
