@@ -1,8 +1,8 @@
 // Copyright 2018, University of Colorado Boulder
 const fs = require( 'fs' );
 const puppeteer = require( 'puppeteer' );
-const runPage = require( './runPage' );
-const runUnitTests = require( './runUnitTests' );
+const puppeteerPage = require( './puppeteerPage' );
+const puppeteerQUnit = require( './puppeteerQUnit' );
 const _ = require( '../../../sherpa/lib/lodash-4.17.4.js' ); // eslint-disable-line
 
 ( async () => {
@@ -50,7 +50,7 @@ const _ = require( '../../../sherpa/lib/lodash-4.17.4.js' ); // eslint-disable-l
     unitTests.forEach( test => allTests.push( {
       name: test,
       type: 'Unit Test',
-      run: () => runUnitTests( browser, test )
+      run: () => puppeteerQUnit( browser, test )
     } ) );
   }
 
@@ -59,17 +59,17 @@ const _ = require( '../../../sherpa/lib/lodash-4.17.4.js' ); // eslint-disable-l
     [ _.sample( testableRunnables, 1 ) ].forEach( test => allTests.push( {
       name: test,
       type: 'Fuzz Test',
-      run: () => runPage( browser, `http://localhost/${test}/${test}_en.html?brand=phet&ea&fuzz`, timeout )
+      run: () => puppeteerPage( browser, `http://localhost/${test}/${test}_en.html?brand=phet&ea&fuzz`, timeout )
     } ) );
   }
 
   // const phetioSimsToTest = ['faradays-law'];
-  // phetioSimsToTest.forEach( sim => tests.push( { name: sim, type: 'Fuzz Studio', run: () => runPage( browser, `http://localhost/phet-io-wrappers/studio/?sim=${sim}&phetioDebug&fuzz`, timeout ) } ) );
-  // phetioSimsToTest.forEach( sim => tests.push( { name: sim, type: 'Fuzz Mirror Inputs', run: () => runPage( browser, `http://localhost/phet-io-wrappers/mirror-inputs/?sim=${sim}&phetioDebug&fuzz`, timeout ) } ) );
-  // phetioSimsToTest.forEach( sim => tests.push( { name: sim, type: 'Fuzz State', run: () => runPage( browser, `http://localhost/phet-io-wrappers/state/?sim=${sim}&phetioDebug&fuzz&numberOfMillisecondsBetweenUpdates=50`, timeout ) } ) );
-  // phetioSimsToTest.forEach( sim => tests.push( { name: sim, type: 'PhET-iO Wrapper Tests', run: () => runPage( browser, `http://localhost/phet-io-wrappers/phet-io-wrappers-tests.html?sim=${sim}&testWrappers=false`, timeout ) } ) );
+  // phetioSimsToTest.forEach( sim => tests.push( { name: sim, type: 'Fuzz Studio', run: () => puppeteerPage( browser, `http://localhost/phet-io-wrappers/studio/?sim=${sim}&phetioDebug&fuzz`, timeout ) } ) );
+  // phetioSimsToTest.forEach( sim => tests.push( { name: sim, type: 'Fuzz Mirror Inputs', run: () => puppeteerPage( browser, `http://localhost/phet-io-wrappers/mirror-inputs/?sim=${sim}&phetioDebug&fuzz`, timeout ) } ) );
+  // phetioSimsToTest.forEach( sim => tests.push( { name: sim, type: 'Fuzz State', run: () => puppeteerPage( browser, `http://localhost/phet-io-wrappers/state/?sim=${sim}&phetioDebug&fuzz&numberOfMillisecondsBetweenUpdates=50`, timeout ) } ) );
+  // phetioSimsToTest.forEach( sim => tests.push( { name: sim, type: 'PhET-iO Wrapper Tests', run: () => puppeteerPage( browser, `http://localhost/phet-io-wrappers/phet-io-wrappers-tests.html?sim=${sim}&testWrappers=false`, timeout ) } ) );
   // const simsToTest = ['graphing-quadratics'];
-  // simsToTest.forEach( test => tests.push( { name: test, type: 'Fuzz Test', run: () => runPage( browser, `http://localhost/${test}/${test}_en.html?brand=phet&ea&fuzz`, timeout ) } ) );
+  // simsToTest.forEach( test => tests.push( { name: test, type: 'Fuzz Test', run: () => puppeteerPage( browser, `http://localhost/${test}/${test}_en.html?brand=phet&ea&fuzz`, timeout ) } ) );
 
   // console.log( 'Found ' + allTests.length + ' tests' );
   const tests = _.partition( allTests, test => allTests.indexOf( test ) % groups === groupIndex )[ 0 ];
