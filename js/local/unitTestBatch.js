@@ -3,12 +3,14 @@ const fs = require( 'fs' );
 const puppeteer = require( 'puppeteer' );
 const puppeteerQUnit = require( './puppeteerQUnit' );
 const _ = require( '../../../sherpa/lib/lodash-4.17.4.js' ); // eslint-disable-line
+const child_process = require( 'child_process' );
 
 ( async () => {
   'use strict';
 
   var groups = parseInt( process.argv[ 2 ], 10 );
   var groupIndex = parseInt( process.argv[ 3 ], 10 );
+  var say = _.includes( process.argv, '--say' );
 
   const browser = await puppeteer.launch();
   const readList = filename => fs.readFileSync( '../perennial/data/' + filename, 'utf8' ).split( '\n' ).filter( name => name.length > 0 );
@@ -58,6 +60,7 @@ const _ = require( '../../../sherpa/lib/lodash-4.17.4.js' ); // eslint-disable-l
   // console.log( `passed (${passedPairs.length})\n${passedPairs.map( pair => pair.test.type + ': ' + pair.test.name ).join( '\n' )}\n` );
   if ( failedPairs.length > 0 ) {
     console.log( `failed (${failedPairs.length})\n${failedPairs.map( pair => pair.test.type + ': ' + pair.test.name ).join( '\n' )}\n` );
+    say && child_process.execSync( 'say Unit test failed' );
   }
 
   await browser.close();

@@ -2,9 +2,12 @@
 const puppeteer = require( 'puppeteer' );
 const puppeteerPage = require( './puppeteerPage' );
 const _ = require( '../../../sherpa/lib/lodash-4.17.4.js' ); // eslint-disable-line
+const child_process = require( 'child_process' );
 
 ( async () => {
   'use strict';
+
+  var say = _.includes( process.argv, '--say' );
 
   const sim = process.argv[ 2 ];
   const url = `http://localhost/${sim}/${sim}_en.html?brand=phet&ea&fuzz`;
@@ -17,6 +20,7 @@ const _ = require( '../../../sherpa/lib/lodash-4.17.4.js' ); // eslint-disable-l
 
   if ( !result.ok ) {
     console.log( `failed fuzzing ${sim}, see ${url}, message:\n${result.message}` );
+    say && child_process.execSync( 'say Fuzz test failed' );
   }
 
   // const phetioSimsToTest = ['faradays-law'];
