@@ -53,6 +53,10 @@ function setup( simNames ) {
     numFrames: {
       type: 'number',
       defaultValue: 10
+    },
+    showTime: {
+      type: 'boolean',
+      defaultValue: true
     }
   } );
 
@@ -176,7 +180,10 @@ function setup( simNames ) {
     }
   }
 
+  var globalStartTime;
+
   function snapshot() {
+    globalStartTime = Date.now();
     currentSnapshot = {};
     snapshots.push( currentSnapshot );
     queue = queue.concat( options.sims );
@@ -199,7 +206,7 @@ function setup( simNames ) {
 
       snapshot[ sim ].hash = data.hash;
       var td = document.createElement( 'td' );
-      td.textContent = data.hash.slice( 0, 6 );
+      td.textContent = data.hash.slice( 0, 6 ) + ( options.showTime ? ' ' + ( Date.now() - globalStartTime ) : '' );
       if ( snapshots.length > 1 && data.hash !== snapshots[ snapshots.length - 2 ][ sim ].hash ) {
         td.style.fontWeight = 'bold';
         td.addEventListener( 'click', function() {
