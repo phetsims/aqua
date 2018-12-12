@@ -50,7 +50,8 @@ const child_process = require( 'child_process' );
   } ) );
 
   const tests = _.partition( allTests, test => allTests.indexOf( test ) % groups === groupIndex )[ 0 ];
-  for ( const test of tests ) {
+  for ( let i = 0; i < tests.length; i++ ) {
+    const test = tests[ i ];
     const result = await test.run();
     pairs.push( { test, result } );
   }
@@ -61,6 +62,9 @@ const child_process = require( 'child_process' );
   if ( failedPairs.length > 0 ) {
     console.log( `failed (${failedPairs.length})\n${failedPairs.map( pair => pair.test.type + ': ' + pair.test.name ).join( '\n' )}\n` );
     say && child_process.execSync( 'say Unit test failed' );
+  }
+  else {
+    console.log( `completed ${pairs.length} unit tests, all passed` );
   }
 
   await browser.close();
