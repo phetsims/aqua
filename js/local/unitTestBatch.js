@@ -53,14 +53,14 @@ const child_process = require( 'child_process' );
   for ( let i = 0; i < tests.length; i++ ) {
     const test = tests[ i ];
     const result = await test.run();
-    pairs.push( { test, result } );
+    pairs.push( { test: test, result: result } );
   }
   // const passedPairs = pairs.filter( pair => pair.result.ok );
   const failedPairs = pairs.filter( pair => !pair.result.ok );
 
   // console.log( `passed (${passedPairs.length})\n${passedPairs.map( pair => pair.test.type + ': ' + pair.test.name ).join( '\n' )}\n` );
   if ( failedPairs.length > 0 ) {
-    console.log( `failed (${failedPairs.length})\n${failedPairs.map( pair => pair.test.type + ': ' + pair.test.name ).join( '\n' )}\n` );
+    console.log( `failed (${failedPairs.length})\n${failedPairs.map( pair => pair.test.type + ': ' + pair.test.name + '\n' + JSON.stringify( pair.result ) ).join( '\n' )}\n` );
     say && child_process.execSync( 'say Unit test failed' );
   }
   else {
