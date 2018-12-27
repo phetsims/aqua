@@ -6,7 +6,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-/* eslint-env node */
 'use strict';
 
 var options = QueryStringMachine.getAll( {

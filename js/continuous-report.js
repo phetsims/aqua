@@ -8,7 +8,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-/* eslint-env node */
 'use strict';
 
 // Origin for our server (ignoring current port), so that we don't require localhost

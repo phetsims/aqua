@@ -1,6 +1,5 @@
 // Copyright 2016, University of Colorado Boulder
 
-/* eslint-env node */
 'use strict';
 var http = require( 'http' );
 var child_process = require( 'child_process' );
