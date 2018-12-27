@@ -1,7 +1,8 @@
 // Copyright 2018, University of Colorado Boulder
 
+'use strict';
+
 module.exports = function( browser, targetURL, timeout ) {
-  'use strict';
 
   return new Promise( async function( resolve, reject ) {
 

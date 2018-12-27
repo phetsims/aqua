@@ -2,10 +2,10 @@
 
 // See the README.md for documentation about query parameters
 
-// Grab all query parameters to pass to the simulation, and add additional ones for receiving messages.
+'use strict';
 
+// Grab all query parameters to pass to the simulation, and add additional ones for receiving messages.
 ( function() {
-  'use strict';
   var simulationQueryString = window.location.search;
 
   if ( simulationQueryString.indexOf( '?' ) >= 0 ) {

@@ -1,4 +1,7 @@
 // Copyright 2018, University of Colorado Boulder
+
+'use strict';
+
 const fs = require( 'fs' );
 const puppeteer = require( 'puppeteer' );
 const puppeteerQUnit = require( './puppeteerQUnit' );
@@ -6,7 +9,6 @@ const _ = require( '../../../sherpa/lib/lodash-4.17.4.js' ); // eslint-disable-l
 const child_process = require( 'child_process' );
 
 ( async () => {
-  'use strict';
 
   var groups = parseInt( process.argv[ 2 ], 10 );
   var groupIndex = parseInt( process.argv[ 3 ], 10 );

@@ -1,11 +1,13 @@
 // Copyright 2018, University of Colorado Boulder
+
+'use strict';
+
 const puppeteer = require( 'puppeteer' );
 const puppeteerPage = require( './puppeteerPage' );
 const _ = require( '../../../sherpa/lib/lodash-4.17.4.js' ); // eslint-disable-line
 const child_process = require( 'child_process' );
 
 ( async () => {
-  'use strict';
 
   var say = _.includes( process.argv, '--say' );
 
