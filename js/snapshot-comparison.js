@@ -9,9 +9,9 @@
 'use strict';
 
 (function() {
-  var req = new XMLHttpRequest();
+  const req = new XMLHttpRequest();
   req.onload = function() {
-    var simListText = req.responseText;
+    const simListText = req.responseText;
 
     // split string into an array of sim names, ignoring blank lines
     setup( simListText.trim().replace( /\r/g, '' ).split( '\n' ) );
@@ -22,12 +22,12 @@
 })();
 
 function setup( simNames ) {
-  var snapshots = [];
-  var queue = [];
-  var currentSnapshot;
-  var currentSim;
+  const snapshots = [];
+  let queue = [];
+  let currentSnapshot;
+  let currentSim;
 
-  var options = QueryStringMachine.getAll( {
+  const options = QueryStringMachine.getAll( {
     sims: {
       type: 'array',
       elementSchema: { type: 'string' },
@@ -61,8 +61,8 @@ function setup( simNames ) {
   } );
 
   function imageToContext( image ) {
-    var canvas = document.createElement( 'canvas' );
-    var context = canvas.getContext( '2d' );
+    const canvas = document.createElement( 'canvas' );
+    const context = canvas.getContext( '2d' );
     canvas.width = options.simWidth;
     canvas.height = options.simHeight;
     context.drawImage( image, 0, 0 );
@@ -72,25 +72,25 @@ function setup( simNames ) {
     return context.getImageData( 0, 0, options.simWidth, options.simHeight );
   }
   function dataToCanvas( data ) {
-    var canvas = document.createElement( 'canvas' );
-    var context = canvas.getContext( '2d' );
+    const canvas = document.createElement( 'canvas' );
+    const context = canvas.getContext( '2d' );
     canvas.width = options.simWidth;
     canvas.height = options.simHeight;
     context.putImageData( data, 0, 0 );
     return canvas;
   }
   function compare( imageA, imageB, msg ) {
-    var threshold = 0;
+    const threshold = 0;
 
-    var a = contextToData( imageToContext( imageA ) );
-    var b = contextToData( imageToContext( imageB ) );
+    const a = contextToData( imageToContext( imageA ) );
+    const b = contextToData( imageToContext( imageB ) );
 
-    var largestDifference = 0;
-    var totalDifference = 0;
-    var colorDiffData = document.createElement( 'canvas' ).getContext( '2d' ).createImageData( a.width, a.height );
-    var alphaDiffData = document.createElement( 'canvas' ).getContext( '2d' ).createImageData( a.width, a.height );
-    for ( var i = 0; i < a.data.length; i++ ) {
-      var diff = Math.abs( a.data[ i ] - b.data[ i ] );
+    let largestDifference = 0;
+    let totalDifference = 0;
+    const colorDiffData = document.createElement( 'canvas' ).getContext( '2d' ).createImageData( a.width, a.height );
+    const alphaDiffData = document.createElement( 'canvas' ).getContext( '2d' ).createImageData( a.width, a.height );
+    for ( let i = 0; i < a.data.length; i++ ) {
+      const diff = Math.abs( a.data[ i ] - b.data[ i ] );
       if ( i % 4 === 3 ) {
         colorDiffData.data[ i ] = 255;
         alphaDiffData.data[ i ] = 255;
@@ -101,9 +101,9 @@ function setup( simNames ) {
       else {
         colorDiffData.data[ i ] = diff;
       }
-      var alphaIndex = ( i - ( i % 4 ) + 3 );
+      const alphaIndex = ( i - ( i % 4 ) + 3 );
       // grab the associated alpha channel and multiply it times the diff
-      var alphaMultipliedDiff = ( i % 4 === 3 ) ? diff : diff * ( a.data[ alphaIndex ] / 255 ) * ( b.data[ alphaIndex ] / 255 );
+      const alphaMultipliedDiff = ( i % 4 === 3 ) ? diff : diff * ( a.data[ alphaIndex ] / 255 ) * ( b.data[ alphaIndex ] / 255 );
 
       totalDifference += alphaMultipliedDiff;
       // if ( alphaMultipliedDiff > threshold ) {
@@ -114,10 +114,10 @@ function setup( simNames ) {
       // }
     }
 
-    var averageDifference = totalDifference / ( 4 * a.width * a.height );
+    const averageDifference = totalDifference / ( 4 * a.width * a.height );
 
     if ( averageDifference > threshold ) {
-      var container = document.createElement( 'div' );
+      const container = document.createElement( 'div' );
       comparisonDiv.appendChild( container );
 
       container.appendChild( document.createTextNode( msg + ', largest: ' + largestDifference + ', average: ' + averageDifference ) );
@@ -130,34 +130,34 @@ function setup( simNames ) {
     }
   }
 
-  var iframe = document.createElement( 'iframe' );
+  const iframe = document.createElement( 'iframe' );
   iframe.setAttribute( 'frameborder', '0' );
   iframe.setAttribute( 'seamless', '1' );
   iframe.setAttribute( 'width', options.simWidth );
   iframe.setAttribute( 'height', options.simHeight );
   document.body.appendChild( iframe );
 
-  var snapshotButton = document.createElement( 'button' );
+  const snapshotButton = document.createElement( 'button' );
   snapshotButton.textContent = 'Start Snapshot';
   snapshotButton.style.display = 'block';
   document.body.appendChild( snapshotButton );
 
-  var comparisonDiv = document.createElement( 'div' );
+  const comparisonDiv = document.createElement( 'div' );
   document.body.appendChild( comparisonDiv );
 
-  var rowMap = {};
-  var table = document.createElement( 'table' );
+  const rowMap = {};
+  const table = document.createElement( 'table' );
   options.sims.forEach( function( sim ) {
-    var row = document.createElement( 'tr' );
+    const row = document.createElement( 'tr' );
     rowMap[ sim ] = row;
     table.appendChild( row );
-    var td = document.createElement( 'td' );
+    const td = document.createElement( 'td' );
     td.textContent = sim;
     row.appendChild( td );
   } );
   document.body.appendChild( table );
 
-  var childQueryParams =
+  const childQueryParams =
     'simSeed=' + encodeURIComponent( options.simSeed ) +
     '&simWidth=' + encodeURIComponent( options.simWidth ) +
     '&simHeight=' + encodeURIComponent( options.simHeight ) +
@@ -180,7 +180,7 @@ function setup( simNames ) {
     }
   }
 
-  var globalStartTime;
+  let globalStartTime;
 
   function snapshot() {
     globalStartTime = Date.now();
@@ -193,7 +193,7 @@ function setup( simNames ) {
   snapshotButton.addEventListener( 'click', snapshot );
 
   window.addEventListener( 'message', function( evt ) {
-    var data = JSON.parse( evt.data );
+    const data = JSON.parse( evt.data );
 
     if ( data.type === 'screenshot' ) {
       // number, url, hash
@@ -201,25 +201,25 @@ function setup( simNames ) {
     }
     else if ( data.type === 'snapshot' ) {
       // basically hash
-      var sim = currentSim;
-      var snapshot = currentSnapshot;
+      const sim = currentSim;
+      const snapshot = currentSnapshot;
 
       snapshot[ sim ].hash = data.hash;
-      var td = document.createElement( 'td' );
+      const td = document.createElement( 'td' );
       td.textContent = data.hash.slice( 0, 6 ) + ( options.showTime ? ' ' + ( Date.now() - globalStartTime ) : '' );
       if ( snapshots.length > 1 && data.hash !== snapshots[ snapshots.length - 2 ][ sim ].hash ) {
         td.style.fontWeight = 'bold';
         td.addEventListener( 'click', function() {
-          var newScreenshots = snapshot[ sim ].screenshots;
-          var oldScreenshots = snapshots[ snapshots.indexOf( snapshot ) - 1 ][ sim ].screenshots;
+          const newScreenshots = snapshot[ sim ].screenshots;
+          const oldScreenshots = snapshots[ snapshots.indexOf( snapshot ) - 1 ][ sim ].screenshots;
 
-          var nextIndex = 0;
+          let nextIndex = 0;
           function run() {
-            var index = nextIndex++;
+            const index = nextIndex++;
             if ( index < newScreenshots.length && index < oldScreenshots.length ) {
-              var newImage = document.createElement( 'img' );
+              const newImage = document.createElement( 'img' );
               newImage.addEventListener( 'load', function() {
-                var oldImage = document.createElement( 'img' );
+                const oldImage = document.createElement( 'img' );
                 oldImage.addEventListener( 'load', function() {
                   compare( oldImage, newImage, 'Snapshot ' + index );
                   run();
@@ -236,7 +236,7 @@ function setup( simNames ) {
       nextSim();
     }
     else if ( data.type === 'error' ) {
-      var errorTd = document.createElement( 'td' );
+      const errorTd = document.createElement( 'td' );
       errorTd.textContent = 'err';
       rowMap[ currentSim ].appendChild( errorTd );
       nextSim();

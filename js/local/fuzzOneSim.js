@@ -9,7 +9,7 @@ const child_process = require( 'child_process' );
 
 ( async () => {
 
-  var say = _.includes( process.argv, '--say' );
+  const say = _.includes( process.argv, '--say' );
 
   const sim = process.argv[ 2 ];
   const url = `http://localhost/${sim}/${sim}_en.html?brand=phet&ea&fuzz`;

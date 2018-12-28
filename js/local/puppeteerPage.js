@@ -5,6 +5,7 @@
 module.exports = function( browser, targetURL, timeout ) {
 
   return new Promise( async function( resolve, reject ) {
+    let id = null;
 
     const page = await browser.newPage();
     let ended = false;
@@ -22,7 +23,7 @@ module.exports = function( browser, targetURL, timeout ) {
 
     try {
       await page.goto( targetURL );
-      var id = setTimeout( async function() {
+      id = setTimeout( async function() {
         end( { ok: true } );
       }, timeout );
     }

@@ -8,7 +8,7 @@
 
 'use strict';
 
-var options = QueryStringMachine.getAll( {
+const options = QueryStringMachine.getAll( {
   // TODO: use this?
   url: {
     type: 'string',
@@ -37,28 +37,28 @@ var options = QueryStringMachine.getAll( {
   }
 } );
 
-var iframe = document.createElement( 'iframe' );
+const iframe = document.createElement( 'iframe' );
 iframe.setAttribute( 'frameborder', '0' );
 iframe.setAttribute( 'seamless', '1' );
 iframe.setAttribute( 'width', options.simWidth );
 iframe.setAttribute( 'height', options.simHeight );
 document.body.appendChild( iframe );
 
-var queryParameters = 'preserveDrawingBuffer&audioVolume=0&sound=disabled&randomSeed=' + options.simSeed + '&playbackMode=true&postMessageOnLoad&postMessageOnError&postMessageOnReady';
+const queryParameters = 'preserveDrawingBuffer&audioVolume=0&sound=disabled&randomSeed=' + options.simSeed + '&playbackMode=true&postMessageOnLoad&postMessageOnError&postMessageOnReady';
 iframe.src = options.url + '?' + options.simQueryParameters + '&' + queryParameters;
 
-var isMouseDown = false;
-var mouseLastMoved = false;
-var mouseX = 0;
-var mouseY = 0;
-var random = null;
+let isMouseDown = false;
+let mouseLastMoved = false;
+let mouseX = 0;
+let mouseY = 0;
+let random = null;
 
 function sendStep( dt ) {
   iframe.contentWindow.phet.joist.sim.stepSimulation( dt );
 }
 function sendMouseToggleEvent() {
-  var input = iframe.contentWindow.phet.joist.display._input;
-  var domEvent = iframe.contentWindow.document.createEvent( 'MouseEvent' );
+  const input = iframe.contentWindow.phet.joist.display._input;
+  const domEvent = iframe.contentWindow.document.createEvent( 'MouseEvent' );
 
   // technically deprecated, but DOM4 event constructors not out yet. people on #whatwg said to use it
   domEvent.initMouseEvent( isMouseDown ? 'mouseup' : 'mousedown', true, true, iframe.contentWindow, 1, // click count
@@ -81,12 +81,12 @@ function sendMouseToggleEvent() {
   mouseLastMoved = false;
 }
 function sendMouseMoveEvent() {
-  var input = iframe.contentWindow.phet.joist.display._input;
+  const input = iframe.contentWindow.phet.joist.display._input;
   mouseX = Math.floor( random.nextDouble() * iframe.contentWindow.phet.joist.display.width );
   mouseY = Math.floor( random.nextDouble() * iframe.contentWindow.phet.joist.display.height );
 
   // our move event
-  var domEvent = iframe.contentWindow.document.createEvent( 'MouseEvent' ); // not 'MouseEvents' according to DOM Level 3 spec
+  const domEvent = iframe.contentWindow.document.createEvent( 'MouseEvent' ); // not 'MouseEvents' according to DOM Level 3 spec
 
   // technically deprecated, but DOM4 event constructors not out yet. people on #whatwg said to use it
   domEvent.initMouseEvent( 'mousemove', true, true, iframe.contentWindow, 0, // click count
@@ -101,7 +101,7 @@ function sendMouseMoveEvent() {
   mouseLastMoved = true;
 }
 function sendFuzz( averageEventQuantity ) {
-  var chance;
+  let chance;
 
   // run a variable number of events, with a certain chance of bailing out (so no events are possible)
   // models a geometric distribution of events
@@ -124,10 +124,10 @@ function hash( str ) {
   return new Hashes.MD5().hex( str );
 }
 
-var count = 0;
-var screenshotHashes = '';
-var loaded = false;
-var received = true;
+let count = 0;
+let screenshotHashes = '';
+let loaded = false;
+let received = true;
 function handleFrame() {
   setTimeout( handleFrame, 0 );
 
@@ -135,13 +135,13 @@ function handleFrame() {
     count++;
     received = false;
 
-    for ( var i = 0; i < 10; i++ ) {
+    for ( let i = 0; i < 10; i++ ) {
       sendFuzz( 100 );
       sendStep( random.nextDouble() * 0.5 + 0.016 );
     }
 
     getScreenshot( function( url ) {
-      var hashedURL = hash( url );
+      const hashedURL = hash( url );
       console.log( count, hashedURL );
 
       ( window.parent !== window ) && window.parent.postMessage( JSON.stringify( {
@@ -154,7 +154,7 @@ function handleFrame() {
       received = true;
       screenshotHashes += hashedURL;
       if ( count === options.numFrames ) {
-        var fullHash = hash( screenshotHashes );
+        const fullHash = hash( screenshotHashes );
 
         ( window.parent !== window ) && window.parent.postMessage( JSON.stringify( {
           type: 'snapshot',
@@ -171,8 +171,8 @@ handleFrame();
 
 // Because of course direct calls to this go through this window object instead.
 window.addEventListener( 'error', function( a ) {
-  var message = '';
-  var stack = '';
+  let message = '';
+  let stack = '';
   if ( a && a.message ) {
     message = a.message;
   }
@@ -188,7 +188,7 @@ window.addEventListener( 'error', function( a ) {
 
 // handling messages from sims
 window.addEventListener( 'message', function( evt ) {
-  var data = JSON.parse( evt.data );
+  const data = JSON.parse( evt.data );
 
   // Sent by Joist due to the postMessage* query parameters
   if ( data.type === 'ready' ) {

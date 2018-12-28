@@ -8,7 +8,7 @@
 
 'use strict';
 
-var options = QueryStringMachine.getAll( {
+const options = QueryStringMachine.getAll( {
   url: {
     type: 'string',
     defaultValue: ''
@@ -19,7 +19,7 @@ var options = QueryStringMachine.getAll( {
   }
 } );
 
-var iframe = document.createElement( 'iframe' );
+const iframe = document.createElement( 'iframe' );
 iframe.setAttribute( 'frameborder', '0' );
 iframe.setAttribute( 'seamless', '1' );
 iframe.setAttribute( 'width', 1024 / 2 );
@@ -29,11 +29,11 @@ document.body.appendChild( iframe );
 iframe.src = options.url;
 
 // Since QUnit doesn't give us an accurate "done" message, we just tally pass/fail counts and wait for a certain amount of time to report back.
-var passed = 0;
-var failed = 0;
-var message = '';
+let passed = 0;
+let failed = 0;
+let message = '';
 
-var done = function() {
+const done = function() {
   if ( id !== null ) {
     message = passed + ' out of ' + ( passed + failed ) + ' tests passed. ' + failed + ' failed.\n' + message;
     if ( passed > 0 && failed === 0 ) {
@@ -48,10 +48,10 @@ var done = function() {
 };
 
 // Supports old tests (which do not know when they are done)
-var id = setTimeout( done, options.duration );
+let id = setTimeout( done, options.duration );
 
 window.addEventListener( 'message', function( evt ) {
-  var data = JSON.parse( evt.data );
+  const data = JSON.parse( evt.data );
 
   // Sent from all of our QUnit wrappers
   if ( data.type === 'qunit-test' ) {

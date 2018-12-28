@@ -1,32 +1,32 @@
 // Copyright 2016, University of Colorado Boulder
 
 'use strict';
-var http = require( 'http' );
-var child_process = require( 'child_process' );
-var spawn = child_process.spawn;
-var path = require( 'path' );
+const http = require( 'http' );
+const child_process = require( 'child_process' );
+const spawn = child_process.spawn;
+const path = require( 'path' );
 
-var port = 45361;
+const port = 45361;
 
 // constants
-var IS_WIN = /^win/.test( process.platform );
-var GRUNT_CMD = IS_WIN ? 'grunt.cmd' : 'grunt'; // needs to be a slightly different command for Windows
-var NPM_CMD = IS_WIN ? 'npm.cmd' : 'npm'; // needs to be a slightly different command for Windows
+const IS_WIN = /^win/.test( process.platform );
+const GRUNT_CMD = IS_WIN ? 'grunt.cmd' : 'grunt'; // needs to be a slightly different command for Windows
+const NPM_CMD = IS_WIN ? 'npm.cmd' : 'npm'; // needs to be a slightly different command for Windows
 
-var jsonHeaders = {
+const jsonHeaders = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*'
 };
 
 // root of your GitHub working copy, relative to the name of the directory that the currently-executing script resides in
-var rootDir = path.normalize( __dirname + '/../../' ); // eslint-disable-line no-undef
+const rootDir = path.normalize( __dirname + '/../../' ); // eslint-disable-line no-undef
 
-var server = http.createServer( function( req, res ) {
-  var simName = req.url.slice( 1 );
+const server = http.createServer( function( req, res ) {
+  const simName = req.url.slice( 1 );
 
   // validate that it is lower-case with hyphens
-  for ( var i = 0; i < simName.length; i++ ) {
-    var charCode = simName.charCodeAt( i );
+  for ( let i = 0; i < simName.length; i++ ) {
+    const charCode = simName.charCodeAt( i );
     if ( charCode !== '-'.charCodeAt( 0 ) && ( charCode < 'a'.charCodeAt( 0 ) || charCode > 'z'.charCodeAt( 0 ) ) ) {
       res.writeHead( 403, jsonHeaders );
       res.end( JSON.stringify( {
@@ -41,13 +41,13 @@ var server = http.createServer( function( req, res ) {
     console.log( '[' + new Date().toLocaleString() + ' ' + simName + '] ' + str );
   }
 
-  var success = false;
-  var output = '';
+  const success = false;
+  let output = '';
 
   simLog( 'requested' );
 
   // TODO: Why do these more portable versions not work?
-  var npmUpdate = spawn( NPM_CMD, [ 'update' ], {
+  const npmUpdate = spawn( NPM_CMD, [ 'update' ], {
     cwd: rootDir + simName
   } );
   simLog( 'npm update' );
@@ -69,7 +69,7 @@ var server = http.createServer( function( req, res ) {
     }
     // npm update success, continue with grunt
     else {
-      var grunt = spawn( GRUNT_CMD, [ '--no-color' ], {
+      const grunt = spawn( GRUNT_CMD, [ '--no-color' ], {
         cwd: rootDir + simName
       } );
       simLog( 'grunt' );

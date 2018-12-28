@@ -6,7 +6,7 @@
 
 // Grab all query parameters to pass to the simulation, and add additional ones for receiving messages.
 ( function() {
-  var simulationQueryString = window.location.search;
+  let simulationQueryString = window.location.search;
 
   if ( simulationQueryString.indexOf( '?' ) >= 0 ) {
     simulationQueryString += '&';
@@ -16,7 +16,7 @@
   }
   simulationQueryString += 'postMessageOnLoad&postMessageOnError';
 
-  var options = QueryStringMachine.getAll( {
+  const options = QueryStringMachine.getAll( {
 
     // Whether the sim should be left open for the testDuration. If false, once a sim loads, it will change to the next sim.
     testTask: {
@@ -58,23 +58,23 @@
     }
   } );
 
-  var simNames; // {Array.<string>} - will be filled in below by an AJAX request
-  var testQueue = []; // {Array.<{ simName: {string}, isBuild: {boolean} }>} - Sim test target queue
-  var buildQueue = []; // {Array.<string>} - sim names that need to be built
+  let simNames; // {Array.<string>} - will be filled in below by an AJAX request
+  const testQueue = []; // {Array.<{ simName: {string}, isBuild: {boolean} }>} - Sim test target queue
+  const buildQueue = []; // {Array.<string>} - sim names that need to be built
 
-  var eventLog = document.createElement( 'div' );
+  const eventLog = document.createElement( 'div' );
   eventLog.id = 'eventLog';
   eventLog.innerHTML = '<div id="dev-errors" style="display: none;"><h1>Sim errors (dev):</h1></div>' +
                        '<div id="build-errors" style="display: none;"><h1>Sim errors (build):</h1></div>' +
                        '<div id="grunt-errors" style="display: none;"><h1>Grunt errors:</h1></div>';
   eventLog.style.display = 'none';
   document.body.appendChild( eventLog );
-  var devErrors = document.getElementById( 'dev-errors' );
-  var buildErrors = document.getElementById( 'build-errors' );
-  var gruntErrors = document.getElementById( 'grunt-errors' );
+  const devErrors = document.getElementById( 'dev-errors' );
+  const buildErrors = document.getElementById( 'build-errors' );
+  const gruntErrors = document.getElementById( 'grunt-errors' );
 
 // a borderless iframe
-  var iframe = document.createElement( 'iframe' );
+  const iframe = document.createElement( 'iframe' );
   iframe.setAttribute( 'frameborder', '0' );
   iframe.setAttribute( 'seamless', '1' );
 // NOTE: we don't set allow-popups, but this was causing a security error when it was open
@@ -84,36 +84,36 @@
   document.body.appendChild( iframe );
 
 // a place for sim status divs
-  var simListDiv = document.createElement( 'div' );
+  const simListDiv = document.createElement( 'div' );
   simListDiv.id = 'simList';
   document.body.appendChild( simListDiv );
 
-  var currentTest;
-  var simStatusElements = {}; // map simName {string} => {HTMLElement}, which holds the status w/ classes
-  var timeoutId; // we need to clear the timeout if we bail from a sim early
+  let currentTest;
+  const simStatusElements = {}; // map simName {string} => {HTMLElement}, which holds the status w/ classes
+  let timeoutId; // we need to clear the timeout if we bail from a sim early
 
   function createStatusElement( simName ) {
-    var simStatusElement = document.createElement( 'div' );
+    const simStatusElement = document.createElement( 'div' );
     simStatusElement.classList.add( 'status' );
     simListDiv.appendChild( simStatusElement );
     simStatusElements[ simName ] = simStatusElement;
 
-    var devStatus = document.createElement( 'span' );
+    const devStatus = document.createElement( 'span' );
     devStatus.classList.add( 'dev' );
     devStatus.innerHTML = '■';
     simStatusElement.appendChild( devStatus );
 
-    var gruntStatus = document.createElement( 'span' );
+    const gruntStatus = document.createElement( 'span' );
     gruntStatus.classList.add( 'grunt' );
     gruntStatus.innerHTML = '■';
     simStatusElement.appendChild( gruntStatus );
 
-    var buildStatus = document.createElement( 'span' );
+    const buildStatus = document.createElement( 'span' );
     buildStatus.classList.add( 'build' );
     buildStatus.innerHTML = '■';
     simStatusElement.appendChild( buildStatus );
 
-    var simNameStatus = document.createElement( 'span' );
+    const simNameStatus = document.createElement( 'span' );
     simNameStatus.classList.add( 'simName' );
     simNameStatus.innerHTML = simName;
     simStatusElement.appendChild( simNameStatus );
@@ -121,11 +121,11 @@
 
   function nextBuild() {
     if ( buildQueue.length ) {
-      var simName = buildQueue.shift();
+      const simName = buildQueue.shift();
 
-      var req = new XMLHttpRequest();
+      const req = new XMLHttpRequest();
       req.onload = function() {
-        var data = JSON.parse( req.responseText );
+        const data = JSON.parse( req.responseText );
 
         if ( data.sim === simName && data.success ) {
           console.log( simName + ' built successfully' );
@@ -171,7 +171,7 @@
     }
 
     if ( testQueue.length ) {
-      var test = testQueue.shift();
+      const test = testQueue.shift();
       currentTest = test;
       loadSim( test.simName, test.isBuild );
       timeoutId = setTimeout( nextSim, options.testDuration );
@@ -185,7 +185,7 @@
   function onSimLoad( simName ) {
     console.log( 'loaded ' + simName );
 
-    var isBuild = simName === currentTest.simName && currentTest.isBuild;
+    const isBuild = simName === currentTest.simName && currentTest.isBuild;
 
     // not loading anymore
     simStatusElements[ simName ].classList.remove( 'loading-' + ( isBuild ? 'build' : 'dev' ) );
@@ -206,8 +206,8 @@
   function onSimError( simName, data ) {
     console.log( 'error on ' + simName );
 
-    var isBuild = simName === currentTest.simName && currentTest.isBuild;
-    var errorLog = isBuild ? buildErrors : devErrors;
+    const isBuild = simName === currentTest.simName && currentTest.isBuild;
+    const errorLog = isBuild ? buildErrors : devErrors;
 
     eventLog.style.display = 'block';
     errorLog.style.display = 'block';
@@ -237,7 +237,7 @@
     if ( !evt.data ) {
       return;
     }
-    var data = JSON.parse( evt.data );
+    const data = JSON.parse( evt.data );
 
     function simNameFromURL( url ) {
       // url like http://localhost/phet/git/molecule-shapes/molecule-shapes_en.html?ea&postMessageOnLoad&postMessageOnError
@@ -250,7 +250,7 @@
       }
     }
 
-    // var simName;
+    // const simName;
     if ( data.type === 'load' ) {
       onSimLoad( simNameFromURL( data.url ) );
     }
@@ -261,9 +261,9 @@
 
 // load the list of sims before kicking things off
   ( function() {
-    var req = new XMLHttpRequest();
+    const req = new XMLHttpRequest();
     req.onload = function() {
-      var simListText = req.responseText;
+      const simListText = req.responseText;
 
       // split string into an array of sim names, ignoring blank lines
       simNames = simListText.trim().replace( /\r/g, '' ).split( '\n' );
@@ -292,7 +292,7 @@
       nextSim();
 
       console.log( 'starting builds: ' + options.testConcurrentBuilds );
-      for ( var k = 0; k < options.testConcurrentBuilds; k++ ) {
+      for ( let k = 0; k < options.testConcurrentBuilds; k++ ) {
         nextBuild();
       }
     };

@@ -68,24 +68,24 @@ const CLONE_MISSING_CMD = '/data/share/phet/continuous-testing/perennial/bin/clo
 const NUMBER_OF_DAYS_TO_KEEP_SNAPSHOTS = 2; // in days, any shapshots that are older will be removed from the continuous report
 
 // Gets update with the current status
-var snapshotStatus = 'Starting up';
+let snapshotStatus = 'Starting up';
 
 function setSnapshotStatus( str ) {
   snapshotStatus = '[' + new Date().toLocaleString().replace( /^.*, /g, '' ).replace( ' AM', 'am' ).replace( ' PM', 'pm' ) + '] ' + str;
 }
 
 // To improve log visibility
-var ANSI_RED = '\x1b[31m';
-var ANSI_GREEN = '\x1b[32m';
-var ANSI_RESET = '\x1b[0m';
+const ANSI_RED = '\x1b[31m';
+const ANSI_GREEN = '\x1b[32m';
+const ANSI_RESET = '\x1b[0m';
 
-var jsonHeaders = {
+const jsonHeaders = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*'
 };
 
 // root of your GitHub working copy, relative to the name of the directory that the currently-executing script resides in
-var rootDir = path.normalize( __dirname + '/../../' ); // eslint-disable-line no-undef
+const rootDir = path.normalize( __dirname + '/../../' ); // eslint-disable-line no-undef
 
 /**
  * Logs a 'DEBUG' line, so we can filter these out later.
@@ -94,7 +94,7 @@ var rootDir = path.normalize( __dirname + '/../../' ); // eslint-disable-line no
  * @param {string} str
  */
 function debugLog( str ) {
-  // var line = '[DEBUG] ' + str;
+  // const line = '[DEBUG] ' + str;
   // console.log( new Date().toISOString() + ' ' + line );
 }
 
@@ -105,7 +105,7 @@ function debugLog( str ) {
  * @param {string} str
  */
 function infoLog( str ) {
-  var line = '[INFO] ' + str;
+  const line = '[INFO] ' + str;
   console.log( new Date().toISOString() + ' ' + ANSI_GREEN + line + ANSI_RESET );
 }
 
@@ -116,7 +116,7 @@ function infoLog( str ) {
  * @param {string} str
  */
 function errorLog( str ) {
-  var line = '[ERROR] ' + str;
+  const line = '[ERROR] ' + str;
   console.log( new Date().toISOString() + ' ' + ANSI_RED + line + ANSI_RESET );
 }
 
@@ -130,7 +130,7 @@ function errorLog( str ) {
  * @param {Function} errorCallback - errorCallback( message: {string} )
  */
 function forEachCallback( items, apply, callback, errorCallback ) {
-  var localItems = items.slice();
+  const localItems = items.slice();
 
   function cycle() {
     if ( localItems.length ) {
@@ -157,11 +157,11 @@ function forEachCallback( items, apply, callback, errorCallback ) {
  * @param {Function} errorCallback - errorCallback( message: {string} )
  */
 function forEachCallbackParallel( maxConcurrent, items, apply, callback, errorCallback ) {
-  var localItems = items.slice();
+  const localItems = items.slice();
 
-  var expectedCount = localItems.length;
-  var count = 0;
-  var errored = false;
+  const expectedCount = localItems.length;
+  let count = 0;
+  let errored = false;
 
   function localCallback() {
     if ( ++count === expectedCount ) {
@@ -185,7 +185,7 @@ function forEachCallbackParallel( maxConcurrent, items, apply, callback, errorCa
     }
   }
 
-  for ( var i = 0; i < Math.min( expectedCount, maxConcurrent ); i++ ) {
+  for ( let i = 0; i < Math.min( expectedCount, maxConcurrent ); i++ ) {
     launch();
   }
 }
@@ -201,12 +201,12 @@ function forEachCallbackParallel( maxConcurrent, items, apply, callback, errorCa
  * @param {Function} errorCallback - errorCallback( message: {string} )
  */
 function filterCallback( items, predicate, callback, errorCallback ) {
-  var result = [];
-  var localItems = items.slice();
+  const result = [];
+  const localItems = items.slice();
 
   function cycle() {
     if ( localItems.length ) {
-      var item = localItems.shift();
+      const item = localItems.shift();
       predicate( item, function( included ) {
         if ( included ) {
           result.push( item );
@@ -236,14 +236,14 @@ function filterCallback( items, predicate, callback, errorCallback ) {
  * @param {Function} errorCallback - errorCallback( stdout: {string}, stderr: {string}, code: {number} ) called when unsuccessful
  */
 function execute( cmd, args, cwd, callback, errorCallback ) {
-  var process = child_process.spawn( cmd, args, {
+  const process = child_process.spawn( cmd, args, {
     cwd: cwd
   } );
   debugLog( 'running ' + cmd + ' ' + args.join( ' ' ) + ' in ' + cwd );
 
   // Will be appended
-  var stdoutData = '';
-  var stderrData = '';
+  let stdoutData = '';
+  let stderrData = '';
 
   process.stderr.on( 'data', function( data ) {
     stderrData += data;
@@ -350,13 +350,13 @@ function isRepoStale( repo, callback, errorCallback ) {
   }
   else {
     execute( GIT_CMD, [ 'rev-parse', 'master' ], rootDir + '/' + repo, function( stdout, stderr ) {
-      var currentSHA = stdout.trim();
+      const currentSHA = stdout.trim();
       if ( currentSHA.length === 40 ) {
         execute( GIT_CMD, [ 'ls-remote', 'https://github.com/phetsims/' + repo + '.git', 'refs/heads/master' ], rootDir + '/' + repo, function( stdout, stderr ) {
-          var remoteSHA = stdout.slice( 0, stdout.indexOf( '\t' ) );
+          const remoteSHA = stdout.slice( 0, stdout.indexOf( '\t' ) );
           if ( remoteSHA.length === 40 ) {
             debugLog( 'SHAs equal: ' + ( currentSHA === remoteSHA ) );
-            var isStale = currentSHA !== remoteSHA;
+            const isStale = currentSHA !== remoteSHA;
             if ( isStale ) {
               infoLog( repo + ' stale' );
             }
@@ -403,7 +403,7 @@ function doesRepoHaveNodeModules( repo, callback, errorCallback ) {
  * @param {Function} errorCallback - errorCallback( message: {string} ) called when unsuccessful
  */
 function npmUpdateRepoInfo( repoInfo, callback, errorCallback ) {
-  var dir = repoInfo.base + '/' + repoInfo.repo;
+  const dir = repoInfo.base + '/' + repoInfo.repo;
   fs.access( dir, function( err ) {
     if ( err ) {
       errorCallback( 'Could not access directory for npm update: ' + dir );
@@ -475,7 +475,7 @@ function testLintEverything( snapshot, callback ) {
 function npmUpdateRoot( baseDir, callback, errorCallback ) {
   getRepos( function( repos ) {
     filterCallback( repos, doesRepoHaveNodeModules, function( nodeRepos ) {
-      var nodeDirectories = nodeRepos.map( function( repo ) {
+      const nodeDirectories = nodeRepos.map( function( repo ) {
         return {
           base: baseDir,
           repo: repo
@@ -578,9 +578,9 @@ function copyReposToSnapshot( repos, snapshotName, callback, errorCallback ) {
  * @returns {Snapshot} snapshot
  */
 function createSnapshot( callback, errorCallback ) {
-  var timestamp = Date.now();
-  var snapshotName = 'snapshot-' + timestamp;
-  var snapshot = {
+  const timestamp = Date.now();
+  const snapshotName = 'snapshot-' + timestamp;
+  const snapshot = {
     name: snapshotName,
     exists: true,
     timestamp: timestamp,
@@ -760,7 +760,7 @@ function createSnapshot( callback, errorCallback ) {
                           }
                         ].forEach( ( { repo, urls } ) => {
                           urls.forEach( pageloadRelativeURL => {
-                            var relativePath = snapshot.name + '/' + repo;
+                            const relativePath = snapshot.name + '/' + repo;
                             snapshot.testQueue.push( {
                               count: 0,
                               snapshotName: snapshot.name,
@@ -845,13 +845,13 @@ function deliverEmptyTest( res ) {
 }
 
 // {boolean} Whether our last scan of SHAs found anything stale.
-var wasStale = true;
+let wasStale = true;
 
 // {Array.<Snapshot>} All of our snapshots
-var snapshots = [];
+const snapshots = [];
 
 // {Results} Main results, with the addition of the snapshotsre ference
-var testResults = {
+const testResults = {
   children: {},
   results: [],
   snapshots: snapshots
@@ -867,15 +867,15 @@ var testResults = {
  * @param {string} message
  */
 function addResult( passed, snapshot, test, message ) {
-  var localTest = test.slice();
-  var container = testResults;
+  const localTest = test.slice();
+  let container = testResults;
   while ( localTest.length ) {
-    var testName = localTest.shift();
+    const testName = localTest.shift();
     if ( container.children[ testName ] ) {
       container = container.children[ testName ];
     }
     else {
-      var newContainer = {
+      const newContainer = {
         children: {},
         results: []
       };
@@ -916,7 +916,7 @@ function removeResultsForSnapshot( container, snapshot ) {
  * @returns {Snapshot|null} - null only on failure
  */
 function findSnapshot( snapshotName ) {
-  for ( var i = 0; i < snapshots.length; i++ ) {
+  for ( let i = 0; i < snapshots.length; i++ ) {
     if ( snapshots[ i ].name === snapshotName ) {
       return snapshots[ i ];
     }
@@ -956,17 +956,17 @@ function testFail( snapshot, test, message ) {
 
 // Main server creation
 http.createServer( function( req, res ) {
-  var requestInfo = url.parse( req.url, true );
+  const requestInfo = url.parse( req.url, true );
 
   if ( requestInfo.pathname === '/aquaserver/next-test' ) {
     // ?old=true or ?old=false, determines whether ES6 or other newer features can be run directly in the browser
     randomBrowserTest( res, requestInfo.query.old === 'true' );
   }
   if ( requestInfo.pathname === '/aquaserver/test-result' ) {
-    var result = JSON.parse( requestInfo.query.result );
-    var snapshot = findSnapshot( result.snapshotName );
-    var test = result.test;
-    var message = result.message;
+    const result = JSON.parse( requestInfo.query.result );
+    const snapshot = findSnapshot( result.snapshotName );
+    const test = result.test;
+    let message = result.message;
     if ( !message || message.indexOf( 'errors.html#timeout' ) < 0 ) {
       if ( !result.passed ) {
         message = ( result.message ? ( result.message + '\n' ) : '' ) + 'id: ' + result.id;
@@ -1011,7 +1011,7 @@ infoLog( 'running on port ' + port + ' with root directory ' + rootDir );
 function randomBrowserTest( res, isOld ) {
   if ( snapshots.length > 0 ) {
     // Pick from one of the first two snapshots
-    var queue = snapshots[ 0 ].testQueue;
+    let queue = snapshots[ 0 ].testQueue;
     if ( snapshots.length > 1 ) {
       queue = queue.concat( snapshots[ 1 ].testQueue );
     }
@@ -1021,8 +1021,8 @@ function randomBrowserTest( res, isOld ) {
       queue = queue.filter( test => test.old );
     }
 
-    var lowestCount = Infinity;
-    var lowestTests = [];
+    let lowestCount = Infinity;
+    let lowestTests = [];
     queue.forEach( function( test ) {
       if ( lowestCount > test.count ) {
         lowestCount = test.count;
@@ -1035,7 +1035,7 @@ function randomBrowserTest( res, isOld ) {
 
     // Deliver a random available test currently
     if ( lowestTests.length > 0 ) {
-      var test = lowestTests[ Math.floor( lowestTests.length * Math.random() ) ];
+      const test = lowestTests[ Math.floor( lowestTests.length * Math.random() ) ];
       deliverTest( res, test );
     }
     else {
@@ -1081,15 +1081,15 @@ function snapshotLoop() {
         createSnapshot( function( snapshot ) {
           snapshots.unshift( snapshot );
 
-          var cutoffTimestamp = getCutoffTimestamp();
+          const cutoffTimestamp = getCutoffTimestamp();
           while ( snapshots.length > 70 || snapshots[ snapshots.length - 1 ].timestamp < cutoffTimestamp && !snapshots[ snapshots.length - 1 ].exists ) {
             removeResultsForSnapshot( testResults, snapshots.pop() );
           }
 
           setSnapshotStatus( 'Removing old snapshot files' );
-          var numActiveSnapshots = 3;
+          const numActiveSnapshots = 3;
           if ( snapshots.length > numActiveSnapshots ) {
-            var lastSnapshot = snapshots[ numActiveSnapshots ];
+            const lastSnapshot = snapshots[ numActiveSnapshots ];
             removeSnapshot( lastSnapshot, function() {
               snapshotLoop();
             }, function( errorMessage ) {
@@ -1121,13 +1121,13 @@ snapshotLoop();
 function buildLoop() {
   setTimeout( function() {
     if ( snapshots.length > 0 ) {
-      var snapshot = snapshots[ 0 ];
-      var buildable = snapshot.buildables[ Math.floor( snapshot.buildables.length * Math.random() ) ];
-      var repo = buildable.repo;
-      var phetio = buildable.phetio;
-      var id = repo + ( phetio ? '-phet-io' : '' );
-      var relativePath = snapshot.name + ( phetio ? '-phet-io' : '' ) + '/' + repo;
-      var parameters = [];
+      const snapshot = snapshots[ 0 ];
+      const buildable = snapshot.buildables[ Math.floor( snapshot.buildables.length * Math.random() ) ];
+      const repo = buildable.repo;
+      const phetio = buildable.phetio;
+      const id = repo + ( phetio ? '-phet-io' : '' );
+      const relativePath = snapshot.name + ( phetio ? '-phet-io' : '' ) + '/' + repo;
+      const parameters = [];
       if ( phetio ) {
         parameters.push( '--brands=phet,phet-io' );
       }

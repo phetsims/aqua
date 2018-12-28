@@ -11,7 +11,7 @@
 'use strict';
 
 // Origin for our server (ignoring current port), so that we don't require localhost
-var serverOrigin = window.location.protocol + '//' + window.location.hostname;
+const serverOrigin = window.location.protocol + '//' + window.location.hostname;
 
 /**
  * Returns a CSS class to use given the number of passing results and failing results.
@@ -37,7 +37,7 @@ function passFailClass( passes, fails ) {
 }
 
 // {HTMLElement|null} - Our currently visible dialog element (if any)
-var visibleDialog = null;
+let visibleDialog = null;
 
 /**
  * Shows the given element as a dialog, hiding any other dialog if it existed.
@@ -75,9 +75,9 @@ function percentString( ratio ) {
 }
 
 // {Array.<HTMLTableRowElement>} - Our current rows that are not top-level (but are nested below). Will be hidden on collapse.
-var childRows = [];
+let childRows = [];
 // {boolean} - Whether the display is collapsed (i.e. are we hiding the child rows)
-var isCollapsed = true;
+let isCollapsed = true;
 
 /**
  * Updates child row visibility.
@@ -90,7 +90,7 @@ function updateCollapsed() {
 }
 
 // Hook our checkbox to handle the collapsed state.
-var collapsedCheckbox = document.getElementById( 'collapsedCheckbox' );
+const collapsedCheckbox = document.getElementById( 'collapsedCheckbox' );
 collapsedCheckbox.addEventListener( 'change', function() {
   isCollapsed = collapsedCheckbox.checked;
   updateCollapsed();
@@ -121,24 +121,24 @@ collapsedCheckbox.addEventListener( 'change', function() {
  * @returns {Object} - See above.
  */
 function recursiveResults( name, resultNode, snapshots, padding, path ) {
-  var currentPath = name ? path.concat( name ) : path;
-  var results = resultNode.results;
-  var passes = results.filter( function( result ) { return result.passed === true; } ).length;
-  var fails = results.length - passes;
-  var recentResults = results.filter( function( result ) { return result.snapshotName === snapshots[ 0 ].name; } );
-  var recentPasses = recentResults.filter( function( result ) { return result.passed === true; } ).length;
-  var recentFails = recentResults.length - recentPasses;
+  const currentPath = name ? path.concat( name ) : path;
+  const results = resultNode.results;
+  let passes = results.filter( function( result ) { return result.passed === true; } ).length;
+  let fails = results.length - passes;
+  const recentResults = results.filter( function( result ) { return result.snapshotName === snapshots[ 0 ].name; } );
+  let recentPasses = recentResults.filter( function( result ) { return result.passed === true; } ).length;
+  let recentFails = recentResults.length - recentPasses;
 
-  var snapshotPasses = [];
-  var snapshotFails = [];
-  var snapshotMessages = [];
-  var snapshotFullCoverage = []; // Whether there is full test coverage for this snapshot
+  const snapshotPasses = [];
+  const snapshotFails = [];
+  const snapshotMessages = [];
+  const snapshotFullCoverage = []; // Whether there is full test coverage for this snapshot
 
   // Initialize out counts for passes/fails/messages/coverage
   snapshots.forEach( function( snapshot ) {
-    var snapshotResults = results.filter( function( result ) { return result.snapshotName === snapshot.name; } );
-    var currentPasses = snapshotResults.filter( function( result ) { return result.passed === true; } ).length;
-    var currentFails = snapshotResults.length - currentPasses;
+    const snapshotResults = results.filter( function( result ) { return result.snapshotName === snapshot.name; } );
+    const currentPasses = snapshotResults.filter( function( result ) { return result.passed === true; } ).length;
+    const currentFails = snapshotResults.length - currentPasses;
     snapshotPasses.push( currentPasses );
     snapshotFails.push( currentFails );
     snapshotMessages.push( results.filter( function( result ) { return !!result.message && result.snapshotName === snapshot.name; } ).map( function( result ) {
@@ -148,17 +148,17 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
   } );
 
   // {Array.<HTMLElement>} - Part of our return value, will be constructed
-  var domElements = [];
+  let domElements = [];
 
   // Process children, aggregating their counts into ours
-  var childNames = Object.keys( resultNode.children ).sort();
+  const childNames = Object.keys( resultNode.children ).sort();
   childNames.forEach( function( childName ) {
-    var childResult = recursiveResults( childName, resultNode.children[ childName ], snapshots, name ? ( padding + '&nbsp;&nbsp;&nbsp;&nbsp;' ) : padding, currentPath );
+    const childResult = recursiveResults( childName, resultNode.children[ childName ], snapshots, name ? ( padding + '&nbsp;&nbsp;&nbsp;&nbsp;' ) : padding, currentPath );
     passes += childResult.passes;
     fails += childResult.fails;
     recentPasses += childResult.recentPasses;
     recentFails += childResult.recentFails;
-    for ( var i = 0; i < snapshots.length; i++ ) {
+    for ( let i = 0; i < snapshots.length; i++ ) {
       snapshotPasses[ i ] += childResult.snapshotPasses[ i ];
       snapshotFails[ i ] += childResult.snapshotFails[ i ];
       snapshotMessages[ i ] = snapshotMessages[ i ].concat( childResult.snapshotMessages[ i ] );
@@ -169,24 +169,24 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
 
   // If we have a name, we'll just handle normally, concatenating table rows
   if ( name ) {
-    var selfElements = [];
+    const selfElements = [];
 
     // left-most column (our name)
-    var leftElement = document.createElement( 'td' );
+    const leftElement = document.createElement( 'td' );
     leftElement.innerHTML = padding + name;
     leftElement.className = passFailClass( recentPasses, recentFails );
     selfElements.push( leftElement );
 
     // main table cells
-    for ( var j = 0; j < snapshots.length; j++ ) {
+    for ( let j = 0; j < snapshots.length; j++ ) {
       (function() {
         // our table element
-        var snapshotElement = document.createElement( 'td' );
+        const snapshotElement = document.createElement( 'td' );
         snapshotElement.innerHTML = percentString( snapshotPasses[ j ] / ( snapshotPasses[ j ] + snapshotFails[ j ] ) );
-        var messages = snapshotMessages[ j ];
+        const messages = snapshotMessages[ j ];
 
-        var uniqueMessages = [];
-        var uniqueMessageMap = {};
+        const uniqueMessages = [];
+        const uniqueMessageMap = {};
         messages.forEach( function( message ) {
           if ( !uniqueMessageMap[ message ] ) {
             uniqueMessages.push( message );
@@ -197,13 +197,13 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
         // if we have messages, construct the dialog and hook up listeners
         if ( uniqueMessages.length ) {
           snapshotElement.style.border = '1px solid black';
-          var snapshotDialog = document.createElement( 'span' );
+          const snapshotDialog = document.createElement( 'span' );
           snapshotDialog.className = 'dialog element (if any)'; // TODO: WTF is this?
 
-          var openLink = document.createElement( 'div' );
+          const openLink = document.createElement( 'div' );
           openLink.className = 'linky';
           openLink.addEventListener( 'click', function( evt ) {
-            var w = window.open();
+            const w = window.open();
             w.document.body.innerHTML =
               uniqueMessages.map( function( message ) {
                 return '<pre>\n' + message.replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' ) + '\n</pre>';
@@ -212,8 +212,8 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
           openLink.innerHTML = 'Open in new tab';
           snapshotDialog.appendChild( openLink );
 
-          for ( var m = 0; m < uniqueMessages.length; m++ ) {
-            var pre = document.createElement( 'pre' );
+          for ( let m = 0; m < uniqueMessages.length; m++ ) {
+            const pre = document.createElement( 'pre' );
             pre.appendChild( document.createTextNode( uniqueMessages[ m ] ) );
             snapshotDialog.appendChild( pre );
           }
@@ -237,7 +237,7 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
     }
 
     // Construct our table row
-    var tr = document.createElement( 'tr' );
+    const tr = document.createElement( 'tr' );
     if ( currentPath.length > 1 ) {
       childRows.push( tr );
     }
@@ -249,27 +249,27 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
   }
   // With no name, we are the top level. Construct the actual table
   else {
-    var headers = [];
+    const headers = [];
 
     // Left-column header
-    var testHeader = document.createElement( 'th' );
+    const testHeader = document.createElement( 'th' );
     testHeader.innerHTML = 'Test';
     headers.push( testHeader );
 
     // Headers for each snapshot (show timestamp)
-    for ( var k = 0; k < snapshots.length; k++ ) {
-      var th = document.createElement( 'th' );
+    for ( let k = 0; k < snapshots.length; k++ ) {
+      const th = document.createElement( 'th' );
       th.className = 'snapshot-header';
       th.innerHTML = new Date( snapshots[ k ].timestamp ).toLocaleString().replace( /\//g, '&#47;' ).replace( ' ', '<br>' ).replace( ' AM', 'am' ).replace( ' PM', 'pm' );
       headers.push( th );
     }
 
-    var headerRow = document.createElement( 'tr' );
+    const headerRow = document.createElement( 'tr' );
     headers.forEach( function( th ) {
       headerRow.appendChild( th );
     } );
 
-    var table = document.createElement( 'table' );
+    const table = document.createElement( 'table' );
 
     table.appendChild( headerRow );
     domElements.forEach( function( element ) {
@@ -295,11 +295,11 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
 
 // Kick off a loop that will continuously request reports from the server
 (function mainLoop() {
-  var req = new XMLHttpRequest();
+  const req = new XMLHttpRequest();
   req.onload = function() {
     setTimeout( mainLoop, 3000 );
-    var data = JSON.parse( req.responseText );
-    var container = document.getElementById( 'report-container' );
+    const data = JSON.parse( req.responseText );
+    const container = document.getElementById( 'report-container' );
     while ( container.childNodes.length ) {
       container.removeChild( container.childNodes[ 0 ] );
     }
@@ -316,12 +316,12 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
 })();
 
 (function snapshotStatusLoop() {
-  var element = document.getElementById( 'snapshotStatus' );
+  const element = document.getElementById( 'snapshotStatus' );
 
-  var req = new XMLHttpRequest();
+  const req = new XMLHttpRequest();
   req.onload = function() {
     setTimeout( snapshotStatusLoop, 1000 );
-    var data = JSON.parse( req.responseText );
+    const data = JSON.parse( req.responseText );
     element.innerHTML = data.status;
   };
   req.onerror = function() {
@@ -334,12 +334,12 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
 })();
 
 (function testStatusLoop() {
-  var element = document.getElementById( 'testStatus' );
+  const element = document.getElementById( 'testStatus' );
 
-  var req = new XMLHttpRequest();
+  const req = new XMLHttpRequest();
   req.onload = function() {
     setTimeout( testStatusLoop, 1000 );
-    var data = JSON.parse( req.responseText );
+    const data = JSON.parse( req.responseText );
     element.innerHTML = data.zeroCounts;
   };
   req.onerror = function() {

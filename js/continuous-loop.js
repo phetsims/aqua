@@ -14,7 +14,7 @@
 
 'use strict';
 
-var options = QueryStringMachine.getAll( {
+const options = QueryStringMachine.getAll( {
   id: {
     type: 'string'
   },
@@ -24,27 +24,27 @@ var options = QueryStringMachine.getAll( {
 } );
 
 // Ignore current port, keep protocol and host.
-var serverOrigin = window.location.protocol + '//' + window.location.hostname;
+const serverOrigin = window.location.protocol + '//' + window.location.hostname;
 
 // iframe that will contain qunit-test.html/sim-test.html/etc.
-var iframe = document.createElement( 'iframe' );
+const iframe = document.createElement( 'iframe' );
 iframe.setAttribute( 'frameborder', '0' );
 iframe.setAttribute( 'seamless', '1' );
 iframe.setAttribute( 'width', 1024 * 0.75 );
 iframe.setAttribute( 'height', 768 * 0.75 );
 document.body.appendChild( iframe );
 
-var infoElement = document.createElement( 'pre' );
+const infoElement = document.createElement( 'pre' );
 document.body.appendChild( infoElement );
 
 // {Array.<string>} - Information about the current test, filled in later.
-var test = null;
+let test = null;
 
 // {string} - The name of the snapshot that our test is executing in, filled in later.
-var snapshotName = null;
+let snapshotName = null;
 
 // {number} - Timeout that will force moving to another test (if our test in our iframe doesn't notify us it is time, e.g. something is broken)
-var timeout = null;
+let timeout = null;
 
 /**
  * Resets our "force move to next test" timer. Should only kick in when our iframe test has failed.
@@ -64,10 +64,10 @@ function resetTimer() {
 function nextTest() {
   iframe.src = 'about:blank';
 
-  var req = new XMLHttpRequest();
+  const req = new XMLHttpRequest();
   req.onload = function() {
     try {
-      var data = JSON.parse( req.responseText );
+      const data = JSON.parse( req.responseText );
 
       // kick off loading our iframe
       iframe.src = data.url;
@@ -106,8 +106,8 @@ function nextTest() {
  * @param {boolean} passed
  */
 function sendTestResult( names, message, passed ) {
-  var req = new XMLHttpRequest();
-  var result = {
+  const req = new XMLHttpRequest();
+  const result = {
     passed: passed,
     test: test.concat( names ),
     snapshotName: snapshotName,
@@ -121,7 +121,7 @@ function sendTestResult( names, message, passed ) {
 
 // Listen to messages from our iframe (fired in test-client.js)
 window.addEventListener( 'message', function( evt ) {
-  var data = JSON.parse( evt.data );
+  const data = JSON.parse( evt.data );
 
   // test pass/fail has names,message
   if ( data.type === 'test-pass' ) {

@@ -10,9 +10,9 @@ const child_process = require( 'child_process' );
 
 ( async () => {
 
-  var groups = parseInt( process.argv[ 2 ], 10 );
-  var groupIndex = parseInt( process.argv[ 3 ], 10 );
-  var say = _.includes( process.argv, '--say' );
+  const groups = parseInt( process.argv[ 2 ], 10 );
+  const groupIndex = parseInt( process.argv[ 3 ], 10 );
+  const say = _.includes( process.argv, '--say' );
 
   const browser = await puppeteer.launch();
   const readList = filename => fs.readFileSync( '../perennial/data/' + filename, 'utf8' ).split( '\n' ).filter( name => name.length > 0 );

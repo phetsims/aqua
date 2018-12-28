@@ -8,7 +8,7 @@
 
 'use strict';
 
-var options = QueryStringMachine.getAll( {
+const options = QueryStringMachine.getAll( {
   url: {
     type: 'string',
     defaultValue: ''
@@ -23,7 +23,7 @@ var options = QueryStringMachine.getAll( {
   }
 } );
 
-var iframe = document.createElement( 'iframe' );
+const iframe = document.createElement( 'iframe' );
 iframe.setAttribute( 'frameborder', '0' );
 iframe.setAttribute( 'seamless', '1' );
 iframe.setAttribute( 'width', 1024 / 2 );
@@ -33,9 +33,9 @@ document.body.appendChild( iframe );
 // Add those two to our query parameters, so we get load/error messages
 iframe.src = options.url + '?postMessageOnLoad&postMessageOnError&postMessageOnBeforeUnload' + ( options.simQueryParameters ? '&' + options.simQueryParameters : '' );
 
-var hasErrored = false;
-var hasLoaded = false;
-var durationExpired = false;
+let hasErrored = false;
+let hasLoaded = false;
+let durationExpired = false;
 
 // Our duration timeout.
 setTimeout( function() {
@@ -105,7 +105,7 @@ function onSimUnload() {
 // handling messages from sims
 window.addEventListener( 'message', function( evt ) {
   if ( evt.data ) {
-    var data = JSON.parse( evt.data );
+    const data = JSON.parse( evt.data );
 
     // Sent by Joist due to the postMessage* query parameters
     if ( data.type === 'load' ) {
