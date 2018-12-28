@@ -80,3 +80,13 @@ Usually, inspect `pm2 logs` to see if something is going on. If it's scrolled pa
 Because pm2 stores logs under `/home/phet-admin/.pm2/logs`, it's filled up the partition for `/home` before. We've increased the size for that, but it may be an issue in the future.
 
 We'll add any future ways of fixing things as we run across them here.
+
+# Pulling aqua
+
+Follow these steps to pull changes to aqua, which are not automatically pulled (see above).
+
+1. Log in to bayes.colorado.edu as phet-admin, requires VPN.
+2. cd `/data/share/phet/continuous-testing/aqua`
+3. `pm2 stop continuous-server`
+4. `git pull`
+5. `pm2 start continuous-server`
