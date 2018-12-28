@@ -87,7 +87,7 @@ Follow these steps to pull changes to aqua, which are not automatically pulled (
 
 1. Notify the team on slack#dev-public that you will be restarting Bayes CT
 2. Log in to bayes.colorado.edu as phet-admin, requires VPN.
-3. cd `/data/share/phet/continuous-testing/aqua`
+3. `cd /data/share/phet/continuous-testing/aqua`
 4. `pm2 stop continuous-server`
 5. `git pull`
 6. `pm2 start continuous-server`
