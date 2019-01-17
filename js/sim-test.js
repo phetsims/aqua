@@ -80,10 +80,12 @@ function onSimError( data ) {
     console.log( 'stack:\n' + data.stack );
   }
 
+  const failMessage = ( options.simQueryParameters ? ( 'Query: ' + options.simQueryParameters + '\n' ) : '' ) + data.message + '\n' + data.stack;
+
   if ( !hasLoaded ) {
-    aqua.testFail( [ 'load' ], data.message + '\n' + data.stack );
+    aqua.testFail( [ 'load' ], failMessage );
   }
-  aqua.testFail( [ 'run' ], data.message + '\n' + data.stack );
+  aqua.testFail( [ 'run' ], failMessage );
   aqua.nextTest();
 }
 
