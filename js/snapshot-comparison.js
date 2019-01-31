@@ -193,6 +193,10 @@ function setup( simNames ) {
   snapshotButton.addEventListener( 'click', snapshot );
 
   window.addEventListener( 'message', function( evt ) {
+    if ( typeof evt.data !== 'string' ) {
+      return;
+    }
+
     const data = JSON.parse( evt.data );
 
     if ( data.type === 'screenshot' ) {

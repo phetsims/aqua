@@ -121,6 +121,10 @@ function sendTestResult( names, message, passed ) {
 
 // Listen to messages from our iframe (fired in test-client.js)
 window.addEventListener( 'message', function( evt ) {
+  if ( typeof evt.data !== 'string' ) {
+    return;
+  }
+
   const data = JSON.parse( evt.data );
 
   // test pass/fail has names,message

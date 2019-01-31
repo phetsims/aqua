@@ -106,18 +106,19 @@ function onSimUnload() {
 
 // handling messages from sims
 window.addEventListener( 'message', function( evt ) {
-  if ( evt.data ) {
-    const data = JSON.parse( evt.data );
+  if ( typeof evt.data !== 'string' ) {
+    return;
+  }
+  const data = JSON.parse( evt.data );
 
-    // Sent by Joist due to the postMessage* query parameters
-    if ( data.type === 'load' ) {
-      onSimLoad();
-    }
-    else if ( data.type === 'error' ) {
-      onSimError( data );
-    }
-    else if ( data.type === 'beforeUnload' ) {
-      onSimUnload();
-    }
+  // Sent by Joist due to the postMessage* query parameters
+  if ( data.type === 'load' ) {
+    onSimLoad();
+  }
+  else if ( data.type === 'error' ) {
+    onSimError( data );
+  }
+  else if ( data.type === 'beforeUnload' ) {
+    onSimUnload();
   }
 } );

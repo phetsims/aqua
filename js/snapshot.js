@@ -56,6 +56,7 @@ let random = null;
 function sendStep( dt ) {
   iframe.contentWindow.phet.joist.sim.stepSimulation( dt );
 }
+
 function sendMouseToggleEvent() {
   const input = iframe.contentWindow.phet.joist.display._input;
   const domEvent = iframe.contentWindow.document.createEvent( 'MouseEvent' );
@@ -80,6 +81,7 @@ function sendMouseToggleEvent() {
 
   mouseLastMoved = false;
 }
+
 function sendMouseMoveEvent() {
   const input = iframe.contentWindow.phet.joist.display._input;
   mouseX = Math.floor( random.nextDouble() * iframe.contentWindow.phet.joist.display.width );
@@ -100,6 +102,7 @@ function sendMouseMoveEvent() {
 
   mouseLastMoved = true;
 }
+
 function sendFuzz( averageEventQuantity ) {
   let chance;
 
@@ -115,11 +118,13 @@ function sendFuzz( averageEventQuantity ) {
     }
   }
 }
+
 function getScreenshot( callback ) {
   iframe.contentWindow.phet.joist.sim.display.foreignObjectRasterization( function( url ) {
     callback( url );
   } );
 }
+
 function hash( str ) {
   return new Hashes.MD5().hex( str );
 }
@@ -128,6 +133,7 @@ let count = 0;
 let screenshotHashes = '';
 let loaded = false;
 let received = true;
+
 function handleFrame() {
   setTimeout( handleFrame, 0 );
 
@@ -167,6 +173,7 @@ function handleFrame() {
     } );
   }
 }
+
 handleFrame();
 
 // Because of course direct calls to this go through this window object instead.
@@ -188,6 +195,10 @@ window.addEventListener( 'error', function( a ) {
 
 // handling messages from sims
 window.addEventListener( 'message', function( evt ) {
+  if ( typeof evt.data !== 'string' ) {
+    return;
+  }
+
   const data = JSON.parse( evt.data );
 
   // Sent by Joist due to the postMessage* query parameters

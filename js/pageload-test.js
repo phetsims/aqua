@@ -71,6 +71,10 @@ function onPageError( data ) {
 
 // handling messages from sims
 window.addEventListener( 'message', function( evt ) {
+  if ( typeof evt.data !== 'string' ) {
+    return;
+  }
+
   const data = JSON.parse( evt.data );
 
   // Sent by Joist due to the postMessage* query parameters

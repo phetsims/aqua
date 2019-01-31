@@ -234,9 +234,10 @@
 
 // handling messages from sims
   window.addEventListener( 'message', function( evt ) {
-    if ( !evt.data || typeof evt.data !== 'string' ) {
+    if ( typeof evt.data !== 'string' ) {
       return;
     }
+
     const data = JSON.parse( evt.data );
 
     function simNameFromURL( url ) {

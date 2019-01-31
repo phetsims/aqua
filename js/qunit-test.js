@@ -51,6 +51,10 @@ const done = function() {
 let id = setTimeout( done, options.duration );
 
 window.addEventListener( 'message', function( evt ) {
+  if ( typeof evt.data !== 'string' ) {
+    return;
+  }
+
   const data = JSON.parse( evt.data );
 
   // Sent from all of our QUnit wrappers
