@@ -234,7 +234,7 @@
 
 // handling messages from sims
   window.addEventListener( 'message', function( evt ) {
-    if ( !evt.data ) {
+    if ( !evt.data || typeof evt.data !== 'string' ) {
       return;
     }
     const data = JSON.parse( evt.data );
