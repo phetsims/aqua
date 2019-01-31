@@ -38,17 +38,28 @@ It may not remember GitHub credentials across reboots also, so if the following 
 0|continuo |
 0|continuo | fatal: could not read Username for 'https://github.com': No such device or address
 ```
-then `cd` into a private repo directory, `git pull`, and put in the phet-dev credentials (username: phet-dev, password is in the PhET credentials document for "GitHub Machine User"). The credential helper should then remember the password for future pulls.
+then `cd` into a private repo directory, `git pull`, and put in the phet-dev credentials (username: phet-dev, password 
+is in the PhET credentials document for "GitHub Machine User"). The credential helper should then remember the password
+for future pulls.
 
-Additionally, if the server crashes, it currently doesn't clear the snapshot directories that it was using. Currently if I restart the server, I'll typically wipe `/data/share/phet/continuous-testing/snapshot-1*` so that we won't run out of disk space. Can be skipped for a while if restarting a lot. Also should hopefully be improved in the future if we continue to run into this.
+Additionally, if the server crashes, it currently doesn't clear the snapshot directories that it was using. Currently 
+if I restart the server, I'll typically wipe `/data/share/phet/continuous-testing/snapshot-1*` so that we won't run out 
+of disk space. Can be skipped for a while if restarting a lot. Also should hopefully be improved in the future if we 
+continue to run into this.
 
 # Chrome processes
 
-To test in-browser things (like fuzzing sims or unit tests), the server provides a page at https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-loop.html that will continuously request tests from the server, run them, and report back results in a loop. It should still work while the server is down, and will "reconnect" once the server comes back up. It takes a query parameter `id` that will be shown with the testing results.
+To test in-browser things (like fuzzing sims or unit tests), the server provides a page at 
+https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-loop.html that will continuously request tests from 
+the server, run them, and report back results in a loop. It should still work while the server is down, and will 
+"reconnect" once the server comes back up. It takes a query parameter `id` that will be shown with the testing results.
 
-Since we still don't have actual devices set up and running tests, we have a semi-sufficient solution of running headless Chrome processes server-side. I'll typically run 9 processes or so (running too much more actually taxes things too much, and can cause "failed to load in time" errors and such).
+Since we still don't have actual devices set up and running tests, we have a semi-sufficient solution of running 
+headless Chrome processes server-side. I'll typically run 9 processes or so (running too much more actually taxes things 
+too much, and can cause "failed to load in time" errors and such).
 
-I'll typically have 9 screens (see https://www.gnu.org/software/screen/manual/screen.html) open, so I can get console output and restart things. Rebooting resets everything.
+I'll typically have 9 screens (see https://www.gnu.org/software/screen/manual/screen.html) open, so I can get console
+output and restart things. Rebooting resets everything.
 
 To create a screen with a name (and enter it):
 ```sh
