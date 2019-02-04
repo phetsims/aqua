@@ -264,6 +264,7 @@ function execute( cmd, args, cwd, callback, errorCallback ) {
   } );
 }
 
+// TODO: Factor out the readFile logic
 /**
  * Asynchronously gets a list of all repo names.
  * @private
@@ -309,6 +310,24 @@ function getRunnableRepos( callback, errorCallback ) {
  */
 function getPhetioRepos( callback, errorCallback ) {
   fs.readFile( rootDir + '/perennial/data/testable-phet-io', 'utf8', function( err, data ) {
+    if ( err ) {
+      errorCallback( 'Could not open phet-io: ' + err );
+    }
+    else {
+      callback( data.trim().replace( /\r/g, '' ).split( '\n' ) );
+    }
+  } );
+}
+
+/**
+ * Asynchronously gets a list of phet-io sim repo names
+ * @private
+ *
+ * @param {Function} callback - callback( repos: {Array.<string>} ), called when successful
+ * @param {Function} errorCallback - errorCallback( message: {string} ) called when unsuccessful
+ */
+function getPhetioReposValidated( callback, errorCallback ) {
+  fs.readFile( rootDir + '/perennial/data/testable-phet-io-validated', 'utf8', function( err, data ) {
     if ( err ) {
       errorCallback( 'Could not open phet-io: ' + err );
     }
@@ -609,170 +628,176 @@ function createSnapshot( callback, errorCallback ) {
             snapshot.repos = repos;
             getPhetioRepos( function( phetioRepos ) {
               snapshot.phetioRepos = phetioRepos;
-              getRunnableRepos( function( runnableRepos ) {
-                snapshot.runnableRepos = runnableRepos;
-                getAccessibleRepos( function( accessibleRepos ) {
-                  snapshot.accessibleRepos = accessibleRepos;
+              getPhetioReposValidated( function( phetioReposValidated ) {
+                snapshot.phetioReposValidated = phetioReposValidated;
+                getRunnableRepos( function( runnableRepos ) {
+                  snapshot.runnableRepos = runnableRepos;
+                  getAccessibleRepos( function( accessibleRepos ) {
+                    snapshot.accessibleRepos = accessibleRepos;
 
-                  snapshot.buildables = runnableRepos.concat( 'scenery', 'kite', 'dot' ).map( function( repo ) {
-                    return {
-                      repo: repo,
-                      phetio: false
-                    };
-                  } ).concat( phetioRepos.map( function( repo ) {
-                    return {
-                      repo: repo,
-                      phetio: true
-                    };
-                  } ) );
-                  setSnapshotStatus( 'Copying snapshot files' );
-                  copyReposToSnapshot( repos, snapshotName, function() {
-                    setSnapshotStatus( 'Running npm update for phet brand' );
-                    npmUpdateRoot( rootDir + '/' + snapshotName, function() {
-                      setSnapshotStatus( 'Running npm update for phet-io brand' );
-                      npmUpdateRoot( rootDir + '/' + snapshotName + '-phet-io', function() {
-                        // final snapshot prep
+                    snapshot.buildables = runnableRepos.concat( 'scenery', 'kite', 'dot' ).map( function( repo ) {
+                      return {
+                        repo: repo,
+                        phetio: false
+                      };
+                    } ).concat( phetioRepos.map( function( repo ) {
+                      return {
+                        repo: repo,
+                        phetio: true
+                      };
+                    } ) );
+                    setSnapshotStatus( 'Copying snapshot files' );
+                    copyReposToSnapshot( repos, snapshotName, function() {
+                      setSnapshotStatus( 'Running npm update for phet brand' );
+                      npmUpdateRoot( rootDir + '/' + snapshotName, function() {
+                        setSnapshotStatus( 'Running npm update for phet-io brand' );
+                        npmUpdateRoot( rootDir + '/' + snapshotName + '-phet-io', function() {
+                          // final snapshot prep
 
-                        // Add require.js tests immediately
-                        snapshot.runnableRepos.forEach( function( runnableRepo ) {
-                          snapshot.testQueue.push( {
-                            count: 0,
-                            snapshotName: snapshotName,
-                            test: [ runnableRepo, 'fuzz', 'require.js' ],
-                            url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz&memoryLimit=1000' )
-                          } );
-                          snapshot.testQueue.push( {
-                            count: 0,
-                            snapshotName: snapshotName,
-                            test: [ runnableRepo, 'fuzz', 'require.js-canvas' ],
-                            url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz&rootRenderer=canvas&memoryLimit=1000' )
-                          } );
-                          snapshot.testQueue.push( {
-                            count: 0,
-                            snapshotName: snapshotName,
-                            test: [ runnableRepo, 'xss-fuzz' ],
-                            url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz&stringTest=xss&memoryLimit=1000' )
-                          } );
-                        } );
-
-                        // phet-io brand tests
-                        snapshot.phetioRepos.forEach( function( phetioRepo ) {
-                          snapshot.testQueue.push( {
-                            count: 0,
-                            snapshotName: snapshotName,
-                            test: [ phetioRepo, 'phet-io-fuzz', 'require.js' ],
-                            url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + phetioRepo + '/' + phetioRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet-io&phetioStandalone&ea&fuzz&memoryLimit=1000' )
-                          } );
-                        } );
-
-                        // accessible tests
-                        snapshot.accessibleRepos.forEach( function( accessibleRepo ) {
-                          snapshot.testQueue.push( {
-                            count: 0,
-                            snapshotName: snapshotName,
-                            test: [ accessibleRepo, 'accessibility-fuzz', 'require.js' ],
-                            url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + accessibleRepo + '/' + accessibleRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz&a11y&memoryLimit=1000' )
-                          } );
-                          snapshot.testQueue.push( {
-                            count: 0,
-                            snapshotName: snapshotName,
-                            test: [ accessibleRepo, 'accessibility-fuzzBoard', 'require.js' ],
-                            url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + accessibleRepo + '/' + accessibleRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzBoard&a11y&memoryLimit=1000' )
-                          } );
-                        } );
-
-                        // phet-io wrappers tests for each PhET-iO Sim
-                        snapshot.phetioRepos.forEach( function( phetioRepo ) {
-                          snapshot.testQueue.push( {
-                            count: 0,
-                            snapshotName: snapshotName,
-                            test: [ phetioRepo, 'phet-io-tests', 'no-assert' ],
-
-                            // Use the QUnit harness since errors are reported to QUnit
-                            url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io-wrappers/phet-io-wrappers-tests.html?sim=' + phetioRepo )
-                          } );
-                          snapshot.testQueue.push( {
-                            count: 0,
-                            snapshotName: snapshotName,
-                            test: [ phetioRepo, 'phet-io-tests', 'assert' ],
-
-                            // Use the QUnit harness since errors are reported to QUnit
-                            url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io-wrappers/phet-io-wrappers-tests.html?sim=' + phetioRepo + '&phetioDebug' )
-                          } );
-                        } );
-
-                        // repo-specific Unit tests (require.js mode) from `grunt generate-test-harness`
-                        [ 'axon', 'balloons-and-static-electricity', 'circuit-construction-kit-common', 'dot', 'kite', 'phetcommon', 'phet-core', 'query-string-machine', 'scenery', 'tandem' ].forEach( function( repo ) {
-
-                          // All tests should work with no query parameters, with assertions enables and also in phet-io brand
-                          [ '', '?ea', '?brand=phet-io', '?ea&brand=phet-io' ].forEach( function( queryString ) {
+                          // Add require.js tests immediately
+                          snapshot.runnableRepos.forEach( function( runnableRepo ) {
                             snapshot.testQueue.push( {
                               count: 0,
                               snapshotName: snapshotName,
-                              test: [ repo, 'top-level-unit-tests', 'require.js' + queryString ], // TODO: I wasn't sure what to put here
-                              url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + repo + '/' + repo + '-tests.html' + queryString )
+                              test: [ runnableRepo, 'fuzz', 'require.js' ],
+                              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz&memoryLimit=1000' )
                             } );
-                          } );
-                        } );
-
-                        // phet-io unit tests
-                        [ '?brand=phet-io', '?ea&brand=phet-io' ].forEach( function( queryString ) {
-                          snapshot.testQueue.push( {
-                            count: 0,
-                            snapshotName: snapshotName,
-                            test: [ 'phet-io', 'top-level-unit-tests', 'require.js' + queryString ], // TODO: I wasn't sure what to put here
-                            url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io/phet-io-tests.html' + queryString )
-                          } );
-                        } );
-
-                        // Kick off linting everything once we have a new snapshot
-                        testLintEverything( snapshot, function() {
-                          // If we have anything else that we want to grunt in chipper, put it here
-                        } );
-
-                        // Page-load tests
-                        [
-                          {
-                            repo: 'dot',
-                            urls: [
-                              '', // the root URL
-                              'tests/',
-                              'tests/playground.html'
-                            ]
-                          },
-                          {
-                            repo: 'kite',
-                            urls: [
-                              '', // the root URL
-                              'tests/playground.html',
-                              'tests/visual-shape-test.html'
-                            ]
-                          },
-                          {
-                            repo: 'scenery',
-                            urls: [
-                              '', // the root URL
-                              'tests/',
-                              'tests/playground.html',
-                              'tests/renderer-comparison.html?renderers=canvas,svg,dom',
-                              'tests/text-quality-test.html'
-                            ]
-                          }
-                        ].forEach( ( { repo, urls } ) => {
-                          urls.forEach( pageloadRelativeURL => {
-                            const relativePath = snapshot.name + '/' + repo;
                             snapshot.testQueue.push( {
                               count: 0,
-                              snapshotName: snapshot.name,
-                              test: [ repo, 'pageload', '/' + pageloadRelativeURL ],
-                              url: 'pageload-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/' + pageloadRelativeURL )
+                              snapshotName: snapshotName,
+                              test: [ runnableRepo, 'fuzz', 'require.js-canvas' ],
+                              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz&rootRenderer=canvas&memoryLimit=1000' )
+                            } );
+                            snapshot.testQueue.push( {
+                              count: 0,
+                              snapshotName: snapshotName,
+                              test: [ runnableRepo, 'xss-fuzz' ],
+                              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz&stringTest=xss&memoryLimit=1000' )
                             } );
                           } );
-                        } );
 
-                        // TODO: add other normal tests here (that don't require building)
+                          // phet-io brand tests
+                          snapshot.phetioRepos.forEach( function( phetioRepo ) {
+                            const validated = snapshot.phetioReposValidated.indexOf( phetioRepo ) >= 0;
+                            const validatedParam = validated ? '&phetioValidateTandems' : '';
+                            snapshot.testQueue.push( {
+                              count: 0,
+                              snapshotName: snapshotName,
+                              test: [ phetioRepo, 'phet-io-fuzz', 'require.js' ],
+                              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + phetioRepo + '/' + phetioRepo + '_en.html' ) +
+                                   '&simQueryParameters=' + encodeURIComponent( 'brand=phet-io&phetioStandalone&ea' + validatedParam + '&fuzz&memoryLimit=1000' )
+                            } );
+                          } );
 
-                        callback( snapshot );
+                          // accessible tests
+                          snapshot.accessibleRepos.forEach( function( accessibleRepo ) {
+                            snapshot.testQueue.push( {
+                              count: 0,
+                              snapshotName: snapshotName,
+                              test: [ accessibleRepo, 'accessibility-fuzz', 'require.js' ],
+                              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + accessibleRepo + '/' + accessibleRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz&a11y&memoryLimit=1000' )
+                            } );
+                            snapshot.testQueue.push( {
+                              count: 0,
+                              snapshotName: snapshotName,
+                              test: [ accessibleRepo, 'accessibility-fuzzBoard', 'require.js' ],
+                              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + accessibleRepo + '/' + accessibleRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzBoard&a11y&memoryLimit=1000' )
+                            } );
+                          } );
+
+                          // phet-io wrappers tests for each PhET-iO Sim
+                          snapshot.phetioRepos.forEach( function( phetioRepo ) {
+                            snapshot.testQueue.push( {
+                              count: 0,
+                              snapshotName: snapshotName,
+                              test: [ phetioRepo, 'phet-io-tests', 'no-assert' ],
+
+                              // Use the QUnit harness since errors are reported to QUnit
+                              url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io-wrappers/phet-io-wrappers-tests.html?sim=' + phetioRepo )
+                            } );
+                            snapshot.testQueue.push( {
+                              count: 0,
+                              snapshotName: snapshotName,
+                              test: [ phetioRepo, 'phet-io-tests', 'assert' ],
+
+                              // Use the QUnit harness since errors are reported to QUnit
+                              url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io-wrappers/phet-io-wrappers-tests.html?sim=' + phetioRepo + '&phetioDebug' )
+                            } );
+                          } );
+
+                          // repo-specific Unit tests (require.js mode) from `grunt generate-test-harness`
+                          [ 'axon', 'balloons-and-static-electricity', 'circuit-construction-kit-common', 'dot', 'kite', 'phetcommon', 'phet-core', 'query-string-machine', 'scenery', 'tandem' ].forEach( function( repo ) {
+
+                            // All tests should work with no query parameters, with assertions enables and also in phet-io brand
+                            [ '', '?ea', '?brand=phet-io', '?ea&brand=phet-io' ].forEach( function( queryString ) {
+                              snapshot.testQueue.push( {
+                                count: 0,
+                                snapshotName: snapshotName,
+                                test: [ repo, 'top-level-unit-tests', 'require.js' + queryString ], // TODO: I wasn't sure what to put here
+                                url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + repo + '/' + repo + '-tests.html' + queryString )
+                              } );
+                            } );
+                          } );
+
+                          // phet-io unit tests
+                          [ '?brand=phet-io', '?ea&brand=phet-io' ].forEach( function( queryString ) {
+                            snapshot.testQueue.push( {
+                              count: 0,
+                              snapshotName: snapshotName,
+                              test: [ 'phet-io', 'top-level-unit-tests', 'require.js' + queryString ], // TODO: I wasn't sure what to put here
+                              url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io/phet-io-tests.html' + queryString )
+                            } );
+                          } );
+
+                          // Kick off linting everything once we have a new snapshot
+                          testLintEverything( snapshot, function() {
+                            // If we have anything else that we want to grunt in chipper, put it here
+                          } );
+
+                          // Page-load tests
+                          [
+                            {
+                              repo: 'dot',
+                              urls: [
+                                '', // the root URL
+                                'tests/',
+                                'tests/playground.html'
+                              ]
+                            },
+                            {
+                              repo: 'kite',
+                              urls: [
+                                '', // the root URL
+                                'tests/playground.html',
+                                'tests/visual-shape-test.html'
+                              ]
+                            },
+                            {
+                              repo: 'scenery',
+                              urls: [
+                                '', // the root URL
+                                'tests/',
+                                'tests/playground.html',
+                                'tests/renderer-comparison.html?renderers=canvas,svg,dom',
+                                'tests/text-quality-test.html'
+                              ]
+                            }
+                          ].forEach( ( { repo, urls } ) => {
+                            urls.forEach( pageloadRelativeURL => {
+                              const relativePath = snapshot.name + '/' + repo;
+                              snapshot.testQueue.push( {
+                                count: 0,
+                                snapshotName: snapshot.name,
+                                test: [ repo, 'pageload', '/' + pageloadRelativeURL ],
+                                url: 'pageload-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/' + pageloadRelativeURL )
+                              } );
+                            } );
+                          } );
+
+                          // TODO: add other normal tests here (that don't require building)
+
+                          callback( snapshot );
+                        }, errorCallback );
                       }, errorCallback );
                     }, errorCallback );
                   }, errorCallback );
@@ -1006,7 +1031,7 @@ infoLog( 'running on port ' + port + ' with root directory ' + rootDir );
  * @private
  *
  * @param {ServerResponse} res
- * @param {boolean} - Whether 
+ * @param {boolean} - Whether
  */
 function randomBrowserTest( res, isOld ) {
   if ( snapshots.length > 0 ) {
