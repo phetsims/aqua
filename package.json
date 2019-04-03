@@ -13,6 +13,11 @@
     "puppeteer": "~1.11.0"
   },
   "eslintConfig": {
-    "extends": "../chipper/eslint/node_eslintrc.js"
+    "extends": "../chipper/eslint/node_eslintrc.js",
+    "globals": {
+      "aqua": false,
+      "XMLHttpRequest": false,
+      "Hashes": false
+    }
   }
 }
