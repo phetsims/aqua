@@ -14,10 +14,13 @@ node js/local/unitTestBatch.js 4 2 "$@" &
 node js/local/unitTestBatch.js 4 3 "$@" &
 
 # Fuzz test a random sim
-node js/local/fuzzOneSim.js ${RANDOM_SIM} "$@" &
+# node js/local/fuzzOneSim.js ${RANDOM_SIM} "$@" &
+
+# Fuzz test a random sim
+node js/local/fuzzOneSim.js wave-interference "$@" &
 
 # Test wave interference since it is in active development
-node js/local/fuzzOneSim.js wave-interference "$@" &
+node js/local/fuzzOneSim.js circuit-construction-kit-dc "$@" &
 
 # Run linting separately since it takes a while
 grunt lint-everything --repo=faradays-law "$@" &
