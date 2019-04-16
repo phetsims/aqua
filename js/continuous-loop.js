@@ -24,7 +24,7 @@ const options = QueryStringMachine.getAll( {
 } );
 
 // Ignore current port, keep protocol and host.
-const serverOrigin = window.location.protocol + '//' + window.location.hostname + ':45366';
+const serverOrigin = window.location.protocol + '//' + window.location.hostname;
 
 // iframe that will contain qunit-test.html/sim-test.html/etc.
 const iframe = document.createElement( 'iframe' );

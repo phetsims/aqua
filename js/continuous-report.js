@@ -11,7 +11,7 @@
 'use strict';
 
 // Origin for our server (ignoring current port), so that we don't require localhost
-const serverOrigin = window.location.protocol + '//' + window.location.hostname + ':45366';
+const serverOrigin = window.location.protocol + '//' + window.location.hostname;
 
 /**
  * Returns a CSS class to use given the number of passing results and failing results.
