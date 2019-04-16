@@ -24,7 +24,7 @@ const options = QueryStringMachine.getAll( {
 } );
 
 // Ignore current port, keep protocol and host.
-const serverOrigin = window.location.protocol + '//' + window.location.hostname;
+const serverOrigin = window.location.protocol + '//' + window.location.hostname + ':45366';
 
 // iframe that will contain qunit-test.html/sim-test.html/etc.
 const iframe = document.createElement( 'iframe' );
@@ -36,12 +36,6 @@ document.body.appendChild( iframe );
 
 const infoElement = document.createElement( 'pre' );
 document.body.appendChild( infoElement );
-
-// {Array.<string>} - Information about the current test, filled in later.
-let test = null;
-
-// {string} - The name of the snapshot that our test is executing in, filled in later.
-let snapshotName = null;
 
 // {number} - Timeout that will force moving to another test (if our test in our iframe doesn't notify us it is time, e.g. something is broken)
 let timeout = null;
@@ -70,14 +64,13 @@ function nextTest() {
       const data = JSON.parse( req.responseText );
 
       // kick off loading our iframe
-      iframe.src = data.url;
-
-      // record test information
-      test = data.test;
-      snapshotName = data.snapshotName;
+      iframe.src = QueryStringMachine.appendQueryString( data.url, 'testInfo=' + encodeURIComponent( JSON.stringify( {
+        test: data.test,
+        snapshotName: data.snapshotName
+      } ) ) );
 
       infoElement.textContent = JSON.stringify( data, null, 2 );
-      document.title = 'Continuous Testing loop for: ' + test.join( ' : ' );
+      document.title = 'Continuous Testing loop for: ' + data.test.join( ' : ' );
     }
     catch( e ) {
       console.log( 'parse error?' );
@@ -103,14 +96,15 @@ function nextTest() {
  *
  * @param {Array.<string>} names
  * @param {string|undefined} message
+ * @param {Object} testInfo - The original test request from continuous-server.js
  * @param {boolean} passed
  */
-function sendTestResult( names, message, passed ) {
+function sendTestResult( names, message, testInfo, passed ) {
   const req = new XMLHttpRequest();
   const result = {
     passed: passed,
-    test: test.concat( names ),
-    snapshotName: snapshotName,
+    test: testInfo.test.concat( names ),
+    snapshotName: testInfo.snapshotName,
     message: message,
     id: options.id
   };
@@ -130,11 +124,11 @@ window.addEventListener( 'message', function( evt ) {
   // test pass/fail has names,message
   if ( data.type === 'test-pass' ) {
     console.log( data.names + ' PASSED' );
-    sendTestResult( data.names, data.message, true );
+    sendTestResult( data.names, data.message, data.testInfo, true );
   }
   else if ( data.type === 'test-fail' ) {
     console.log( data.names + ' FAILED' );
-    sendTestResult( data.names, data.message, false );
+    sendTestResult( data.names, data.message, data.testInfo, false );
   }
   else if ( data.type === 'test-next' ) {
     nextTest();

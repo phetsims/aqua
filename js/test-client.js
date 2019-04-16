@@ -8,6 +8,13 @@
 
 'use strict';
 
+const aquaOptions = QueryStringMachine.getAll( {
+  testInfo: {
+    type: 'string',
+    defaultValue: ''
+  }
+} );
+
 window.aqua = {
   /**
    * Sends a post message.
@@ -30,7 +37,8 @@ window.aqua = {
     aqua.sendMessage( {
       type: 'test-pass',
       names: names,
-      message: message
+      message: message,
+      testInfo: JSON.parse( aquaOptions.testInfo )
     } );
     console.log( '[PASS] ' + names.join( ',' ) + ' - ' + message );
   },
@@ -48,7 +56,8 @@ window.aqua = {
       aqua.sendMessage( {
         type: 'test-fail',
         names: names,
-        message: message
+        message: message,
+        testInfo: JSON.parse( aquaOptions.testInfo )
       } );
     }
     console.log( '[FAIL] ' + names.join( ',' ) + ' - ' + message );
