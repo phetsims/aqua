@@ -62,6 +62,22 @@
   const testQueue = []; // {Array.<{ simName: {string}, isBuild: {boolean} }>} - Sim test target queue
   const buildQueue = []; // {Array.<string>} - sim names that need to be built
 
+  const failedSims = []; // {Array.<string>} - sim names that failed the tests
+
+  // create a button to rerun the failed tests
+  const rerunFailedTestsButton = document.createElement( 'button' );
+  rerunFailedTestsButton.innerHTML = 'Rerun Failed Sims';
+  rerunFailedTestsButton.addEventListener( 'click', () => {
+    if ( failedSims.length > 0 ) {
+      const omitTestSimsSearch = QueryStringMachine.removeKeyValuePair( window.location.search, 'testSims' );
+      let url = window.location.origin + window.location.pathname;
+      url += QueryStringMachine.appendQueryString( omitTestSimsSearch, `testSims=${failedSims.join( ',' )}` );
+      window.location.replace( url );
+    }
+  } );
+  document.body.appendChild( rerunFailedTestsButton );
+  rerunFailedTestsButton.style.display = 'none';
+
   const eventLog = document.createElement( 'div' );
   eventLog.id = 'eventLog';
   eventLog.innerHTML = '<div id="dev-errors" style="display: none;"><h1>Sim errors (dev):</h1></div>' +
@@ -227,6 +243,9 @@
     // since we can have multiple errors for a single sim (due to being asynchronous),
     // we need to not move forward more than one sim
     if ( simName === currentTest.simName ) {
+      failedSims.push( simName ); // add to the list of failed sims
+      rerunFailedTestsButton.style.display = 'block'; // show the button now that there is at least one failed sim
+
       // on failure, speed up by switching to the next sim
       nextSim();
     }
