@@ -666,7 +666,7 @@ function createSnapshot( callback, errorCallback ) {
                               count: 0,
                               snapshotName: snapshotName,
                               test: [ runnableRepo, 'fuzz', 'require.js-canvas' ],
-                              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz&rootRenderer=canvas&memoryLimit=1000' )
+                              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz&rootRenderer=canvas' )
                             } );
                             snapshot.testQueue.push( {
                               count: 0,
