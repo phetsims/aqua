@@ -116,16 +116,19 @@
 
     const devStatus = document.createElement( 'span' );
     devStatus.classList.add( 'dev' );
+    devStatus.classList.add( 'unselectable' );
     devStatus.innerHTML = '■';
     simStatusElement.appendChild( devStatus );
 
     const gruntStatus = document.createElement( 'span' );
     gruntStatus.classList.add( 'grunt' );
+    gruntStatus.classList.add( 'unselectable' );
     gruntStatus.innerHTML = '■';
     simStatusElement.appendChild( gruntStatus );
 
     const buildStatus = document.createElement( 'span' );
     buildStatus.classList.add( 'build' );
+    buildStatus.classList.add( 'unselectable' );
     buildStatus.innerHTML = '■';
     simStatusElement.appendChild( buildStatus );
 
