@@ -665,12 +665,6 @@ function createSnapshot( callback, errorCallback ) {
                             snapshot.testQueue.push( {
                               count: 0,
                               snapshotName: snapshotName,
-                              test: [ runnableRepo, 'fuzz', 'require.js-canvas' ],
-                              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz&rootRenderer=canvas' )
-                            } );
-                            snapshot.testQueue.push( {
-                              count: 0,
-                              snapshotName: snapshotName,
                               test: [ runnableRepo, 'xss-fuzz' ],
                               url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + runnableRepo + '/' + runnableRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz&stringTest=xss&memoryLimit=1000' )
                             } );
