@@ -1,4 +1,4 @@
-// Copyright 2016, University of Colorado Boulder
+// Copyright 2017-2019, University of Colorado Boulder
 
 /*
  * Common functions used to communicate from test wrappers to continuous-loop.html (assumed to be the parent frame).
