@@ -64,6 +64,16 @@
 
   const failedSims = []; // {Array.<string>} - sim names that failed the tests
 
+  // Track whether 'shift' key is pressed, so that we can change how windows are opened.  If shift is pressed, the
+  // page is launched in a separate tab.
+  let shiftPressed = false;
+  window.addEventListener( 'keydown', function( event ) {
+    shiftPressed = event.shiftKey;
+  } );
+  window.addEventListener( 'keyup', function( event ) {
+    shiftPressed = event.shiftKey;
+  } );
+
   // create a button to rerun the failed tests
   const rerunFailedTestsButton = document.createElement( 'button' );
   rerunFailedTestsButton.innerHTML = 'Rerun Failed Sims';
@@ -72,7 +82,12 @@
       const omitTestSimsSearch = QueryStringMachine.removeKeyValuePair( window.location.search, 'testSims' );
       let url = window.location.origin + window.location.pathname;
       url += QueryStringMachine.appendQueryString( omitTestSimsSearch, `testSims=${failedSims.join( ',' )}` );
-      window.location.replace( url );
+      if ( shiftPressed ) {
+        window.open( url, '_blank' );
+      }
+      else {
+        window.location.replace( url );
+      }
     }
   } );
   document.body.appendChild( rerunFailedTestsButton );
