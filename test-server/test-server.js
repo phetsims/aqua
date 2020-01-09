@@ -46,7 +46,6 @@ const server = http.createServer( function( req, res ) {
 
   simLog( 'requested' );
 
-  // TODO: Why do these more portable versions not work?
   const npmUpdate = spawn( NPM_CMD, [ 'update' ], {
     cwd: rootDir + simName
   } );

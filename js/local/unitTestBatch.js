@@ -30,7 +30,7 @@ const child_process = require( 'child_process' );
       suffix = '&brand=phet-io';
     }
 
-    // TODO: support arbitrary prefix for localhost
+    // TODO: support arbitrary prefix for localhost (https://github.com/phetsims/aqua/issues/81)
     return `http://localhost/${repo}/${repo}-tests.html?ea${suffix}`;
   };
 

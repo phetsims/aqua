@@ -2,7 +2,8 @@
 # https://www.codeword.xyz/2015/09/02/three-ways-to-script-processes-in-parallel/
 # Run fast local tests as a sanity check before committing or pushing.
 # "$@" passes through options
-# TODO: support arbitrary number of args and fork each out to another fuzz test.  This will allow developers to customize usage of this script.
+# TODO: support arbitrary number of args and fork each out to another fuzz test.
+#       This will allow developers to customize usage of this script. https://github.com/phetsims/aqua/issues/81
 
 # Choose a testable-runnable sim for fuzzing.  Trim whitespace lines.
 RANDOM_SIM="$(sed '/^[[:space:]]*$/d' ../perennial/data/testable-runnables | sort -R | head -n 1)"

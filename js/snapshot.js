@@ -1,7 +1,8 @@
 // Copyright 2017-2019, University of Colorado Boulder
 
 /**
- * TODO doc
+ * Runs a snapshot for a specific sim (url) with a given seed. It will send a number of events, and will record
+ * visual frames the desired number of times (with SHAs) and can send post-messages to communicate the events.
  *
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
@@ -9,7 +10,6 @@
 'use strict';
 
 const options = QueryStringMachine.getAll( {
-  // TODO: use this?
   url: {
     type: 'string',
     defaultValue: '../../molecule-shapes/molecule-shapes_en.html'

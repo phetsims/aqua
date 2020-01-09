@@ -198,7 +198,7 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
         if ( uniqueMessages.length ) {
           snapshotElement.style.border = '1px solid black';
           const snapshotDialog = document.createElement( 'span' );
-          snapshotDialog.className = 'dialog element (if any)'; // TODO: WTF is this?
+          snapshotDialog.className = 'snapshotDialog';
 
           const openLink = document.createElement( 'div' );
           openLink.className = 'linky';

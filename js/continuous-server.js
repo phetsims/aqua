@@ -264,7 +264,6 @@ function execute( cmd, args, cwd, callback, errorCallback ) {
   } );
 }
 
-// TODO: Factor out the readFile logic
 /**
  * Asynchronously gets a list of all repo names.
  * @private
@@ -623,7 +622,7 @@ function createSnapshot( callback, errorCallback ) {
           errorCallback( 'Could not create phet-io snapshot dir ' + snapshotName + '-phet-io: ' + err );
         }
         else {
-          // TODO: async/await
+          // TODO: async/await https://github.com/phetsims/aqua/issues/68
           getRepos( function( repos ) {
             snapshot.repos = repos;
             getPhetioRepos( function( phetioRepos ) {
@@ -727,7 +726,7 @@ function createSnapshot( callback, errorCallback ) {
                               snapshot.testQueue.push( {
                                 count: 0,
                                 snapshotName: snapshotName,
-                                test: [ repo, 'top-level-unit-tests', 'require.js' + queryString ], // TODO: I wasn't sure what to put here
+                                test: [ repo, 'top-level-unit-tests', 'require.js' + queryString ],
                                 url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + repo + '/' + repo + '-tests.html' + queryString )
                               } );
                             } );
@@ -738,7 +737,7 @@ function createSnapshot( callback, errorCallback ) {
                             snapshot.testQueue.push( {
                               count: 0,
                               snapshotName: snapshotName,
-                              test: [ 'phet-io', 'top-level-unit-tests', 'require.js' + queryString ], // TODO: I wasn't sure what to put here
+                              test: [ 'phet-io', 'top-level-unit-tests', 'require.js' + queryString ],
                               url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io/phet-io-tests.html' + queryString )
                             } );
                           } );
@@ -788,7 +787,7 @@ function createSnapshot( callback, errorCallback ) {
                             } );
                           } );
 
-                          // TODO: add other normal tests here (that don't require building)
+                          // NOTE: add other normal tests here (that don't require building)
 
                           callback( snapshot );
                         }, errorCallback );
@@ -910,7 +909,7 @@ function addResult( passed, snapshot, test, message ) {
     message: message
   } );
 
-  // TODO: remove stale tests here?
+  // NOTE: we could remove stale tests here?
 }
 
 function getCutoffTimestamp() {

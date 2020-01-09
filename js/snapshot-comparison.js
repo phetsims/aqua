@@ -1,7 +1,8 @@
 // Copyright 2017-2019, University of Colorado Boulder
 
 /**
- * TODO doc
+ * Capable of running through sims in multiple passes (in-between code changes) to see if there is any behavioral change
+ * in the sim resulting from that change.
  *
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
@@ -174,9 +175,6 @@ function setup( simNames ) {
   function nextSim() {
     if ( queue.length ) {
       loadSim( queue.shift() );
-    }
-    else {
-      // TODO
     }
   }
 
