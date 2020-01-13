@@ -215,7 +215,8 @@ window.addEventListener( 'message', function( evt ) {
     // FileSaver don't allow popup
     iframe.contentWindow.saveAs = function() {};
 
-    random = new iframe.contentWindow.phet.dot.Random( { seed: 2.3 } );
+    // We need to create an object with the iframe's Object.prototype as its prototype to pass our assertion checks
+    random = new iframe.contentWindow.phet.dot.Random( iframe.contentWindow.Object.create( iframe.contentWindow.Object.prototype, { seed: { value: 2.3 } } ) );
 
     iframe.contentWindow.phet.joist.launchSimulation();
     iframe.contentWindow.phet.joist.sim.display.interactive = false;
