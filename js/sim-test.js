@@ -26,8 +26,8 @@ const options = QueryStringMachine.getAll( {
 const iframe = document.createElement( 'iframe' );
 iframe.setAttribute( 'frameborder', '0' );
 iframe.setAttribute( 'seamless', '1' );
-iframe.setAttribute( 'width', 1024 / 2 );
-iframe.setAttribute( 'height', 768 / 2 );
+iframe.setAttribute( 'width', '512' );
+iframe.setAttribute( 'height', '384' );
 document.body.appendChild( iframe );
 
 // Add those two to our query parameters, so we get load/error messages

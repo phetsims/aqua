@@ -30,8 +30,8 @@ const serverOrigin = window.location.protocol + '//' + window.location.hostname;
 const iframe = document.createElement( 'iframe' );
 iframe.setAttribute( 'frameborder', '0' );
 iframe.setAttribute( 'seamless', '1' );
-iframe.setAttribute( 'width', 1024 * 0.75 );
-iframe.setAttribute( 'height', 768 * 0.75 );
+iframe.setAttribute( 'width', '768' );
+iframe.setAttribute( 'height', '576' );
 document.body.appendChild( iframe );
 
 const infoElement = document.createElement( 'pre' );
