@@ -93,6 +93,11 @@
   document.body.appendChild( rerunFailedTestsButton );
   rerunFailedTestsButton.style.display = 'none';
 
+  const addSimToRerunList = sim => {
+    failedSims.push( sim ); // add to the list of failed sims
+    rerunFailedTestsButton.style.display = 'block'; // show the button now that there is at least one failed sim
+  };
+
   const eventLog = document.createElement( 'div' );
   eventLog.id = 'eventLog';
   eventLog.innerHTML = '<div id="dev-errors" style="display: none;"><h1>Sim errors (dev):</h1></div>' +
@@ -202,6 +207,9 @@
 
     if ( currentTest ) {
       simStatusElements[ currentTest.simName ].classList.add( 'complete-' + ( currentTest.isBuild ? 'build' : 'dev' ) );
+      if ( !currentTest.loaded ) {
+        addSimToRerunList( currentTest.simName );
+      }
     }
 
     if ( testQueue.length ) {
@@ -220,6 +228,8 @@
     console.log( 'loaded ' + simName );
 
     const isBuild = simName === currentTest.simName && currentTest.isBuild;
+
+    currentTest.loaded = true;
 
     // not loading anymore
     simStatusElements[ simName ].classList.remove( 'loading-' + ( isBuild ? 'build' : 'dev' ) );
@@ -261,8 +271,7 @@
     // since we can have multiple errors for a single sim (due to being asynchronous),
     // we need to not move forward more than one sim
     if ( simName === currentTest.simName ) {
-      failedSims.push( simName ); // add to the list of failed sims
-      rerunFailedTestsButton.style.display = 'block'; // show the button now that there is at least one failed sim
+      addSimToRerunList( simName );
 
       // on failure, speed up by switching to the next sim
       nextSim();
