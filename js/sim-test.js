@@ -31,7 +31,8 @@ iframe.setAttribute( 'height', '384' );
 document.body.appendChild( iframe );
 
 // Add those two to our query parameters, so we get load/error messages
-iframe.src = options.url + '?postMessageOnLoad&postMessageOnError&postMessageOnBeforeUnload' + ( options.simQueryParameters ? '&' + options.simQueryParameters : '' );
+iframe.src = QueryStringMachine.appendQueryStringArray( options.url,
+  [ '?postMessageOnLoad&postMessageOnError&postMessageOnBeforeUnload', options.simQueryParameters ] );
 
 let hasErrored = false;
 let hasLoaded = false;

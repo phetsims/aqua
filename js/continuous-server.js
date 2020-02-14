@@ -680,10 +680,30 @@ function createSnapshot( callback, errorCallback ) {
                               url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + phetioRepo + '/' + phetioRepo + '_en.html' ) +
                                    '&simQueryParameters=' + encodeURIComponent( 'brand=phet-io&phetioStandalone&ea' + validatedParam + '&fuzz&memoryLimit=1000' )
                             } );
+
+                            // fuzz test important wrappers
+                            snapshot.testQueue.push( {
+                              count: 0,
+                              snapshotName: snapshotName,
+                              test: [ phetioRepo, 'phet-io-studio-fuzz', 'require.js' ],
+                              url: 'sim-test.html?url=' + encodeURIComponent( `../../${snapshotName}/studio/?sim=${phetioRepo}&phetioDebug&fuzz&postMessageToParent` )
+                            } );
+                            snapshot.testQueue.push( {
+                              count: 0,
+                              snapshotName: snapshotName,
+                              test: [ phetioRepo, 'phet-io-state-fuzz', 'require.js' ],
+                              url: 'sim-test.html?url=' + encodeURIComponent( `../../${snapshotName}/phet-io-wrappers/state/?sim=${phetioRepo}&phetioDebug&fuzz&postMessageToParent` )
+                            } );
+                            snapshot.testQueue.push( {
+                              count: 0,
+                              snapshotName: snapshotName,
+                              test: [ phetioRepo, 'phet-io-mirror-inputs-fuzz', 'require.js' ],
+                              url: 'sim-test.html?url=' + encodeURIComponent( `../../${snapshotName}/phet-io-wrappers/mirror-inputs/?sim=${phetioRepo}&phetioDebug&fuzz&postMessageToParent` )
+                            } );
                           } );
 
                           // accessible tests
-                          snapshot.accessibleRepos.forEach( function( accessibleRepo ) {
+                          snapshot.accessibleRepos.forEach( accessibleRepo => {
                             snapshot.testQueue.push( {
                               count: 0,
                               snapshotName: snapshotName,
