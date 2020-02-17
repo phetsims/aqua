@@ -81,7 +81,7 @@
     if ( failedSims.length > 0 ) {
       const omitTestSimsSearch = QueryStringMachine.removeKeyValuePair( window.location.search, 'testSims' );
       let url = window.location.origin + window.location.pathname;
-      url += QueryStringMachine.appendQueryString( omitTestSimsSearch, `testSims=${failedSims.join( ',' )}` );
+      url += QueryStringMachine.appendQueryString( omitTestSimsSearch, `testSims=${_.uniq( failedSims ).join( ',' )}` );
       if ( shiftPressed ) {
         window.open( url, '_blank' );
       }
