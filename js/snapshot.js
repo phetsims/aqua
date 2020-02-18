@@ -216,7 +216,14 @@ window.addEventListener( 'message', function( evt ) {
     iframe.contentWindow.saveAs = function() {};
 
     // We need to create an object with the iframe's Object.prototype as its prototype to pass our assertion checks
-    random = new iframe.contentWindow.phet.dot.Random( iframe.contentWindow.Object.create( iframe.contentWindow.Object.prototype, { seed: { value: 2.3 } } ) );
+    const options = iframe.contentWindow.Object.create( iframe.contentWindow.Object.prototype, {
+      seed: {
+        value: 2.3,
+        enumerable: true
+      }
+    } );
+    console.log( options );
+    random = new iframe.contentWindow.phet.dot.Random( options );
 
     iframe.contentWindow.phet.joist.launchSimulation();
     iframe.contentWindow.phet.joist.sim.display.interactive = false;
