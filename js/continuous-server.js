@@ -888,7 +888,7 @@ let wasStale = true;
 // {Array.<Snapshot>} All of our snapshots
 const snapshots = [];
 
-// {Results} Main results, with the addition of the snapshotsre ference
+// {Results} Main results, with the addition of the snapshots reference
 const testResults = {
   children: {},
   results: [],
