@@ -81,7 +81,7 @@ function onSimError( data ) {
     console.log( 'stack:\n' + data.stack );
   }
 
-  const failMessage = ( options.simQueryParameters ? ( 'Query: ' + options.simQueryParameters + '\n' ) : '' ) + data.message + '\n' + data.stack;
+  const failMessage = iframe.src + '\n' + ( options.simQueryParameters ? ( 'Query: ' + options.simQueryParameters + '\n' ) : '' ) + data.message + '\n' + data.stack;
 
   if ( !hasLoaded ) {
     aqua.testFail( [ 'load' ], failMessage );

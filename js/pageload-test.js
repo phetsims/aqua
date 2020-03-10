@@ -64,7 +64,7 @@ function onPageError( data ) {
       console.log( 'stack:\n' + data.stack );
     }
 
-    aqua.testFail( [ 'load' ], data.message + '\n' + data.stack );
+    aqua.testFail( [ 'load' ], iframe.src + '\n' + data.message + '\n' + data.stack );
     aqua.nextTest();
   }
 }

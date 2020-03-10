@@ -35,7 +35,7 @@ let message = '';
 
 const done = function() {
   if ( id !== null ) {
-    message = passed + ' out of ' + ( passed + failed ) + ' tests passed. ' + failed + ' failed.\n' + message;
+    message = iframe.src + '\n' + passed + ' out of ' + ( passed + failed ) + ' tests passed. ' + failed + ' failed.\n' + message;
     if ( passed > 0 && failed === 0 ) {
       aqua.testPass( [], message );
     }
