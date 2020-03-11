@@ -8,9 +8,9 @@
 const a = document.getElementById( 'aFrame' );
 const b = document.getElementById( 'bFrame' );
 
-let split = window.location.search.split( '&b=' );
+const split = window.location.search.split( '&b=' );
 if ( split.length !== 2 ) {
-  throw new Error( 'bad URL, requires ?a= and &b=' )
+  throw new Error( 'bad URL, requires ?a= and &b=' );
 }
 const bSrc = split[ 1 ];
 const aSrc = split[ 0 ].split( '?a=' )[ 1 ];
