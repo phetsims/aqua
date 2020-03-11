@@ -1,15 +1,22 @@
 // Copyright 2020, University of Colorado Boulder
 
 /**
- * Compare two running sims interactively. They must be running on the same origin.
+ * Compare two running sims interactively. They must be running on the same origin and specified via ?a= and &b=
  * @author Sam Reid (PhET Interactive Simulations)
  */
 
 const a = document.getElementById( 'aFrame' );
 const b = document.getElementById( 'bFrame' );
-// a.src = 'http://localhost/main/gravity-and-orbits/gravity-and-orbits_en.html?brand=phet&ea&showPointers';
-a.src = 'http://localhost/gravity-and-orbits_en.html?showPointers';
-b.src = 'http://localhost/vanilla/gravity-and-orbits/gravity-and-orbits_en.html?brand=phet&ea&showPointers';
+
+let split = window.location.search.split( '&b=' );
+if ( split.length !== 2 ) {
+  throw new Error( 'bad URL, requires ?a= and &b=' )
+}
+const bSrc = split[ 1 ];
+const aSrc = split[ 0 ].split( '?a=' )[ 1 ];
+
+a.src = aSrc;
+b.src = bSrc;
 
 /**
  * Determine if a simulation is ready for input
