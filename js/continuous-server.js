@@ -343,10 +343,10 @@ function getPhetioReposValidated( callback, errorCallback ) {
  * @param {Function} callback - callback( repos: {Array.<string>} ), called when successful
  * @param {Function} errorCallback - errorCallback( message: {string} ) called when unsuccessful
  */
-function getAccessibleRepos( callback, errorCallback ) {
-  fs.readFile( rootDir + '/perennial/data/accessibility', 'utf8', function( err, data ) {
+function getInteractiveDescriptionsRepos( callback, errorCallback ) {
+  fs.readFile( rootDir + '/perennial/data/interactive-descriptions', 'utf8', function( err, data ) {
     if ( err ) {
-      errorCallback( 'Could not open phet-io: ' + err );
+      errorCallback( 'Could not open interactive-descriptions: ' + err );
     }
     else {
       callback( data.trim().replace( /\r/g, '' ).split( '\n' ) );
@@ -631,8 +631,8 @@ function createSnapshot( callback, errorCallback ) {
                 snapshot.phetioReposValidated = phetioReposValidated;
                 getRunnableRepos( function( runnableRepos ) {
                   snapshot.runnableRepos = runnableRepos;
-                  getAccessibleRepos( function( accessibleRepos ) {
-                    snapshot.accessibleRepos = accessibleRepos;
+                  getInteractiveDescriptionsRepos( function( interactiveDescriptionRepos ) {
+                    snapshot.interactiveDescriptionRepos = interactiveDescriptionRepos;
 
                     snapshot.buildables = runnableRepos.concat( 'scenery', 'kite', 'dot' ).map( function( repo ) {
                       return {
@@ -703,18 +703,18 @@ function createSnapshot( callback, errorCallback ) {
                           } );
 
                           // accessible tests
-                          snapshot.accessibleRepos.forEach( accessibleRepo => {
+                          snapshot.interactiveDescriptionRepos.forEach( interactiveDescriptionRepo => {
                             snapshot.testQueue.push( {
                               count: 0,
                               snapshotName: snapshotName,
-                              test: [ accessibleRepo, 'accessibility-fuzz', 'require.js' ],
-                              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + accessibleRepo + '/' + accessibleRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz&a11y&memoryLimit=1000' )
+                              test: [ interactiveDescriptionRepo, 'interactive-description-fuzz', 'require.js' ],
+                              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + interactiveDescriptionRepo + '/' + interactiveDescriptionRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz&a11y&memoryLimit=1000' )
                             } );
                             snapshot.testQueue.push( {
                               count: 0,
                               snapshotName: snapshotName,
-                              test: [ accessibleRepo, 'accessibility-fuzzBoard', 'require.js' ],
-                              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + accessibleRepo + '/' + accessibleRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzBoard&a11y&memoryLimit=1000' )
+                              test: [ interactiveDescriptionRepo, 'interactive-description-fuzzBoard', 'require.js' ],
+                              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + interactiveDescriptionRepo + '/' + interactiveDescriptionRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzBoard&a11y&memoryLimit=1000' )
                             } );
                           } );
 
@@ -1189,18 +1189,18 @@ function buildLoop() {
               old: true
             } );
           }
-          if ( snapshot.accessibleRepos.indexOf( repo ) >= 0 && !phetio ) {
+          if ( snapshot.interactiveDescriptionRepos.indexOf( repo ) >= 0 && !phetio ) {
             snapshot.testQueue.push( {
               count: 0,
               snapshotName: snapshot.name,
-              test: [ repo, 'accessibility-fuzz', 'built' + ( phetio ? '-phet-io' : '' ) ],
+              test: [ repo, 'interactive-description-fuzz', 'built' + ( phetio ? '-phet-io' : '' ) ],
               url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/phet/' + repo + '_en_phet.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzz&a11y&memoryLimit=1000' ),
               old: true
             } );
             snapshot.testQueue.push( {
               count: 0,
               snapshotName: snapshot.name,
-              test: [ repo, 'accessibility-fuzzBoard', 'built' + ( phetio ? '-phet-io' : '' ) ],
+              test: [ repo, 'interactive-description-fuzzBoard', 'built' + ( phetio ? '-phet-io' : '' ) ],
               url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/phet/' + repo + '_en_phet.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzzBoard&a11y&memoryLimit=1000' ),
               old: true
             } );
