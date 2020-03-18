@@ -708,13 +708,13 @@ function createSnapshot( callback, errorCallback ) {
                               count: 0,
                               snapshotName: snapshotName,
                               test: [ interactiveDescriptionRepo, 'interactive-description-fuzz', 'require.js' ],
-                              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + interactiveDescriptionRepo + '/' + interactiveDescriptionRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz&a11y&memoryLimit=1000' )
+                              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + interactiveDescriptionRepo + '/' + interactiveDescriptionRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzz&supportsDescriptions&memoryLimit=1000' )
                             } );
                             snapshot.testQueue.push( {
                               count: 0,
                               snapshotName: snapshotName,
                               test: [ interactiveDescriptionRepo, 'interactive-description-fuzzBoard', 'require.js' ],
-                              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + interactiveDescriptionRepo + '/' + interactiveDescriptionRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzBoard&a11y&memoryLimit=1000' )
+                              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/' + interactiveDescriptionRepo + '/' + interactiveDescriptionRepo + '_en.html' ) + '&simQueryParameters=' + encodeURIComponent( 'brand=phet&ea&fuzzBoard&supportsDescriptions&memoryLimit=1000' )
                             } );
                           } );
 
@@ -1194,14 +1194,14 @@ function buildLoop() {
               count: 0,
               snapshotName: snapshot.name,
               test: [ repo, 'interactive-description-fuzz', 'built' + ( phetio ? '-phet-io' : '' ) ],
-              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/phet/' + repo + '_en_phet.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzz&a11y&memoryLimit=1000' ),
+              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/phet/' + repo + '_en_phet.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzz&supportsDescriptions&memoryLimit=1000' ),
               old: true
             } );
             snapshot.testQueue.push( {
               count: 0,
               snapshotName: snapshot.name,
               test: [ repo, 'interactive-description-fuzzBoard', 'built' + ( phetio ? '-phet-io' : '' ) ],
-              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/phet/' + repo + '_en_phet.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzzBoard&a11y&memoryLimit=1000' ),
+              url: 'sim-test.html?url=' + encodeURIComponent( '../../' + relativePath + '/build/phet/' + repo + '_en_phet.html' ) + '&simQueryParameters=' + encodeURIComponent( 'fuzzBoard&supportsDescriptions&memoryLimit=1000' ),
               old: true
             } );
           }
