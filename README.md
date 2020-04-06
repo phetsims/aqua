@@ -46,7 +46,7 @@ A browser visiting continuous-loop.html will begin an infinite loop of requestin
 - file: protocol
 - Basic iframe tests
 - Touch fuzzing (with one or more 'fingers')
-- Other locales (in require.js and built)
+- Other locales (in unbuilt and built)
 - Other builds, tesing locales/brand/mangle/uglify/allHTML.
 - Runtime flags, such as:
   - accessibility
