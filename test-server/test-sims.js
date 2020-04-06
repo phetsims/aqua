@@ -24,8 +24,8 @@
       defaultValue: true
     },
 
-    // Whether sims should be tested in require.js mode
-    testRequirejs: {
+    // Whether sims should be tested in unbuilt mode
+    testUnbuilt: {
       type: 'boolean',
       defaultValue: true
     },
@@ -322,7 +322,7 @@
         createStatusElement( simName );
 
         // First, if enabled, put require.js testing on the queue
-        if ( options.testRequirejs ) {
+        if ( options.testUnbuilt ) {
           testQueue.push( {
             simName: simName,
             build: false

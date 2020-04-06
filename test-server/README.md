@@ -9,7 +9,7 @@
   for fuzzing, other query parameters (like ?fuzz) are recommended.
 - testTask {boolean} Whether a tested sim should be left open after loading. If false, it will move to the next
   simulation immediately upon the previous simulation loading. Defaults to true.
-- testRequirejs {boolean} Whether tests will be run in require.js mode. Defaults to true.
+- testUnbuilt {boolean} Whether tests will be run in unbuilt mode. Defaults to true.
 - testBuilt {boolean} Whether the sims will be built (and the built versions tested). Defaults to true.
 - testSims {Array.<string>} Comma-separated list of sims to be tested. Defaults to sims in active-runnables
 - testDuration {number} Milliseconds to keep simulations open when testTask:true. Starts counting from when the iframe
