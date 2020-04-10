@@ -723,7 +723,7 @@ function createSnapshot( callback, errorCallback ) {
                             snapshot.testQueue.push( {
                               count: 0,
                               snapshotName: snapshotName,
-                              test: [ phetioRepo, 'phet-io-tests', 'no-assert' ],
+                              test: [ phetioRepo, 'phet-io-wrappers-tests', 'no-assert' ],
 
                               // Use the QUnit harness since errors are reported to QUnit
                               url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io-wrappers/phet-io-wrappers-tests.html?sim=' + phetioRepo )
@@ -731,7 +731,7 @@ function createSnapshot( callback, errorCallback ) {
                             snapshot.testQueue.push( {
                               count: 0,
                               snapshotName: snapshotName,
-                              test: [ phetioRepo, 'phet-io-tests', 'assert' ],
+                              test: [ phetioRepo, 'phet-io-wrappers-tests', 'assert' ],
 
                               // Use the QUnit harness since errors are reported to QUnit
                               url: 'qunit-test.html?url=' + encodeURIComponent( '../../' + snapshotName + '/phet-io-wrappers/phet-io-wrappers-tests.html?sim=' + phetioRepo + '&phetioDebug' )
