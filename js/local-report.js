@@ -65,7 +65,9 @@ const reportProperty = new axon.Property( {
 })();
 
 const rootNode = new scenery.Node();
-const display = new scenery.Display( rootNode );
+const display = new scenery.Display( rootNode, {
+  passiveEvents: true
+} );
 
 document.body.appendChild( display.domElement );
 
@@ -87,7 +89,8 @@ reportProperty.link( report => {
     spacing: 2,
     children: [
       ...new Date( 1586988043041 ).toLocaleString().replace( ',', '' ).replace( ' AM', 'am' ).replace( ' PM', 'pm' ).split( ' ' ).map( str => new scenery.Text( str, { fontSize: 10 } ) )
-    ]
+    ],
+    cursor: 'pointer'
   } ) );
 
   const maxTestLabelWidth = _.max( testLabels.map( node => node.width ) );
