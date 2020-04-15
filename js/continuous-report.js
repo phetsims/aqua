@@ -10,8 +10,14 @@
 
 'use strict';
 
-// Origin for our server (ignoring current port), so that we don't require localhost
-const serverOrigin = window.location.protocol + '//' + window.location.hostname;
+const options = QueryStringMachine.getAll( {
+  server: {
+    type: 'string',
+
+    // Origin for our server (ignoring current port), so that we don't require localhost
+    defaultValue: window.location.protocol + '//' + window.location.hostname
+  }
+} );
 
 /**
  * Returns a CSS class to use given the number of passing results and failing results.
@@ -311,7 +317,7 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
     setTimeout( mainLoop, 3000 );
     console.log( 'XHR error?' );
   };
-  req.open( 'get', serverOrigin + '/aquaserver/results', true ); // enable CORS
+  req.open( 'get', options.server + '/aquaserver/results', true ); // enable CORS
   req.send();
 })();
 
@@ -329,7 +335,7 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
     element.innerHTML = '<span style="color: red;">Could not contact server</span>';
     console.log( 'XHR error?' );
   };
-  req.open( 'get', serverOrigin + '/aquaserver/snapshot-status', true ); // enable CORS
+  req.open( 'get', options.server + '/aquaserver/snapshot-status', true ); // enable CORS
   req.send();
 })();
 
@@ -347,6 +353,6 @@ function recursiveResults( name, resultNode, snapshots, padding, path ) {
     element.innerHTML = '<span style="color: red;">Could not contact server</span>';
     console.log( 'XHR error?' );
   };
-  req.open( 'get', serverOrigin + '/aquaserver/test-status', true ); // enable CORS
+  req.open( 'get', options.server + '/aquaserver/test-status', true ); // enable CORS
   req.send();
 })();

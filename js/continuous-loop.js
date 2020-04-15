@@ -20,11 +20,14 @@ const options = QueryStringMachine.getAll( {
   },
   old: {
     type: 'flag'
+  },
+  server: {
+    type: 'string',
+
+    // Ignore current port, keep protocol and host.
+    defaultValue: window.location.protocol + '//' + window.location.hostname
   }
 } );
-
-// Ignore current port, keep protocol and host.
-const serverOrigin = window.location.protocol + '//' + window.location.hostname;
 
 // iframe that will contain qunit-test.html/sim-test.html/etc.
 const iframe = document.createElement( 'iframe' );
@@ -85,7 +88,7 @@ function nextTest() {
     // On connection failure, just try again with a delay (don't hammer the server)
     setTimeout( nextTest, 60000 ); // 1min
   };
-  req.open( 'get', serverOrigin + '/aquaserver/next-test?old=' + options.old, true );
+  req.open( 'get', options.server + '/aquaserver/next-test?old=' + options.old, true );
   req.send();
   resetTimer();
 }
@@ -108,7 +111,7 @@ function sendTestResult( names, message, testInfo, passed ) {
     message: message,
     id: options.id
   };
-  req.open( 'get', serverOrigin + '/aquaserver/test-result?result=' + encodeURIComponent( JSON.stringify( result ) ) );
+  req.open( 'get', options.server + '/aquaserver/test-result?result=' + encodeURIComponent( JSON.stringify( result ) ) );
   req.send();
   resetTimer();
 }
