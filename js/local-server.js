@@ -11,7 +11,9 @@ const cloneMissingRepos = require( '../../perennial/js/common/cloneMissingRepos'
 const getRepoList = require( '../../perennial/js/common/getRepoList' );
 const gitPull = require( '../../perennial/js/common/gitPull' );
 const isStale = require( '../../perennial/js/common/isStale' );
+const npmUpdate = require( '../../perennial/js/common/npmUpdate' );
 const CTSnapshot = require( './CTSnapshot' );
+const fs = require( 'fs' );
 const http = require( 'http' );
 const _ = require( 'lodash' ); // eslint-disable-line
 const path = require( 'path' );
@@ -297,7 +299,14 @@ const cycleSnapshots = async () => {
         for ( const repo of staleRepos ) {
           await gitPull( repo );
         }
-        await cloneMissingRepos();
+        const clonedRepos = await cloneMissingRepos();
+
+        // npm prune/update on any changed repos, so we can keep our npm status good in our checked out version
+        for ( const repo of [ ...staleRepos, ...clonedRepos ] ) {
+          if ( fs.existsSync( `../${repo}/package.json` ) ) {
+            await npmUpdate( repo );
+          }
+        }
       }
       else {
         winston.info( 'No stale repos' );
@@ -311,8 +320,6 @@ const cycleSnapshots = async () => {
           await snapshot.create( rootDir, setSnapshotStatus );
 
           snapshots.unshift( snapshot );
-
-          await snapshot.npmInstall();
 
           const cutoffTimestamp = Date.now() - 1000 * 60 * 60 * 24 * NUMBER_OF_DAYS_TO_KEEP_SNAPSHOTS;
           while ( snapshots.length > 70 || snapshots[ snapshots.length - 1 ].timestamp < cutoffTimestamp && !snapshots[ snapshots.length - 1 ].exists ) {

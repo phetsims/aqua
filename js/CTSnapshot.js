@@ -14,12 +14,8 @@ const deleteDirectory = require( '../../perennial/js/common/deleteDirectory' );
 const execute = require( '../../perennial/js/common/execute' );
 const getRepoList = require( '../../perennial/js/common/getRepoList' );
 const gitRevParse = require( '../../perennial/js/common/gitRevParse' );
-const npmCommand = require( '../../perennial/js/common/npmCommand' );
 const fs = require( 'fs' );
 const _ = require( 'lodash' ); // eslint-disable-line
-
-// constants
-const copyOptions = { filter: path => path.indexOf( 'node_modules' ) < 0 };
 
 class CTSnapshot {
   /**
@@ -76,8 +72,8 @@ class CTSnapshot {
     }
 
     for ( const repo of this.repos ) {
-      await copyDirectory(  `${rootDir}/${repo}`, `${this.phetDir}/${repo}`, copyOptions );
-      await copyDirectory(  `${rootDir}/${repo}`, `${this.phetioDir}/${repo}`, copyOptions );
+      await copyDirectory(  `${rootDir}/${repo}`, `${this.phetDir}/${repo}`, {} );
+      await copyDirectory(  `${rootDir}/${repo}`, `${this.phetioDir}/${repo}`, {} );
     }
 
     // @public {Array.<Object>}
@@ -98,16 +94,6 @@ class CTSnapshot {
       test.success = false;
       return test;
     } );
-  }
-
-  async npmInstall() {
-    const npmRepos = this.repos.filter( repo => fs.existsSync( `../${repo}/package.json` ) );
-    for ( const repo of npmRepos ) {
-      this.setSnapshotStatus( `Running npm update for ${repo}` );
-
-      await execute( npmCommand, [ 'update', `--cache=../npm-caches/${repo}`, '--tmp=../npm-tmp' ], `${this.phetDir}/${repo}` );
-      await execute( npmCommand, [ 'update', `--cache=../npm-caches/${repo}`, '--tmp=../npm-tmp' ], `${this.phetioDir}/${repo}` );
-    }
   }
 
   /**
