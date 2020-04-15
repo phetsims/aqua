@@ -38,7 +38,7 @@ let durationExpired = false;
 setTimeout( function() {
   if ( !hasLoaded && !hasErrored && !durationExpired ) {
     durationExpired = true;
-    aqua.testFail( [ 'load' ], 'Did not load in the time allowed: ' + options.duration + 'ms' );
+    aqua.testFail( 'Did not load in the time allowed: ' + options.duration + 'ms' );
     aqua.nextTest();
   }
 }, options.duration );
@@ -47,7 +47,7 @@ function onPageLoad() {
   console.log( 'loaded' );
   if ( !hasLoaded && !hasErrored && !durationExpired ) {
     hasLoaded = true;
-    aqua.testPass( [ 'load' ] );
+    aqua.testPass();
     aqua.nextTest();
   }
 }
@@ -64,7 +64,7 @@ function onPageError( data ) {
       console.log( 'stack:\n' + data.stack );
     }
 
-    aqua.testFail( [ 'load' ], iframe.src + '\n' + data.message + '\n' + data.stack );
+    aqua.testFail( iframe.src + '\n' + data.message + '\n' + data.stack );
     aqua.nextTest();
   }
 }

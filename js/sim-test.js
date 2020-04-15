@@ -44,12 +44,11 @@ setTimeout( function() {
   if ( !hasErrored ) {
     if ( hasLoaded ) {
       // Only pass the 'run' if it loads AND doesn't error for the entire duration
-      aqua.testPass( [ 'run' ] );
+      aqua.testPass();
     }
     else {
       // If we didn't load, assume it's because of testing load (don't fail for now, but leave in commented bits)
-      // aqua.testFail( [ 'load' ], 'Did not load in time allowed: ' + options.duration + 'ms' );
-      // aqua.testFail( [ 'run' ], 'Did not load in time allowed: ' + options.duration + 'ms' );
+      // aqua.testFail( 'Did not load in time allowed: ' + options.duration + 'ms' );
     }
     aqua.nextTest();
   }
@@ -66,8 +65,6 @@ function onSimLoad() {
       blur: function() {}
     };
   };
-
-  aqua.testPass( [ 'load' ] );
 }
 
 function onSimError( data ) {
@@ -83,10 +80,7 @@ function onSimError( data ) {
 
   const failMessage = iframe.src + '\n' + ( options.simQueryParameters ? ( 'Query: ' + options.simQueryParameters + '\n' ) : '' ) + data.message + '\n' + data.stack;
 
-  if ( !hasLoaded ) {
-    aqua.testFail( [ 'load' ], failMessage );
-  }
-  aqua.testFail( [ 'run' ], failMessage );
+  aqua.testFail( failMessage );
   aqua.nextTest();
 }
 
@@ -97,10 +91,7 @@ function onSimUnload() {
     hasErrored = true;
     console.log( 'Unloaded before duration expired' );
 
-    if ( !hasLoaded ) {
-      aqua.testFail( [ 'load' ], 'Unloaded frame before complete, window.location probably changed' );
-    }
-    aqua.testFail( [ 'run' ], 'Unloaded frame before complete, window.location probably changed' );
+    aqua.testFail( 'Unloaded frame before complete, window.location probably changed' );
     aqua.nextTest();
   }
 }

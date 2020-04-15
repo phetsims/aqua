@@ -30,37 +30,33 @@ window.aqua = {
    * Sends a test pass.
    * @public
    *
-   * @param {Array.<string>} names - Test names, e.g. [ 'build-a-molecule', 'fuzz', 'require.js' ]
    * @param {string|undefined} message
    */
-  testPass: function( names, message ) {
+  testPass: function( message ) {
     aqua.sendMessage( {
       type: 'test-pass',
-      names: names,
       message: message,
       testInfo: JSON.parse( aquaOptions.testInfo )
     } );
-    console.log( '[PASS] ' + names.join( ',' ) + ' - ' + message );
+    console.log( '[PASS] ' + message );
   },
 
   /**
    * Sends a test failure.
    * @public
    *
-   * @param {Array.<string>} names - Test names, e.g. [ 'build-a-molecule', 'fuzz', 'require.js' ]
    * @param {string|undefined} message
    */
-  testFail: function( names, message ) {
+  testFail: function( message ) {
     // Don't send timeouts as failures, since it doesn't usually indicate an underlying problem
     if ( message.indexOf( 'errors.html#timeout' ) < 0 ) {
       aqua.sendMessage( {
         type: 'test-fail',
-        names: names,
         message: message,
         testInfo: JSON.parse( aquaOptions.testInfo )
       } );
     }
-    console.log( '[FAIL] ' + names.join( ',' ) + ' - ' + message );
+    console.log( '[FAIL] ' + message );
   },
 
   /**

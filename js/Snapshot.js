@@ -14,27 +14,31 @@ const deleteDirectory = require( '../../perennial/js/common/deleteDirectory' );
 const execute = require( '../../perennial/js/common/execute' );
 const getRepoList = require( '../../perennial/js/common/getRepoList' );
 const gitRevParse = require( '../../perennial/js/common/gitRevParse' );
+const Test = require( './Test' );
 const fs = require( 'fs' );
 const _ = require( 'lodash' ); // eslint-disable-line
 
-class CTSnapshot {
+class Snapshot {
   /**
-   * Creates this snapshot.
-   * @public
-   *
    * @param {string} rootDir
    * @param {function({string})} setSnapshotStatus
    */
-  async create( rootDir, setSnapshotStatus ) {
-
+  constructor( rootDir, setSnapshotStatus ) {
     // @private {string}
     this.rootDir = rootDir;
 
     // @private {function}
     this.setSnapshotStatus = setSnapshotStatus;
+  }
+
+  /**
+   * Creates this snapshot.
+   * @public
+   */
+  async create() {
 
     const timestamp = Date.now();
-    const snapshotDir = `${rootDir}/ct-snapshots`;
+    const snapshotDir = `${this.rootDir}/ct-snapshots`;
 
     this.setSnapshotStatus( `Initializing new snapshot: ${timestamp}` );
 
@@ -48,16 +52,12 @@ class CTSnapshot {
     this.exists = true;
 
     // @public {string}
-    this.phetDir = `${snapshotDir}/${timestamp}-phet`;
-    this.phetioDir = `${snapshotDir}/${timestamp}-phet-io`;
+    this.directory = `${snapshotDir}/${timestamp}`;
 
     if ( !fs.existsSync( snapshotDir ) ) {
       await createDirectory( snapshotDir );
     }
-    await createDirectory( this.phetDir );
-    await createDirectory( this.phetioDir );
-
-    this.setSnapshotStatus( 'Copying snapshot files' );
+    await createDirectory( this.directory );
 
     // @public {Array.<string>}
     this.repos = getRepoList( 'active-repos' );
@@ -72,27 +72,15 @@ class CTSnapshot {
     }
 
     for ( const repo of this.repos ) {
-      await copyDirectory(  `${rootDir}/${repo}`, `${this.phetDir}/${repo}`, {} );
-      await copyDirectory(  `${rootDir}/${repo}`, `${this.phetioDir}/${repo}`, {} );
+      this.setSnapshotStatus( `Copying snapshot files: ${repo}` );
+      await copyDirectory( `${this.rootDir}/${repo}`, `${this.directory}/${repo}`, {} );
     }
 
-    // @public {Array.<Object>}
-    this.tests = JSON.parse( await execute( 'node', [ 'js/listContinuousTests.js' ], '../perennial' ) ).map( test => {
-      test.snapshot = this;
-      return test;
-    } );
-    this.browserTests = this.tests.filter( test => [ 'sim-test', 'qunit-test', 'pageload-test' ].includes( test.type ) ).map( test => {
-      test.count = 0;
-      return test;
-    } );
-    this.lintTests = this.tests.filter( test => test.type === 'lint' ).map( test => {
-      test.complete = false;
-      return test;
-    } );
-    this.buildTests = this.tests.filter( test => test.type === 'build' ).map( test => {
-      test.complete = false;
-      test.success = false;
-      return test;
+    this.setSnapshotStatus( 'Loading tests from perennial' );
+
+    // @public {Array.<Test>}
+    this.tests = JSON.parse( await execute( 'node', [ 'js/listContinuousTests.js' ], '../perennial' ) ).map( description => {
+      return new Test( this, description );
     } );
   }
 
@@ -101,29 +89,31 @@ class CTSnapshot {
    * @public
    */
   async remove() {
-    await deleteDirectory( this.phetDir );
-    await deleteDirectory( this.phetioDir );
+    await deleteDirectory( this.directory );
 
     this.exists = false;
   }
 
+  /**
+   * Returns all of the available local tests.
+   * @public
+   *
+   * @returns {Array.<Object>}
+   */
+  getAvailableLocalTests() {
+    return this.tests.filter( test => test.isLocallyAvailable() );
+  }
+
+  /**
+   * Returns all of the available browser tests.
+   * @public
+   *
+   * @param {boolean} es5Only
+   * @returns {Array.<Object>}
+   */
   getAvailableBrowserTests( es5Only ) {
-    return this.browserTests.filter( test => {
-      if ( es5Only && !test.es5 ) {
-        return false;
-      }
-
-      if ( test.buildDependencies ) {
-        for ( const dependency of test.buildDependencies ) {
-          if ( !_.some( this.buildTests, buildTest => buildTest.repo === dependency && buildTest.brand === test.brand && buildTest.success ) ) {
-            return false;
-          }
-        }
-      }
-
-      return true;
-    } );
+    return this.tests.filter( test => test.isBrowserAvailable( es5Only ) );
   }
 }
 
-module.exports = CTSnapshot;
+module.exports = Snapshot;

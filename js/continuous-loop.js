@@ -97,16 +97,15 @@ function nextTest() {
  * Send a test result to the server.
  * @private
  *
- * @param {Array.<string>} names
  * @param {string|undefined} message
  * @param {Object} testInfo - The original test request from continuous-server.js
  * @param {boolean} passed
  */
-function sendTestResult( names, message, testInfo, passed ) {
+function sendTestResult( message, testInfo, passed ) {
   const req = new XMLHttpRequest();
   const result = {
     passed: passed,
-    test: testInfo.test.concat( names ),
+    test: testInfo.test,
     snapshotName: testInfo.snapshotName,
     message: message,
     id: options.id
@@ -126,12 +125,12 @@ window.addEventListener( 'message', function( evt ) {
 
   // test pass/fail has names,message
   if ( data.type === 'test-pass' ) {
-    console.log( data.names + ' PASSED' );
-    sendTestResult( data.names, data.message, data.testInfo, true );
+    console.log( 'PASSED' );
+    sendTestResult( data.message, data.testInfo, true );
   }
   else if ( data.type === 'test-fail' ) {
-    console.log( data.names + ' FAILED' );
-    sendTestResult( data.names, data.message, data.testInfo, false );
+    console.log( 'FAILED' );
+    sendTestResult( data.message, data.testInfo, false );
   }
   else if ( data.type === 'test-next' ) {
     nextTest();

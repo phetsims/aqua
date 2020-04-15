@@ -1,0 +1,33 @@
+// Copyright 2020, University of Colorado Boulder
+
+/**
+ * Holds data related to a specific test result
+ *
+ * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ */
+
+'use strict';
+
+const assert = require( 'assert' );
+
+class TestResult {
+  /**
+   * @param {Test} test
+   * @param {boolean} passed
+   * @param {string|null} [message]
+   */
+  constructor( test, passed, message ) {
+    assert( typeof passed === 'boolean', 'passed should be a boolean' );
+
+    // @public {Test}
+    this.test = test;
+
+    // @public {boolean}
+    this.passed = passed;
+
+    // @public {string|null}
+    this.message = message || null;
+  }
+}
+
+module.exports = TestResult;

@@ -8,11 +8,14 @@
 
 const asyncFilter = require( '../../perennial/js/common/asyncFilter' );
 const cloneMissingRepos = require( '../../perennial/js/common/cloneMissingRepos' );
+const execute = require( '../../perennial/js/common/execute' );
 const getRepoList = require( '../../perennial/js/common/getRepoList' );
 const gitPull = require( '../../perennial/js/common/gitPull' );
+const gruntCommand = require( '../../perennial/js/common/gruntCommand' );
 const isStale = require( '../../perennial/js/common/isStale' );
 const npmUpdate = require( '../../perennial/js/common/npmUpdate' );
-const CTSnapshot = require( './CTSnapshot' );
+const sleep = require( '../../perennial/js/common/sleep' );
+const Snapshot = require( './Snapshot' );
 const fs = require( 'fs' );
 const http = require( 'http' );
 const _ = require( 'lodash' ); // eslint-disable-line
@@ -22,6 +25,7 @@ const winston = require( 'winston' );
 
 const PORT = 45366;
 const NUMBER_OF_DAYS_TO_KEEP_SNAPSHOTS = 2; // in days, any shapshots that are older will be removed from the continuous report
+const DEBUG_PRETEND_CLEAN = true;
 
 const jsonHeaders = {
   'Content-Type': 'application/json',
@@ -30,13 +34,6 @@ const jsonHeaders = {
 
 // {Array.<Snapshot>} All of our snapshots
 const snapshots = [];
-
-// {Results} Main results, with the addition of the snapshots reference
-const testResults = {
-  children: {},
-  results: [],
-  snapshots: snapshots
-};
 
 // root of your GitHub working copy, relative to the name of the directory that the currently-executing script resides in
 const rootDir = path.normalize( __dirname + '/../../' ); // eslint-disable-line no-undef
@@ -49,108 +46,38 @@ const setSnapshotStatus = str => {
 };
 
 /**
- * Adds a test result into our {Results} object.
- * @private
- *
- * @param {boolean} passed
- * @param {Snapshot} snapshot
- * @param {Array.<string>} test - The path
- * @param {string} message
- */
-const addResult = ( passed, snapshot, test, message ) => {
-  const localTest = test.slice();
-  let container = testResults;
-  while ( localTest.length ) {
-    const testName = localTest.shift();
-    if ( container.children[ testName ] ) {
-      container = container.children[ testName ];
-    }
-    else {
-      const newContainer = {
-        children: {},
-        results: []
-      };
-      container.children[ testName ] = newContainer;
-      container = newContainer;
-    }
-  }
-
-  container.results.push( {
-    passed: passed,
-    snapshotName: snapshot.name,
-    snapshotTimestamp: snapshot.timestamp,
-    message: message
-  } );
-
-  // NOTE: we could remove stale tests here?
-};
-
-/**
  * Records a test pass from any source.
  *
- * @param {Snapshot} snapshot
- * @param {Array.<string>} test - The path
+ * @param {Test} test
  * @param {string|undefined} message
  */
-const testPass = ( snapshot, test, message ) => {
-  if ( snapshot === null ) {
-    throw new Error( 'Snapshot null: ' + JSON.stringify( test ) + ' + ' + JSON.stringify( message ) );
-  }
-  winston.info( '[PASS] ' + snapshot.name + ' ' + test.join( ',' ) + ': ' + message );
-  addResult( true, snapshot, test, message );
+const testPass = ( test, message ) => {
+  winston.info( `[PASS] ${test.snapshot.name} ${test.names.join( ',' )}` );
+  test.recordResult( true, message );
 };
 
 /**
  * Records a test failure from any source.
  *
- * @param {Snapshot} snapshot
- * @param {Array.<string>} test - The path
+ * @param {Test} test
  * @param {string|undefined} message
  */
-const testFail = ( snapshot, test, message ) => {
-  winston.info( '[FAIL] ' + snapshot.name + ' ' + test.join( ',' ) + ': ' + message );
-  addResult( false, snapshot, test, message );
+const testFail = ( test, message ) => {
+  winston.info( `[FAIL] ${test.snapshot.name} ${test.names.join( ',' )}` );
+  test.recordResult( false, message );
 };
 
 /**
- * Respond to an HTTP request with a response with the given {Test}.
- * @private
+ * Respond to an HTTP request with a response
  *
  * @param {ServerResponse} res
  * @param {Test|null} test
  */
 const deliverTest = ( res, test ) => {
-  let url;
-  const base = test ? `../../${test.brand === 'phet-io' ? test.phetioDir : test.phetDir}` : '';
+  const object = test.getObjectForBrowser();
+  test.count++;
 
-  if ( test === null ) {
-    url = 'no-test.html';
-  }
-  else if ( test.type === 'sim-test' ) {
-    url = 'sim-test.html?url=' + encodeURIComponent( `${base}/test.url` ) + '&simQueryParameters=' + encodeURIComponent( test.queryParameters );
-  }
-  else if ( test.type === 'qunit-test' ) {
-    url = 'qunit-test.html?url=' + encodeURIComponent( `${base}/test.url` );
-  }
-  else if ( test.type === 'pageload-test' ) {
-    url = 'pageload-test.html?url=' + encodeURIComponent( `${base}/test.url` );
-  }
-  else {
-    url = 'no-test.html';
-  }
-
-  if ( test ) {
-    test.count++;
-  }
-
-  const object = {
-    count: test ? test.count : 0,
-    snapshotName: test ? test.snapshot.name : null,
-    test: test ? test.test : null,
-    url: url
-  };
-
-  winston.info( 'Delivering test: ' + JSON.stringify( object, null, 2 ) );
+  winston.info( `Delivering test: ${object.snapshotName} ${object.url}` );
   res.writeHead( 200, jsonHeaders );
   res.end( JSON.stringify( object ) );
 };
@@ -162,7 +89,12 @@ const deliverTest = ( res, test ) => {
  * @param {ServerResponse} res
  */
 const deliverEmptyTest = res => {
-  deliverTest( res, null );
+  res.writeHead( 200, jsonHeaders );
+  res.end( JSON.stringify( {
+    snapshotName: null,
+    test: null,
+    url: 'no-test.html'
+  } ) );
 };
 
 /**
@@ -197,9 +129,8 @@ const randomBrowserTest = ( res, es5Only ) => {
   } );
 
   // Deliver a random available test currently
-  if ( lowestTests.length > 0 ) {
-    const test = lowestTests[ Math.floor( lowestTests.length * Math.random() ) ];
-    deliverTest( res, test );
+  if ( lowestTests.length ) {
+    deliverTest( res, _.sample( lowestTests ) );
   }
   else {
     deliverEmptyTest( res );
@@ -209,65 +140,67 @@ const randomBrowserTest = ( res, es5Only ) => {
 const startServer = () => {
   // Main server creation
   http.createServer( ( req, res ) => {
-    const requestInfo = url.parse( req.url, true );
+    try {
+      const requestInfo = url.parse( req.url, true );
 
-    if ( requestInfo.pathname === '/aquaserver/next-test' ) {
-      // ?old=true or ?old=false, determines whether ES6 or other newer features can be run directly in the browser
-      randomBrowserTest( res, requestInfo.query.old === 'true' );
-    }
-    if ( requestInfo.pathname === '/aquaserver/test-result' ) {
-      const result = JSON.parse( requestInfo.query.result );
-
-      const snapshot = _.find( snapshots, snapshot => snapshot.name === result.snapshotName );
-      if ( snapshot ) {
-        const test = result.test;
+      if ( requestInfo.pathname === '/aquaserver/next-test' ) {
+        // ?old=true or ?old=false, determines whether ES6 or other newer features can be run directly in the browser
+        randomBrowserTest( res, requestInfo.query.old === 'true' );
+      }
+      if ( requestInfo.pathname === '/aquaserver/test-result' ) {
+        const result = JSON.parse( requestInfo.query.result );
         let message = result.message;
-        if ( !message || message.indexOf( 'errors.html#timeout' ) < 0 ) {
-          if ( !result.passed ) {
-            message = ( result.message ? ( result.message + '\n' ) : '' ) + 'id: ' + result.id;
-          }
-          if ( result.passed ) {
-            testPass( snapshot, test, message );
+
+        const snapshot = _.find( snapshots, snapshot => snapshot.name === result.snapshotName );
+        if ( snapshot ) {
+          const testNames = result.test;
+
+          const test = _.find( snapshot.tests, test => {
+            return _.isEqual( testNames, test.names );
+          } );
+          if ( test ) {
+            if ( !message || message.indexOf( 'errors.html#timeout' ) < 0 ) {
+              if ( !result.passed ) {
+                message = ( result.message ? ( result.message + '\n' ) : '' ) + 'id: ' + result.id;
+              }
+              if ( result.passed ) {
+                testPass( test, message );
+              }
+              else {
+                testFail( test, message );
+              }
+            }
           }
           else {
-            testFail( snapshot, test, message );
+            winston.info( `Could not find test under snapshot: ${result.snapshotName} ${result.test.toString()}` );
           }
         }
-      }
-      else {
-        winston.info( `Could not find snapshot: ${snapshot}` );
-      }
+        else {
+          winston.info( `Could not find snapshot for name: ${result.snapshotName}` );
+        }
 
-      res.writeHead( 200, jsonHeaders );
-      res.end( JSON.stringify( { received: 'true' } ) );
+        res.writeHead( 200, jsonHeaders );
+        res.end( JSON.stringify( { received: 'true' } ) );
+      }
+      if ( requestInfo.pathname === '/aquaserver/snapshot-status' ) {
+        res.writeHead( 200, jsonHeaders );
+        res.end( JSON.stringify( {
+          status: snapshotStatus
+        } ) );
+      }
+      if ( requestInfo.pathname === '/aquaserver/test-status' ) {
+        res.writeHead( 200, jsonHeaders );
+        res.end( JSON.stringify( {
+          zeroCounts: snapshots[ 0 ] ? snapshots[ 0 ].browserTests.filter( test => test.count === 0 ).length : 0
+        } ) );
+      }
     }
-    if ( requestInfo.pathname === '/aquaserver/results' ) {
-      res.writeHead( 200, jsonHeaders );
-      res.end( JSON.stringify( testResults ) );
-    }
-    if ( requestInfo.pathname === '/aquaserver/snapshot-status' ) {
-      res.writeHead( 200, jsonHeaders );
-      res.end( JSON.stringify( {
-        status: snapshotStatus
-      } ) );
-    }
-    if ( requestInfo.pathname === '/aquaserver/test-status' ) {
-      res.writeHead( 200, jsonHeaders );
-      res.end( JSON.stringify( {
-        zeroCounts: snapshots[ 0 ] ? snapshots[ 0 ].browserTests.filter( test => test.count === 0 ).length : 0
-      } ) );
+    catch ( e ) {
+      winston.error( e );
     }
   } ).listen( PORT );
 
   winston.info( `running on port ${PORT}` );
-};
-
-const removeResultsForSnapshot = ( container, snapshot ) => {
-  container.results = container.results.filter( testResult => testResult.snapshotName !== snapshot.name );
-
-  container.children && Object.keys( container.children ).forEach( childKey => {
-    removeResultsForSnapshot( container.children[ childKey ], snapshot );
-  } );
 };
 
 const cycleSnapshots = async () => {
@@ -276,25 +209,24 @@ const cycleSnapshots = async () => {
 
   while ( true ) { // eslint-disable-line
     try {
-      if ( wasStale ) {
-        setSnapshotStatus( 'Checking for commits (changes detected, waiting for stable SHAs)' );
-      }
-      else {
-        setSnapshotStatus( 'Checking for commits (no changes since last snapshot)' );
-      }
+      const staleMessage = wasStale ? 'Changes detected, waiting for stable SHAs' : 'No changes';
 
       const reposToCheck = getRepoList( 'active-repos' ).filter( repo => repo !== 'aqua' );
 
       const staleRepos = await asyncFilter( reposToCheck, async repo => {
-        winston.info( `Checking stale: ${repo}` );
-        return await isStale( repo );
+        setSnapshotStatus( `${staleMessage}; checking ${repo}` );
+        if ( DEBUG_PRETEND_CLEAN ) {
+          return false;
+        }
+        else {
+          return await isStale( repo );
+        }
       } );
 
       if ( staleRepos.length ) {
         wasStale = true;
 
-        winston.info( `Stale repos: ${staleRepos.join( ', ' )}` );
-        setSnapshotStatus( `Pulling repos: ${staleRepos.join( ', ' )}` );
+        setSnapshotStatus( `Stale repos: ${staleRepos.join( ', ' )}, pulling/npm` );
 
         for ( const repo of staleRepos ) {
           await gitPull( repo );
@@ -316,23 +248,83 @@ const cycleSnapshots = async () => {
 
           winston.info( 'Stable point reached' );
 
-          const snapshot = new CTSnapshot();
-          await snapshot.create( rootDir, setSnapshotStatus );
+          const snapshot = new Snapshot( rootDir, setSnapshotStatus );
+          await snapshot.create();
 
           snapshots.unshift( snapshot );
 
           const cutoffTimestamp = Date.now() - 1000 * 60 * 60 * 24 * NUMBER_OF_DAYS_TO_KEEP_SNAPSHOTS;
           while ( snapshots.length > 70 || snapshots[ snapshots.length - 1 ].timestamp < cutoffTimestamp && !snapshots[ snapshots.length - 1 ].exists ) {
-            removeResultsForSnapshot( testResults, snapshots.pop() );
+            snapshots.pop();
           }
 
           setSnapshotStatus( 'Removing old snapshot files' );
           const numActiveSnapshots = 3;
-          if ( snapshots.length > numActiveSnapshots ) {
-            const lastSnapshot = snapshots[ numActiveSnapshots ];
-            await lastSnapshot.remove();
+          for ( const snapshot of snapshots.slice( numActiveSnapshots ) ) {
+            if ( snapshot.exists ) {
+              await snapshot.remove();
+            }
           }
         }
+      }
+
+      if ( DEBUG_PRETEND_CLEAN ) {
+        await sleep( 10000000 );
+      }
+    }
+    catch ( e ) {
+      winston.error( e );
+    }
+  }
+};
+
+const localTaskCycle = async () => {
+  while ( true ) { // eslint-disable-line
+    try {
+      if ( snapshots.length === 0 ) {
+        await sleep( 1000 );
+        continue;
+      }
+
+      // Pick from one of the first two snapshots
+      let availableTests = snapshots[ 0 ].getAvailableLocalTests();
+      if ( snapshots.length > 1 ) {
+        availableTests = availableTests.concat( snapshots[ 1 ].getAvailableLocalTests() );
+      }
+
+      if ( !availableTests.length ) {
+        await sleep( 1000 );
+        continue;
+      }
+
+      const test = _.sample( availableTests );
+
+      if ( test.type === 'lint' ) {
+        test.complete = true;
+        try {
+          const output = await execute( gruntCommand, [ 'lint' ], `../${test.repo}` );
+
+          testPass( test, output );
+        }
+        catch ( e ) {
+          testFail( test, `Build failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
+        }
+      }
+      else if ( test.type === 'build' ) {
+        test.complete = true;
+        try {
+          const output = await execute( gruntCommand, [ `--brands=${test.brands.join( ',' )}`, '--lint=false' ], `../${test.repo}` );
+
+          testPass( test, output );
+          test.success = true;
+        }
+        catch ( e ) {
+          testFail( test, `Build failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
+        }
+      }
+      else {
+        // uhhh, don't know what happened? Don't loop here without sleeping
+        await sleep( 1000 );
       }
     }
     catch ( e ) {
@@ -343,3 +335,4 @@ const cycleSnapshots = async () => {
 
 startServer();
 cycleSnapshots();
+localTaskCycle(); // TODO: how many to run?

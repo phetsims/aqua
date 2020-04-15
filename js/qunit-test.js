@@ -37,10 +37,10 @@ const done = function() {
   if ( id !== null ) {
     message = iframe.src + '\n' + passed + ' out of ' + ( passed + failed ) + ' tests passed. ' + failed + ' failed.\n' + message;
     if ( passed > 0 && failed === 0 ) {
-      aqua.testPass( [], message );
+      aqua.testPass( message );
     }
     else {
-      aqua.testFail( [], message );
+      aqua.testFail( message );
     }
     id = null;
     aqua.nextTest();
