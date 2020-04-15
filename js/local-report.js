@@ -85,10 +85,12 @@ const reportNode = new scenery.Node();
 reportProperty.link( report => {
   const testLabels = report.testNames.map( names => new scenery.Text( names.join( ' : ' ), { fontSize: 12 } ) );
 
+  const padding = 3;
+
   const snapshotLabels = report.snapshots.map( snapshot => new scenery.VBox( {
     spacing: 2,
     children: [
-      ...new Date( 1586988043041 ).toLocaleString().replace( ',', '' ).replace( ' AM', 'am' ).replace( ' PM', 'pm' ).split( ' ' ).map( str => new scenery.Text( str, { fontSize: 10 } ) )
+      ...new Date( snapshot.timestamp ).toLocaleString().replace( ',', '' ).replace( ' AM', 'am' ).replace( ' PM', 'pm' ).split( ' ' ).map( str => new scenery.Text( str, { fontSize: 10 } ) )
     ],
     cursor: 'pointer'
   } ) );
@@ -103,8 +105,8 @@ reportProperty.link( report => {
       const test = _.find( snapshot.tests, test => _.isEqual( names, test.names ) );
 
       const background = new scenery.Rectangle( 0, 0, maxSnapshotLabelWidth, maxTestLabelHeight, {
-        x: maxTestLabelWidth + i * maxSnapshotLabelWidth,
-        y: maxSnapshotLabelHeight + j * maxTestLabelHeight
+        x: maxTestLabelWidth + padding + i * ( maxSnapshotLabelWidth + padding ),
+        y: maxSnapshotLabelHeight + padding + j * ( maxTestLabelHeight + padding )
       } );
 
       if ( test ) {
@@ -131,11 +133,11 @@ reportProperty.link( report => {
 
   testLabels.forEach( ( label, i ) => {
     label.left = 0;
-    label.top = i * maxTestLabelHeight + maxSnapshotLabelHeight;
+    label.top = i * ( maxTestLabelHeight + padding ) + maxSnapshotLabelHeight + padding;
   } );
   snapshotLabels.forEach( ( label, i ) => {
     label.top = 0;
-    label.left = maxTestLabelWidth + i * maxSnapshotLabelWidth;
+    label.left = ( maxTestLabelWidth + padding ) + i * ( maxSnapshotLabelWidth + padding );
   } );
 
   reportNode.children = [

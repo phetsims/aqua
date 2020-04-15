@@ -25,7 +25,7 @@ const winston = require( 'winston' );
 
 const PORT = 45366;
 const NUMBER_OF_DAYS_TO_KEEP_SNAPSHOTS = 2; // in days, any shapshots that are older will be removed from the continuous report
-const DEBUG_PRETEND_CLEAN = true;
+const DEBUG_PRETEND_CLEAN = false;
 
 const jsonHeaders = {
   'Content-Type': 'application/json',
