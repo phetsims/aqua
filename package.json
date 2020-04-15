@@ -19,7 +19,12 @@
     "globals": {
       "aqua": false,
       "XMLHttpRequest": false,
-      "Hashes": false
+      "Hashes": false,
+      "phetCore": false,
+      "axon": false,
+      "dot": false,
+      "kite": false,
+      "scenery": false
     }
   }
 }

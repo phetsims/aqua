@@ -35,6 +35,8 @@ const jsonHeaders = {
 // {Array.<Snapshot>} All of our snapshots
 const snapshots = [];
 
+let reportJSON = '{}';
+
 // root of your GitHub working copy, relative to the name of the directory that the currently-executing script resides in
 const rootDir = path.normalize( __dirname + '/../../' ); // eslint-disable-line no-undef
 
@@ -77,7 +79,7 @@ const deliverTest = ( res, test ) => {
   const object = test.getObjectForBrowser();
   test.count++;
 
-  winston.info( `Delivering test: ${object.snapshotName} ${object.url}` );
+  winston.info( `[SEND] ${object.snapshotName} ${test.names.join( ',' )} ${object.url}` );
   res.writeHead( 200, jsonHeaders );
   res.end( JSON.stringify( object ) );
 };
@@ -188,11 +190,9 @@ const startServer = () => {
           status: snapshotStatus
         } ) );
       }
-      if ( requestInfo.pathname === '/aquaserver/test-status' ) {
+      if ( requestInfo.pathname === '/aquaserver/report' ) {
         res.writeHead( 200, jsonHeaders );
-        res.end( JSON.stringify( {
-          zeroCounts: snapshots[ 0 ] ? snapshots[ 0 ].browserTests.filter( test => test.count === 0 ).length : 0
-        } ) );
+        res.end( reportJSON );
       }
     }
     catch ( e ) {
@@ -333,6 +333,47 @@ const localTaskCycle = async () => {
   }
 };
 
+const reportTaskCycle = async () => {
+  while ( true ) { // eslint-disable-line
+    try {
+      const report = {
+        snapshots: snapshots.map( snapshot => {
+          return {
+            timestamp: snapshot.timestamp,
+            shas: snapshot.shas,
+            tests: snapshot.tests.map( test => {
+              const passedTestResults = test.results.filter( testResult => testResult.passed );
+              const failedTestResults = test.results.filter( testResult => !testResult.passed );
+              return {
+                names: test.names,
+                passCount: passedTestResults.length,
+                failCount: failedTestResults.length,
+                passMessages: _.uniq( passedTestResults.map( testResult => testResult.message ).filter( _.identity ) ),
+                failMessages: _.uniq( failedTestResults.map( testResult => testResult.message ).filter( _.identity ) )
+              };
+            } )
+          };
+        } ),
+        testNames: _.sortBy( _.uniqWith( _.flatten( snapshots.map( snapshot => snapshot.tests.map( test => test.names ) ) ), _.isEqual ), names => names.toString() )
+      };
+
+      reportJSON = JSON.stringify( report );
+    }
+    catch ( e ) {
+      winston.error( e );
+    }
+
+    await sleep( 5000 );
+  }
+};
+
+const numberLocal = Number.parseInt( process.argv[ 2 ], 10 ) || 1;
+
 startServer();
 cycleSnapshots();
-localTaskCycle(); // TODO: how many to run?
+reportTaskCycle();
+
+winston.info( `Launching ${numberLocal} local tasks` );
+_.range( 0, numberLocal ).forEach( () => {
+  localTaskCycle();
+} );
