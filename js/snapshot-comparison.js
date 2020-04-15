@@ -170,7 +170,7 @@ function setup( simNames ) {
     currentSnapshot[ currentSim ] = {
       screenshots: []
     };
-    iframe.src = 'snapshot.html?' + childQueryParams + '&url=' + encodeURIComponent( '../../' + sim + '/' + sim + '_en.html' );
+    iframe.src = 'take-snapshot.html?' + childQueryParams + '&url=' + encodeURIComponent( '../../' + sim + '/' + sim + '_en.html' );
   }
   function nextSim() {
     if ( queue.length ) {
