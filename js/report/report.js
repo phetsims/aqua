@@ -6,7 +6,9 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
+import EnumerationProperty from '../../../axon/js/EnumerationProperty.js';
 import Property from '../../../axon/js/Property.js';
+import Enumeration from '../../../phet-core/js/Enumeration.js';
 import escapeHTML from '../../../phet-core/js/escapeHTML.js';
 import PhetFont from '../../../scenery-phet/js/PhetFont.js';
 import Display from '../../../scenery/js/display/Display.js';
@@ -18,6 +20,7 @@ import RichText from '../../../scenery/js/nodes/RichText.js';
 import Text from '../../../scenery/js/nodes/Text.js';
 import VBox from '../../../scenery/js/nodes/VBox.js';
 import Color from '../../../scenery/js/util/Color.js';
+import HorizontalAquaRadioButtonGroup from '../../../sun/js/HorizontalAquaRadioButtonGroup.js';
 import Panel from '../../../sun/js/Panel.js';
 import TextPushButton from '../../../sun/js/buttons/TextPushButton.js';
 
@@ -82,6 +85,11 @@ const reportProperty = new Property( {
 // {Property.<Array.<string>>} - Which repos to expand!
 const expandedReposProperty = new Property( [] );
 
+const Sort = Enumeration.byKeys( [ 'ALPHABETICAL', 'IMPORTANCE' ] );
+
+// {Property.<Sort>}
+const sortProperty = new EnumerationProperty( Sort, Sort.ALPHABETICAL );
+
 const rootNode = new Node();
 const display = new Display( rootNode, {
   passiveEvents: true
@@ -104,7 +112,7 @@ rootNode.addChild( new VBox( {
   children: [
     statusNode,
     new HBox( {
-      spacing: 10,
+      spacing: 15,
       children: [
         new TextPushButton( 'Expand all', {
           listener: () => {
@@ -115,6 +123,18 @@ rootNode.addChild( new VBox( {
           listener: () => {
             expandedReposProperty.value = [];
           }
+        } ),
+        new HorizontalAquaRadioButtonGroup( sortProperty, [
+          {
+            value: Sort.ALPHABETICAL,
+            node: new Text( 'Alphabetical', { font: new PhetFont( { size: 12 } ) } )
+          },
+          {
+            value: Sort.IMPORTANCE,
+            node: new Text( 'Importance', { font: new PhetFont( { size: 12 } ) } )
+          }
+        ], {
+          spacing: 10
         } )
       ]
     } ),
@@ -153,8 +173,8 @@ const popup = ( triggerNode, message ) => {
   } ) );
 };
 
-Property.multilink( [ reportProperty, expandedReposProperty ], ( report, expandedRepos ) => {
-  const tests = [];
+Property.multilink( [ reportProperty, expandedReposProperty, sortProperty ], ( report, expandedRepos, sort ) => {
+  let tests = [];
 
   // scan to determine what tests we are showing
   report.testNames.forEach( ( names, index ) => {
@@ -177,6 +197,22 @@ Property.multilink( [ reportProperty, expandedReposProperty ], ( report, expande
       } );
     }
   } );
+
+  if ( sort === Sort.IMPORTANCE ) {
+    tests = _.sortBy( tests, test => {
+      const failIndex = _.findIndex( report.snapshots, snapshot => _.some( test.indices, index => snapshot.tests[ index ].n ) );
+      const passIndex = _.findIndex( report.snapshots, snapshot => _.some( test.indices, index => snapshot.tests[ index ].y ) );
+      if ( failIndex >= 0 ) {
+        return failIndex;
+      }
+      else if ( passIndex >= 0 ) {
+        return passIndex + 1000;
+      }
+      else {
+        return 10000;
+      }
+    } );
+  }
 
   let testLabels = tests.map( test => {
     const label = new Text( test.names.join( ' : ' ), { font: new PhetFont( { size: 12 } ) } );
