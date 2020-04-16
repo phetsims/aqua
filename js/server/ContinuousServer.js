@@ -1,7 +1,7 @@
 // Copyright 2020, University of Colorado Boulder
 
 /**
- * TODO: doc
+ * Coordinates continuous testing, and provides HTTP APIs for reports or clients that run browser tests.
  *
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
@@ -52,7 +52,7 @@ class ContinuousServer {
     this.reportJSON = '{}';
 
     // @public {string}
-    this.snapshotStatus = 'Starting up';
+    this.status = 'Starting up';
 
     try {
       this.loadFromFile();
@@ -119,7 +119,7 @@ class ContinuousServer {
         if ( requestInfo.pathname === '/aquaserver/snapshot-status' ) {
           res.writeHead( 200, jsonHeaders );
           res.end( JSON.stringify( {
-            status: this.snapshotStatus
+            status: this.status
           } ) );
         }
         if ( requestInfo.pathname === '/aquaserver/report' ) {
@@ -211,10 +211,9 @@ class ContinuousServer {
    *
    * @param {string} str
    */
-  setSnapshotStatus( str ) {
-    // TODO: rename to setStatus?
-    this.snapshotStatus = `[${new Date().toLocaleString().replace( /^.*, /g, '' ).replace( ' AM', 'am' ).replace( ' PM', 'pm' )}] ${str}`;
-    winston.info( `status: ${this.snapshotStatus}` );
+  setStatus( str ) {
+    this.status = `[${new Date().toLocaleString().replace( /^.*, /g, '' ).replace( ' AM', 'am' ).replace( ' PM', 'pm' )}] ${str}`;
+    winston.info( `status: ${this.status}` );
   }
 
   /**
@@ -269,7 +268,7 @@ class ContinuousServer {
 
     // when loading from a file
     if ( this.snapshots.length ) {
-      this.setSnapshotStatus( 'Scanning checked out state to determine whether the server is stale' );
+      this.setStatus( 'Scanning checked out state to determine whether the server is stale' );
 
       wasStale = false;
       for ( const repo of Object.keys( this.snapshots[ 0 ].shas ) ) {
@@ -284,7 +283,7 @@ class ContinuousServer {
 
     // initial NPM checks, so that all repos will have node_modules that need them
     for ( const repo of getRepoList( 'active-repos' ) ) {
-      this.setSnapshotStatus( `Running initial node_modules checks: ${repo}` );
+      this.setStatus( `Running initial node_modules checks: ${repo}` );
       if ( repo !== 'aqua' && fs.existsSync( `../${repo}/package.json` ) && !fs.existsSync( `../${repo}/node_modules` ) ) {
         await npmUpdate( repo );
       }
@@ -297,7 +296,7 @@ class ContinuousServer {
         const reposToCheck = getRepoList( 'active-repos' ).filter( repo => repo !== 'aqua' );
 
         const staleRepos = await asyncFilter( reposToCheck, async repo => {
-          this.setSnapshotStatus( `${staleMessage}; checking ${repo}` );
+          this.setStatus( `${staleMessage}; checking ${repo}` );
           if ( DEBUG_PRETEND_CLEAN ) {
             return false;
           }
@@ -309,7 +308,7 @@ class ContinuousServer {
         if ( staleRepos.length ) {
           wasStale = true;
 
-          this.setSnapshotStatus( `Stale repos (pulling/npm): ${staleRepos.join( ', ' )}` );
+          this.setStatus( `Stale repos (pulling/npm): ${staleRepos.join( ', ' )}` );
 
           for ( const repo of staleRepos ) {
             await gitPull( repo );
@@ -331,7 +330,7 @@ class ContinuousServer {
 
             winston.info( 'Stable point reached' );
 
-            const snapshot = new Snapshot( this.rootDir, this.setSnapshotStatus.bind( this ) );
+            const snapshot = new Snapshot( this.rootDir, this.setStatus.bind( this ) );
             await snapshot.create();
 
             this.snapshots.unshift( snapshot );
@@ -343,7 +342,7 @@ class ContinuousServer {
 
             this.saveToFile();
 
-            this.setSnapshotStatus( 'Removing old snapshot files' );
+            this.setStatus( 'Removing old snapshot files' );
             const numActiveSnapshots = 3;
             for ( const snapshot of this.snapshots.slice( numActiveSnapshots ) ) {
               if ( snapshot.exists ) {
@@ -436,8 +435,6 @@ class ContinuousServer {
             return {
               timestamp: snapshot.timestamp,
               shas: snapshot.shas,
-
-              // TODO: would sparse arrays be better here? probably, but slower lookup
               tests: testNames.map( names => {
                 const test = snapshot.findTest( names );
                 if ( test ) {

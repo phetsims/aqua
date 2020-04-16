@@ -21,14 +21,14 @@ const _ = require( 'lodash' ); // eslint-disable-line
 class Snapshot {
   /**
    * @param {string} rootDir
-   * @param {function({string})} setSnapshotStatus
+   * @param {function({string})} setStatus
    */
-  constructor( rootDir, setSnapshotStatus ) {
+  constructor( rootDir, setStatus ) {
     // @private {string}
     this.rootDir = rootDir;
 
     // @private {function}
-    this.setSnapshotStatus = setSnapshotStatus;
+    this.setStatus = setStatus;
   }
 
   /**
@@ -40,7 +40,7 @@ class Snapshot {
     const timestamp = Date.now();
     const snapshotDir = `${this.rootDir}/ct-snapshots`;
 
-    this.setSnapshotStatus( `Initializing new snapshot: ${timestamp}` );
+    this.setStatus( `Initializing new snapshot: ${timestamp}` );
 
     // @public {number}
     this.timestamp = timestamp;
@@ -69,11 +69,11 @@ class Snapshot {
     }
 
     for ( const repo of this.repos ) {
-      this.setSnapshotStatus( `Copying snapshot files: ${repo}` );
+      this.setStatus( `Copying snapshot files: ${repo}` );
       await copyDirectory( `${this.rootDir}/${repo}`, `${this.directory}/${repo}`, {} );
     }
 
-    this.setSnapshotStatus( 'Loading tests from perennial' );
+    this.setStatus( 'Loading tests from perennial' );
 
     // @public {Array.<Test>}
     this.tests = JSON.parse( await execute( 'node', [ 'js/listContinuousTests.js' ], '../perennial' ) ).map( description => {
@@ -99,7 +99,7 @@ class Snapshot {
    * @returns {Test|null}
    */
   findTest( names ) {
-    // TODO: can increase performance with different lookups
+    // TODO: can increase performance with different lookups (e.g. binary?)
     return _.find( this.tests, test => _.isEqual( test.names, names ) );
   }
 

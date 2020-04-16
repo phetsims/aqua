@@ -30,7 +30,7 @@ module.exports = grunt => {
 
       const port = grunt.option( 'port' ) ? Number.parseInt( grunt.option( 'port' ), 10 ) : 45366;
       const localCount = Number.parseInt( grunt.option( 'localCount' ), 10 );
-      const snapshot = grunt.option( 'snapshot' ) !== 'false';
+      const snapshot = grunt.option( 'snapshot' ) !== false;
 
       const serverQueryParameter = encodeURIComponent( `http://localhost:${port}` );
       const unbuiltReportURL = `${buildLocal.localTestingURL}aqua/html/local-report.html?server=${serverQueryParameter}`;
@@ -40,7 +40,6 @@ module.exports = grunt => {
       console.log( unbuiltReportURL );
       console.log( builtReportURL );
       console.log( loopURL );
-
 
       const server = new ContinuousServer();
       server.startServer( port );
