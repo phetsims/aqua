@@ -7,18 +7,21 @@
  */
 
 import Property from '../../../axon/js/Property.js';
+import escapeHTML from '../../../phet-core/js/escapeHTML.js';
 import PhetFont from '../../../scenery-phet/js/PhetFont.js';
 import Display from '../../../scenery/js/display/Display.js';
 import FireListener from '../../../scenery/js/listeners/FireListener.js';
 import HBox from '../../../scenery/js/nodes/HBox.js';
 import Node from '../../../scenery/js/nodes/Node.js';
 import Rectangle from '../../../scenery/js/nodes/Rectangle.js';
+import RichText from '../../../scenery/js/nodes/RichText.js';
 import Text from '../../../scenery/js/nodes/Text.js';
 import VBox from '../../../scenery/js/nodes/VBox.js';
 import Color from '../../../scenery/js/util/Color.js';
+import Panel from '../../../sun/js/Panel.js';
 import TextPushButton from '../../../sun/js/buttons/TextPushButton.js';
 
-window.assertions.enableAssert();
+// window.assertions.enableAssert();
 
 const options = QueryStringMachine.getAll( {
   server: {
@@ -94,6 +97,8 @@ snapshotStatusProperty.link( status => {
 const reportNode = new Node();
 
 rootNode.addChild( new VBox( {
+  x: 10,
+  y: 10,
   spacing: 10,
   align: 'left',
   children: [
@@ -116,6 +121,18 @@ rootNode.addChild( new VBox( {
     reportNode
   ]
 } ) );
+
+let clipboard = '';
+document.addEventListener( 'copy', e => {
+  console.log( 'clipboard' );
+  e.preventDefault();
+  if ( e.clipboardData) {
+    e.clipboardData.setData( 'text/plain', clipboard );
+  }
+  else if ( window.clipboardData ) {
+    window.clipboardData.setData( 'Text', clipboard );
+  }
+} );
 
 Property.multilink( [ reportProperty, expandedReposProperty ], ( report, expandedRepos ) => {
   const tests = [];
@@ -186,6 +203,7 @@ Property.multilink( [ reportProperty, expandedReposProperty ], ( report, expande
       let untestedCount = 0;
       let passCount = 0;
       let failCount = 0;
+      let messages = [];
 
       test.indices.forEach( index => {
         totalCount++;
@@ -197,6 +215,9 @@ Property.multilink( [ reportProperty, expandedReposProperty ], ( report, expande
           failCount += snapshotTest.n;
           if ( snapshotTest.y + snapshotTest.n === 0 ) {
             untestedCount++;
+          }
+          if ( snapshotTest.m ) {
+            messages = messages.concat( snapshotTest.m );
           }
         }
         else {
@@ -226,14 +247,31 @@ Property.multilink( [ reportProperty, expandedReposProperty ], ( report, expande
           background.addChild( new Rectangle( 0, 0, completeRatio * maxSnapshotLabelWidth, maxTestLabelHeight, {
             fill: passColor
           } ) );
-
         }
       }
       else {
         background.fill = untestedColor;
       }
 
-      // TODO: display percentage? have something if there is something not meant to test?
+      if ( messages.length ) {
+        background.addInputListener( new FireListener( {
+          fire: () => {
+            const messageHTML = messages.join( '\n\n' ).split( '\n' ).map( escapeHTML ).join( '<br>' );
+            const messagesNode = new RichText( messageHTML, {
+              font: new PhetFont( { size: 12 } ),
+              align: 'left'
+            } );
+            const panel = new Panel( messagesNode );
+            rootNode.addChild( panel );
+            panel.left = background.right;
+            panel.top = background.top;
+            clipboard = messages.join( '\n\n' );
+            panel.addInputListener( new FireListener( {
+              fire: () => panel.detach()
+            } ) );
+          }
+        } ) );
+      }
 
       return background;
     } );
@@ -257,6 +295,6 @@ Property.multilink( [ reportProperty, expandedReposProperty ], ( report, expande
 
 display.initializeEvents();
 display.updateOnRequestAnimationFrame( dt => {
-  display.width = window.innerWidth;
-  display.height = Math.ceil( rootNode.height );
+  display.width = Math.max( window.innerWidth, Math.ceil( rootNode.width ) );
+  display.height = Math.max( 400, Math.ceil( rootNode.height ) );
 } );
