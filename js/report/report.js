@@ -134,6 +134,25 @@ document.addEventListener( 'copy', e => {
   }
 } );
 
+const popup = ( triggerNode, message ) => {
+  const messageHTML = message.split( '\n' ).map( escapeHTML ).join( '<br>' );
+  const messagesNode = new RichText( messageHTML, {
+    font: new PhetFont( { size: 12 } ),
+    align: 'left'
+  } );
+  const panel = new Panel( messagesNode, {
+    backgroundPickable: true
+  } );
+  rootNode.addChild( panel );
+  // TODO: align if it's at the bottom
+  panel.left = triggerNode.right;
+  panel.top = triggerNode.top;
+  clipboard = message;
+  panel.addInputListener( new FireListener( {
+    fire: () => panel.detach()
+  } ) );
+};
+
 Property.multilink( [ reportProperty, expandedReposProperty ], ( report, expandedRepos ) => {
   const tests = [];
 
@@ -177,13 +196,20 @@ Property.multilink( [ reportProperty, expandedReposProperty ], ( report, expande
 
   const padding = 3;
 
-  const snapshotLabels = report.snapshots.map( snapshot => new VBox( {
-    spacing: 2,
-    children: [
-      ...new Date( snapshot.timestamp ).toLocaleString().replace( ',', '' ).replace( ' AM', 'am' ).replace( ' PM', 'pm' ).split( ' ' ).map( str => new Text( str, { font: new PhetFont( { size: 10 } ) } ) )
-    ],
-    cursor: 'pointer'
-  } ) );
+  const snapshotLabels = report.snapshots.map( snapshot => {
+    const label = new VBox( {
+      spacing: 2,
+      children: [
+        ...new Date( snapshot.timestamp ).toLocaleString().replace( ',', '' ).replace( ' AM', 'am' ).replace( ' PM', 'pm' ).split( ' ' ).map( str => new Text( str, { font: new PhetFont( { size: 10 } ) } ) )
+      ]
+    } );
+    label.addInputListener( new FireListener( {
+      fire: () => {
+        popup( label, `${snapshot.timestamp}\n${JSON.stringify( snapshot.shas, null, 2 )}` );
+      }
+    } ) );
+    return label;
+  } );
 
   const maxTestLabelWidth = _.max( testLabels.map( node => node.width ) );
   const maxTestLabelHeight = _.max( testLabels.map( node => node.height ) );
@@ -265,21 +291,7 @@ Property.multilink( [ reportProperty, expandedReposProperty ], ( report, expande
       if ( messages.length ) {
         background.addInputListener( new FireListener( {
           fire: () => {
-            const messageHTML = messages.join( '\n\n' ).split( '\n' ).map( escapeHTML ).join( '<br>' );
-            const messagesNode = new RichText( messageHTML, {
-              font: new PhetFont( { size: 12 } ),
-              align: 'left'
-            } );
-            const panel = new Panel( messagesNode, {
-              backgroundPickable: true
-            } );
-            rootNode.addChild( panel );
-            panel.left = background.right;
-            panel.top = background.top;
-            clipboard = messages.join( '\n\n' );
-            panel.addInputListener( new FireListener( {
-              fire: () => panel.detach()
-            } ) );
+            popup( background, messages.join( '\n\n' ) );
           }
         } ) );
       }
