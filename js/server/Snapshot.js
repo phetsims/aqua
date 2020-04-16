@@ -62,9 +62,6 @@ class Snapshot {
     // @public {Array.<string>}
     this.repos = getRepoList( 'active-repos' );
 
-    // @public {Array.<string>}
-    this.npmInstalledRepos = [];
-
     // @public {Object} - maps repo {string} => sha {string}
     this.shas = {};
     for ( const repo of this.repos ) {
@@ -89,9 +86,21 @@ class Snapshot {
    * @public
    */
   async remove() {
-    await deleteDirectory( this.directory );
-
     this.exists = false;
+
+    await deleteDirectory( this.directory );
+  }
+
+  /**
+   * Finds a given test by its names.
+   * @public
+   *
+   * @param {Array.<string>} names
+   * @returns {Test|null}
+   */
+  findTest( names ) {
+    // TODO: can increase performance with different lookups
+    return _.find( this.tests, test => _.isEqual( test.names, names ) );
   }
 
   /**
@@ -113,6 +122,44 @@ class Snapshot {
    */
   getAvailableBrowserTests( es5Only ) {
     return this.tests.filter( test => test.isBrowserAvailable( es5Only ) );
+  }
+
+  /**
+   * Creates a pojo-style object for saving/restoring
+   *
+   * @returns {Object}
+   */
+  serialize() {
+    return {
+      rootDir: this.rootDir,
+      timestamp: this.timestamp,
+      name: this.name,
+      exists: this.exists,
+      directory: this.directory,
+      repos: this.repos,
+      shas: this.shas,
+      tests: this.tests.map( test => test.serialize() )
+    };
+  }
+
+  /**
+   * Creates the in-memory representation from the serialized form
+   *
+   * @param {Object} serialization
+   * @returns {Snapshot}
+   */
+  static deserialize( serialization ) {
+    const snapshot = new Snapshot( serialization.rootDir, () => {} );
+
+    snapshot.timestamp = serialization.timestamp;
+    snapshot.name = serialization.name;
+    snapshot.exists = serialization.exists;
+    snapshot.directory = serialization.directory;
+    snapshot.repos = serialization.repos;
+    snapshot.shas = serialization.shas;
+    snapshot.tests = serialization.tests.map( testSerialization => Test.deserialize( snapshot, testSerialization ) );
+
+    return snapshot;
   }
 }
 

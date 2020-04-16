@@ -9,3 +9,4 @@ node_modules/
 .eslintcache
 screenshots/
 logs/*.txt
+.continuous-testing-state.json

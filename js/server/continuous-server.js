@@ -33,12 +33,24 @@ const jsonHeaders = {
 };
 
 // {Array.<Snapshot>} All of our snapshots
-const snapshots = [];
+let snapshots = [];
 
 let reportJSON = '{}';
 
 // root of your GitHub working copy, relative to the name of the directory that the currently-executing script resides in
 const rootDir = path.normalize( __dirname + '/../../../' ); // eslint-disable-line no-undef
+
+const saveFile = `${rootDir}/aqua/.continuous-testing-state.json`;
+const saveToFile = () => {
+  fs.writeFileSync( saveFile, JSON.stringify( {
+    snapshots: snapshots.map( snapshot => snapshot.serialize() )
+  }, null, 2 ), 'utf-8' );
+};
+const loadFromFile = () => {
+  if ( fs.existsSync( saveFile ) ) {
+    snapshots = JSON.parse( fs.readFileSync( saveFile, 'utf-8' ) ).snapshots.map( Snapshot.deserialize );
+  }
+};
 
 // Gets update with the current status
 let snapshotStatus = 'Starting up';
@@ -171,6 +183,7 @@ const startServer = () => {
               else {
                 testFail( test, message );
               }
+              saveToFile();
             }
           }
           else {
@@ -226,7 +239,7 @@ const cycleSnapshots = async () => {
       if ( staleRepos.length ) {
         wasStale = true;
 
-        setSnapshotStatus( `Stale repos: ${staleRepos.join( ', ' )}, pulling/npm` );
+        setSnapshotStatus( `Stale repos (pulling/npm): ${staleRepos.join( ', ' )}` );
 
         for ( const repo of staleRepos ) {
           await gitPull( repo );
@@ -258,11 +271,14 @@ const cycleSnapshots = async () => {
             snapshots.pop();
           }
 
+          saveToFile();
+
           setSnapshotStatus( 'Removing old snapshot files' );
           const numActiveSnapshots = 3;
           for ( const snapshot of snapshots.slice( numActiveSnapshots ) ) {
             if ( snapshot.exists ) {
               await snapshot.remove();
+              saveToFile();
             }
           }
         }
@@ -301,6 +317,7 @@ const localTaskCycle = async () => {
 
       if ( test.type === 'lint' ) {
         test.complete = true;
+        saveToFile();
         try {
           const output = await execute( gruntCommand, [ 'lint' ], `../${test.repo}` );
 
@@ -309,9 +326,11 @@ const localTaskCycle = async () => {
         catch ( e ) {
           testFail( test, `Build failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
         }
+        saveToFile();
       }
       else if ( test.type === 'build' ) {
         test.complete = true;
+        saveToFile();
         try {
           const output = await execute( gruntCommand, [ `--brands=${test.brands.join( ',' )}`, '--lint=false' ], `../${test.repo}` );
 
@@ -321,6 +340,7 @@ const localTaskCycle = async () => {
         catch ( e ) {
           testFail( test, `Build failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
         }
+        saveToFile();
       }
       else {
         // uhhh, don't know what happened? Don't loop here without sleeping
@@ -336,25 +356,37 @@ const localTaskCycle = async () => {
 const reportTaskCycle = async () => {
   while ( true ) { // eslint-disable-line
     try {
+      const testNames = _.sortBy( _.uniqWith( _.flatten( snapshots.map( snapshot => snapshot.tests.map( test => test.names ) ) ), _.isEqual ), names => names.toString() );
       const report = {
         snapshots: snapshots.map( snapshot => {
           return {
             timestamp: snapshot.timestamp,
             shas: snapshot.shas,
-            tests: snapshot.tests.map( test => {
-              const passedTestResults = test.results.filter( testResult => testResult.passed );
-              const failedTestResults = test.results.filter( testResult => !testResult.passed );
-              return {
-                names: test.names,
-                passCount: passedTestResults.length,
-                failCount: failedTestResults.length,
-                passMessages: _.uniq( passedTestResults.map( testResult => testResult.message ).filter( _.identity ) ),
-                failMessages: _.uniq( failedTestResults.map( testResult => testResult.message ).filter( _.identity ) )
-              };
+
+            // TODO: would sparse arrays be better here? probably, but slower lookup
+            tests: testNames.map( names => {
+              const test = snapshot.findTest( names );
+              if ( test ) {
+                const passedTestResults = test.results.filter( testResult => testResult.passed );
+                const failedTestResults = test.results.filter( testResult => !testResult.passed );
+                const failMessages = _.uniq( failedTestResults.map( testResult => testResult.message ).filter( _.identity ) );
+
+                const result = {
+                  y: passedTestResults.length,
+                  n: failedTestResults.length
+                };
+                if ( failMessages.length ) {
+                  result.m = failMessages;
+                }
+                return result;
+              }
+              else {
+                return {};
+              }
             } )
           };
         } ),
-        testNames: _.sortBy( _.uniqWith( _.flatten( snapshots.map( snapshot => snapshot.tests.map( test => test.names ) ) ), _.isEqual ), names => names.toString() )
+        testNames: testNames
       };
 
       reportJSON = JSON.stringify( report );
@@ -368,6 +400,13 @@ const reportTaskCycle = async () => {
 };
 
 const numberLocal = Number.parseInt( process.argv[ 2 ], 10 ) || 1;
+
+try {
+  loadFromFile();
+}
+catch ( e ) {
+  winston.error( `error loading from file: ${e}` );
+}
 
 startServer();
 cycleSnapshots();

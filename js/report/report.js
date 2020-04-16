@@ -64,11 +64,18 @@ const reportProperty = new Property( {
   };
   req.onerror = function() {
     setTimeout( reportLoop, 20000 );
-    reportProperty.reset();
+
+    // Show the most recent results anyway?
+    // reportProperty.reset();
   };
   req.open( 'get', options.server + '/aquaserver/report', true );
   req.send();
 })();
+
+
+
+
+
 
 const rootNode = new Node();
 const display = new Display( rootNode, {
@@ -110,21 +117,21 @@ reportProperty.link( report => {
 
   const snapshotsTestNodes = _.flatten( report.snapshots.map( ( snapshot, i ) => {
     return report.testNames.map( ( names, j ) => {
-      const test = _.find( snapshot.tests, test => _.isEqual( names, test.names ) );
+      const test = snapshot.tests[ j ];
 
       const background = new Rectangle( 0, 0, maxSnapshotLabelWidth, maxTestLabelHeight, {
         x: maxTestLabelWidth + padding + i * ( maxSnapshotLabelWidth + padding ),
         y: maxSnapshotLabelHeight + padding + j * ( maxTestLabelHeight + padding )
       } );
 
-      if ( test ) {
-        if ( test.passCount > 0 && test.failCount === 0 ) {
+      if ( typeof test.y === 'number' ) {
+        if ( test.y > 0 && test.n === 0 ) {
           background.fill = passColor;
         }
-        else if ( test.passCount === 0 && test.failCount > 0 ) {
+        else if ( test.y === 0 && test.n > 0 ) {
           background.fill = failColor;
         }
-        else if ( test.passCount === 0 && test.failCount === 0 ) {
+        else if ( test.y === 0 && test.n === 0 ) {
           background.fill = untestedColor;
         }
         else {
@@ -157,6 +164,6 @@ reportProperty.link( report => {
 
 display.initializeEvents();
 display.updateOnRequestAnimationFrame( dt => {
-  display.width = Math.ceil( rootNode.width );
+  display.width = window.innerWidth;
   display.height = Math.ceil( rootNode.height );
 } );

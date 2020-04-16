@@ -28,6 +28,29 @@ class TestResult {
     // @public {string|null}
     this.message = message || null;
   }
+
+  /**
+   * Creates a pojo-style object for saving/restoring
+   *
+   * @returns {Object}
+   */
+  serialize() {
+    return {
+      passed: this.passed,
+      message: this.message
+    };
+  }
+
+  /**
+   * Creates the in-memory representation from the serialized form
+   *
+   * @param {Test} test
+   * @param {Object} serialization
+   * @returns {TestResult}
+   */
+  static deserialize( test, serialization ) {
+    return new TestResult( test, serialization.passed, serialization.message );
+  }
 }
 
 module.exports = TestResult;

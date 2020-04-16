@@ -34,6 +34,9 @@ class Test {
     // @public {Snapshot}
     this.snapshot = snapshot;
 
+    // @private {Object} - Saved for future serialization
+    this.description = description;
+
     // @public {Array.<string>}
     this.names = description.test;
 
@@ -185,6 +188,40 @@ class Test {
       test: this.names,
       url: url
     };
+  }
+
+  /**
+   * Creates a pojo-style object for saving/restoring
+   *
+   * @returns {Object}
+   */
+  serialize() {
+    return {
+      description: this.description,
+      results: this.results.map( testResult => testResult.serialize() ),
+      complete: this.complete,
+      success: this.success,
+      count: this.count
+    };
+  }
+
+  /**
+   * Creates the in-memory representation from the serialized form
+   *
+   * @param {Snapshot} snapshot
+   * @param {Object} serialization
+   * @returns {Test}
+   */
+  static deserialize( snapshot, serialization ) {
+    const test = new Test( snapshot, serialization.description );
+
+    test.complete = serialization.complete;
+    test.success = serialization.success;
+    test.count = serialization.count;
+
+    test.results = serialization.results.map( resultSerialization => TestResult.deserialize( test, resultSerialization ) );
+
+    return test;
   }
 }
 
