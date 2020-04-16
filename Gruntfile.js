@@ -2,5 +2,5 @@
 
 'use strict';
 
-// use chipper's gruntfile
-module.exports = require( '../chipper/js/grunt/Gruntfile.js' );
+// use aqua's gruntfile
+module.exports = require( '../aqua/js/Gruntfile.js' );

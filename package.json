@@ -24,7 +24,8 @@
       "axon": false,
       "dot": false,
       "kite": false,
-      "scenery": false
+      "scenery": false,
+      "__dirname": false
     }
   },
   "phet": {
