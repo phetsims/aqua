@@ -6,15 +6,15 @@
 
 'use strict';
 
-const asyncFilter = require( '../../perennial/js/common/asyncFilter' );
-const cloneMissingRepos = require( '../../perennial/js/common/cloneMissingRepos' );
-const execute = require( '../../perennial/js/common/execute' );
-const getRepoList = require( '../../perennial/js/common/getRepoList' );
-const gitPull = require( '../../perennial/js/common/gitPull' );
-const gruntCommand = require( '../../perennial/js/common/gruntCommand' );
-const isStale = require( '../../perennial/js/common/isStale' );
-const npmUpdate = require( '../../perennial/js/common/npmUpdate' );
-const sleep = require( '../../perennial/js/common/sleep' );
+const asyncFilter = require( '../../../perennial/js/common/asyncFilter' );
+const cloneMissingRepos = require( '../../../perennial/js/common/cloneMissingRepos' );
+const execute = require( '../../../perennial/js/common/execute' );
+const getRepoList = require( '../../../perennial/js/common/getRepoList' );
+const gitPull = require( '../../../perennial/js/common/gitPull' );
+const gruntCommand = require( '../../../perennial/js/common/gruntCommand' );
+const isStale = require( '../../../perennial/js/common/isStale' );
+const npmUpdate = require( '../../../perennial/js/common/npmUpdate' );
+const sleep = require( '../../../perennial/js/common/sleep' );
 const Snapshot = require( './Snapshot' );
 const fs = require( 'fs' );
 const http = require( 'http' );

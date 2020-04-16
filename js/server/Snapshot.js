@@ -8,12 +8,12 @@
 
 'use strict';
 
-const copyDirectory = require( '../../perennial/js/common/copyDirectory' );
-const createDirectory = require( '../../perennial/js/common/createDirectory' );
-const deleteDirectory = require( '../../perennial/js/common/deleteDirectory' );
-const execute = require( '../../perennial/js/common/execute' );
-const getRepoList = require( '../../perennial/js/common/getRepoList' );
-const gitRevParse = require( '../../perennial/js/common/gitRevParse' );
+const copyDirectory = require( '../../../perennial/js/common/copyDirectory' );
+const createDirectory = require( '../../../perennial/js/common/createDirectory' );
+const deleteDirectory = require( '../../../perennial/js/common/deleteDirectory' );
+const execute = require( '../../../perennial/js/common/execute' );
+const getRepoList = require( '../../../perennial/js/common/getRepoList' );
+const gitRevParse = require( '../../../perennial/js/common/gitRevParse' );
 const Test = require( './Test' );
 const fs = require( 'fs' );
 const _ = require( 'lodash' ); // eslint-disable-line
