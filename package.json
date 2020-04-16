@@ -26,5 +26,8 @@
       "kite": false,
       "scenery": false
     }
+  },
+  "phet": {
+    "buildStandalone": true
   }
 }
