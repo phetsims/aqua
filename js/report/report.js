@@ -176,6 +176,13 @@ const popup = ( triggerNode, message ) => {
 Property.multilink( [ reportProperty, expandedReposProperty, sortProperty ], ( report, expandedRepos, sort ) => {
   let tests = [];
 
+  const everythingName = '(everything)';
+
+  tests.push( {
+    names: [ everythingName ],
+    indices: _.range( 0, report.testNames.length )
+  } );
+
   // scan to determine what tests we are showing
   report.testNames.forEach( ( names, index ) => {
     if ( !expandedRepos.includes( names[ 0 ] ) ) {
@@ -216,6 +223,9 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty ], ( r
 
   let testLabels = tests.map( test => {
     const label = new Text( test.names.join( ' : ' ), { font: new PhetFont( { size: 12 } ) } );
+    if ( test.names[ 0 ] === everythingName ) {
+      label.fill = '#999';
+    }
     label.addInputListener( new FireListener( {
       fire: () => {
         const topLevelName = test.names[ 0 ];
@@ -288,7 +298,9 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty ], ( r
             untestedCount++;
           }
           if ( snapshotTest.m ) {
-            messages = messages.concat( snapshotTest.m );
+            messages = messages.concat( snapshotTest.m.map( message => {
+              return `${report.testNames[ index ].join( ' : ' )}\n${message}`;
+            } ) );
           }
         }
         else {
