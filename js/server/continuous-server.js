@@ -38,7 +38,7 @@ const snapshots = [];
 let reportJSON = '{}';
 
 // root of your GitHub working copy, relative to the name of the directory that the currently-executing script resides in
-const rootDir = path.normalize( __dirname + '/../../' ); // eslint-disable-line no-undef
+const rootDir = path.normalize( __dirname + '/../../../' ); // eslint-disable-line no-undef
 
 // Gets update with the current status
 let snapshotStatus = 'Starting up';
