@@ -159,7 +159,7 @@ Property.multilink( [ reportProperty, expandedReposProperty ], ( report, expande
     }
   } );
 
-  const testLabels = tests.map( test => {
+  let testLabels = tests.map( test => {
     const label = new Text( test.names.join( ' : ' ), { font: new PhetFont( { size: 12 } ) } );
     label.addInputListener( new FireListener( {
       fire: () => {
@@ -189,6 +189,15 @@ Property.multilink( [ reportProperty, expandedReposProperty ], ( report, expande
   const maxTestLabelHeight = _.max( testLabels.map( node => node.height ) );
   const maxSnapshotLabelWidth = _.max( snapshotLabels.map( node => node.width ) );
   const maxSnapshotLabelHeight = _.max( snapshotLabels.map( node => node.height ) );
+
+  testLabels = testLabels.map( label => {
+    label.left = 0;
+    label.top = 0;
+    return new Rectangle( 0, 0, maxTestLabelWidth, maxTestLabelHeight, {
+      fill: '#fafafa',
+      children: [ label ]
+    } );
+  } );
 
   const snapshotsTestNodes = _.flatten( report.snapshots.map( ( snapshot, i ) => {
     return tests.map( ( test, j ) => {
@@ -261,7 +270,9 @@ Property.multilink( [ reportProperty, expandedReposProperty ], ( report, expande
               font: new PhetFont( { size: 12 } ),
               align: 'left'
             } );
-            const panel = new Panel( messagesNode );
+            const panel = new Panel( messagesNode, {
+              backgroundPickable: true
+            } );
             rootNode.addChild( panel );
             panel.left = background.right;
             panel.top = background.top;
