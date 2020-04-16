@@ -394,5 +394,5 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
 display.initializeEvents();
 display.updateOnRequestAnimationFrame( dt => {
   display.width = Math.max( window.innerWidth, Math.ceil( rootNode.width ) );
-  display.height = Math.max( 400, Math.ceil( rootNode.height ) );
+  display.height = Math.max( 400, Math.ceil( rootNode.height ) ) + 100;
 } );
