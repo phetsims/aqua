@@ -7,12 +7,16 @@
  */
 
 import Property from '../../../axon/js/Property.js';
+import PhetFont from '../../../scenery-phet/js/PhetFont.js';
 import Display from '../../../scenery/js/display/Display.js';
+import FireListener from '../../../scenery/js/listeners/FireListener.js';
+import HBox from '../../../scenery/js/nodes/HBox.js';
 import Node from '../../../scenery/js/nodes/Node.js';
 import Rectangle from '../../../scenery/js/nodes/Rectangle.js';
 import Text from '../../../scenery/js/nodes/Text.js';
 import VBox from '../../../scenery/js/nodes/VBox.js';
 import Color from '../../../scenery/js/util/Color.js';
+import TextPushButton from '../../../sun/js/buttons/TextPushButton.js';
 
 window.assertions.enableAssert();
 
@@ -26,13 +30,13 @@ const options = QueryStringMachine.getAll( {
 } );
 
 const passColor = new Color( 60, 255, 60 );
+const passColorPartial = new Color( 170, 255, 170 );
 const failColor = new Color( 255, 90, 90 );
-const mixedColor = new Color( 255,210,80 );
-const unincludedColor = new Color( 128, 128, 128 );
+const failColorPartial = new Color( 255, 190, 190 );
 const untestedColor = new Color( 240, 240, 240 );
 
-// Property.<string>
-const snapshotStatusProperty = new Property( 'unknown status' );
+// {Property.<string>}
+const snapshotStatusProperty = new Property( 'loading...' );
 
 snapshotStatusProperty.lazyLink( status => console.log( `Status: ${status}` ) );
 
@@ -50,7 +54,7 @@ snapshotStatusProperty.lazyLink( status => console.log( `Status: ${status}` ) );
   req.send();
 })();
 
-// Property.<Object|null>
+// {Property.<Object|null>}
 const reportProperty = new Property( {
   snapshots: [],
   testNames: []
@@ -72,10 +76,8 @@ const reportProperty = new Property( {
   req.send();
 })();
 
-
-
-
-
+// {Property.<Array.<string>>} - Which repos to expand!
+const expandedReposProperty = new Property( [] );
 
 const rootNode = new Node();
 const display = new Display( rootNode, {
@@ -84,7 +86,7 @@ const display = new Display( rootNode, {
 
 document.body.appendChild( display.domElement );
 
-const statusNode = new Text( '', { fontSize: 14 } );
+const statusNode = new Text( '', { font: new PhetFont( { size: 14 } ) } );
 snapshotStatusProperty.link( status => {
   statusNode.text = status;
 } );
@@ -94,18 +96,74 @@ const reportNode = new Node();
 rootNode.addChild( new VBox( {
   spacing: 10,
   align: 'left',
-  children: [ statusNode, reportNode ]
+  children: [
+    statusNode,
+    new HBox( {
+      spacing: 10,
+      children: [
+        new TextPushButton( 'Expand all', {
+          listener: () => {
+            expandedReposProperty.value = _.uniq( reportProperty.value.testNames.map( names => names[ 0 ] ) );
+          }
+        } ),
+        new TextPushButton( 'Collapse all', {
+          listener: () => {
+            expandedReposProperty.value = [];
+          }
+        } )
+      ]
+    } ),
+    reportNode
+  ]
 } ) );
 
-reportProperty.link( report => {
-  const testLabels = report.testNames.map( names => new Text( names.join( ' : ' ), { fontSize: 12 } ) );
+Property.multilink( [ reportProperty, expandedReposProperty ], ( report, expandedRepos ) => {
+  const tests = [];
+
+  // scan to determine what tests we are showing
+  report.testNames.forEach( ( names, index ) => {
+    if ( !expandedRepos.includes( names[ 0 ] ) ) {
+      const lastTest = tests[ tests.length - 1 ];
+      if ( lastTest && lastTest.names[ 0 ] === names[ 0 ] ) {
+        lastTest.indices.push( index );
+      }
+      else {
+        tests.push( {
+          names: [ names[ 0 ] ],
+          indices: [ index ]
+        } );
+      }
+    }
+    else {
+      tests.push( {
+        names: names,
+        indices: [ index ]
+      } );
+    }
+  } );
+
+  const testLabels = tests.map( test => {
+    const label = new Text( test.names.join( ' : ' ), { font: new PhetFont( { size: 12 } ) } );
+    label.addInputListener( new FireListener( {
+      fire: () => {
+        const topLevelName = test.names[ 0 ];
+        if ( test.names.length > 1 ) {
+          expandedReposProperty.value = expandedReposProperty.value.filter( name => name !== topLevelName );
+        }
+        else {
+          expandedReposProperty.value = _.uniq( [ ...expandedReposProperty.value, topLevelName ] );
+        }
+      }
+    } ) );
+    return label;
+  } );
 
   const padding = 3;
 
   const snapshotLabels = report.snapshots.map( snapshot => new VBox( {
     spacing: 2,
     children: [
-      ...new Date( snapshot.timestamp ).toLocaleString().replace( ',', '' ).replace( ' AM', 'am' ).replace( ' PM', 'pm' ).split( ' ' ).map( str => new Text( str, { fontSize: 10 } ) )
+      ...new Date( snapshot.timestamp ).toLocaleString().replace( ',', '' ).replace( ' AM', 'am' ).replace( ' PM', 'pm' ).split( ' ' ).map( str => new Text( str, { font: new PhetFont( { size: 10 } ) } ) )
     ],
     cursor: 'pointer'
   } ) );
@@ -116,31 +174,66 @@ reportProperty.link( report => {
   const maxSnapshotLabelHeight = _.max( snapshotLabels.map( node => node.height ) );
 
   const snapshotsTestNodes = _.flatten( report.snapshots.map( ( snapshot, i ) => {
-    return report.testNames.map( ( names, j ) => {
-      const test = snapshot.tests[ j ];
-
+    return tests.map( ( test, j ) => {
+      const x = maxTestLabelWidth + padding + i * ( maxSnapshotLabelWidth + padding );
+      const y = maxSnapshotLabelHeight + padding + j * ( maxTestLabelHeight + padding );
       const background = new Rectangle( 0, 0, maxSnapshotLabelWidth, maxTestLabelHeight, {
-        x: maxTestLabelWidth + padding + i * ( maxSnapshotLabelWidth + padding ),
-        y: maxSnapshotLabelHeight + padding + j * ( maxTestLabelHeight + padding )
+        x: x,
+        y: y
       } );
 
-      if ( typeof test.y === 'number' ) {
-        if ( test.y > 0 && test.n === 0 ) {
-          background.fill = passColor;
-        }
-        else if ( test.y === 0 && test.n > 0 ) {
-          background.fill = failColor;
-        }
-        else if ( test.y === 0 && test.n === 0 ) {
-          background.fill = untestedColor;
+      let totalCount = 0;
+      let untestedCount = 0;
+      let passCount = 0;
+      let failCount = 0;
+
+      test.indices.forEach( index => {
+        totalCount++;
+
+        const snapshotTest = snapshot.tests[ index ];
+
+        if ( typeof snapshotTest.y === 'number' ) {
+          passCount += snapshotTest.y;
+          failCount += snapshotTest.n;
+          if ( snapshotTest.y + snapshotTest.n === 0 ) {
+            untestedCount++;
+          }
         }
         else {
-          background.fill = mixedColor;
+          untestedCount++;
+        }
+      } );
+
+      const completeRatio = totalCount ? ( ( totalCount - untestedCount ) / totalCount ) : 1;
+
+      if ( failCount > 0 ) {
+        if ( untestedCount === 0 ) {
+          background.fill = failColor;
+        }
+        else {
+          background.fill = failColorPartial;
+          background.addChild( new Rectangle( 0, 0, completeRatio * maxSnapshotLabelWidth, maxTestLabelHeight, {
+            fill: failColor
+          } ) );
+        }
+      }
+      else if ( passCount > 0 ) {
+        if ( untestedCount === 0 ) {
+          background.fill = passColor;
+        }
+        else {
+          background.fill = passColorPartial;
+          background.addChild( new Rectangle( 0, 0, completeRatio * maxSnapshotLabelWidth, maxTestLabelHeight, {
+            fill: passColor
+          } ) );
+
         }
       }
       else {
-        background.fill = unincludedColor;
+        background.fill = untestedColor;
       }
+
+      // TODO: display percentage? have something if there is something not meant to test?
 
       return background;
     } );
