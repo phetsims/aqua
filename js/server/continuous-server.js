@@ -11,6 +11,7 @@ const cloneMissingRepos = require( '../../../perennial/js/common/cloneMissingRep
 const execute = require( '../../../perennial/js/common/execute' );
 const getRepoList = require( '../../../perennial/js/common/getRepoList' );
 const gitPull = require( '../../../perennial/js/common/gitPull' );
+const gitRevParse = require( '../../../perennial/js/common/gitRevParse' );
 const gruntCommand = require( '../../../perennial/js/common/gruntCommand' );
 const isStale = require( '../../../perennial/js/common/isStale' );
 const npmUpdate = require( '../../../perennial/js/common/npmUpdate' );
@@ -219,6 +220,29 @@ const startServer = () => {
 const cycleSnapshots = async () => {
   // {boolean} Whether our last scan of SHAs found anything stale.
   let wasStale = true;
+
+  // when loading from a file
+  if ( snapshots.length ) {
+    setSnapshotStatus( 'Scanning checked out state to determine whether the server is stale' );
+
+    wasStale = false;
+    for ( const repo of Object.keys( snapshots[ 0 ].shas ) ) {
+      if ( await gitRevParse( repo, 'master' ) !== snapshots[ 0 ].shas[ repo ] ) {
+        wasStale = true;
+        break;
+      }
+    }
+
+    winston.info( `Initial wasStale: ${wasStale}` );
+  }
+
+  // initial NPM checks, so that all repos will have node_modules that need them
+  for ( const repo of getRepoList( 'active-repos' ) ) {
+    setSnapshotStatus( `Running initial node_modules checks: ${repo}` );
+    if ( repo !== 'aqua' && fs.existsSync( `../${repo}/package.json` ) && !fs.existsSync( `../${repo}/node_modules` ) ) {
+      await npmUpdate( repo );
+    }
+  }
 
   while ( true ) { // eslint-disable-line
     try {
