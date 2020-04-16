@@ -13,6 +13,7 @@ import escapeHTML from '../../../phet-core/js/escapeHTML.js';
 import PhetFont from '../../../scenery-phet/js/PhetFont.js';
 import Display from '../../../scenery/js/display/Display.js';
 import FireListener from '../../../scenery/js/listeners/FireListener.js';
+import DOM from '../../../scenery/js/nodes/DOM.js';
 import HBox from '../../../scenery/js/nodes/HBox.js';
 import Node from '../../../scenery/js/nodes/Node.js';
 import Rectangle from '../../../scenery/js/nodes/Rectangle.js';
@@ -85,6 +86,9 @@ const reportProperty = new Property( {
 // {Property.<Array.<string>>} - Which repos to expand!
 const expandedReposProperty = new Property( [] );
 
+// {Property.<string>}
+const filterStringProperty = new Property( '' );
+
 const Sort = Enumeration.byKeys( [ 'ALPHABETICAL', 'IMPORTANCE' ] );
 
 // {Property.<Sort>}
@@ -103,6 +107,21 @@ snapshotStatusProperty.link( status => {
 } );
 
 const reportNode = new Node();
+
+const filterElement = document.createElement( 'input' );
+filterElement.type = 'text';
+
+filterElement.addEventListener( 'change', () => {
+  filterStringProperty.value = filterElement.value;
+} );
+
+const filterNode = new HBox( {
+  spacing: 5,
+  children: [
+    new Text( 'Filter:', { font: new PhetFont( { size: 12 } ) } ),
+    new DOM( filterElement )
+  ]
+} );
 
 rootNode.addChild( new VBox( {
   x: 10,
@@ -135,7 +154,8 @@ rootNode.addChild( new VBox( {
           }
         ], {
           spacing: 10
-        } )
+        } ),
+        filterNode
       ]
     } ),
     reportNode
@@ -173,7 +193,7 @@ const popup = ( triggerNode, message ) => {
   } ) );
 };
 
-Property.multilink( [ reportProperty, expandedReposProperty, sortProperty ], ( report, expandedRepos, sort ) => {
+Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filterStringProperty ], ( report, expandedRepos, sort, filterString ) => {
   let tests = [];
 
   const everythingName = '(everything)';
@@ -204,6 +224,13 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty ], ( r
       } );
     }
   } );
+
+  if ( filterString.length ) {
+    // Spaces separate multiple search terms
+    filterString.split( ' ' ).forEach( filterPart => {
+      tests = tests.filter( test => _.some( test.names, name => name.includes( filterPart ) ) );
+    } );
+  }
 
   if ( sort === Sort.IMPORTANCE ) {
     tests = _.sortBy( tests, test => {
