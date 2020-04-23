@@ -63,10 +63,15 @@ statusProperty.lazyLink( status => console.log( `Status: ${status}` ) );
   const req = new XMLHttpRequest();
   req.onload = function() {
     setTimeout( snapshotStatusLoop, 1000 );
-    const result = JSON.parse( req.responseText );
-    statusProperty.value = result.status;
-    lastErrorProperty.value = result.lastErrorString;
-    startupTimestampProperty.value = result.startupTimestamp;
+    if ( req.responseText.includes( '<title>503 Service Unavailable</title>' ) ) {
+      statusProperty.value = '503 error on server';
+    }
+    else {
+      const result = JSON.parse( req.responseText );
+      statusProperty.value = result.status;
+      lastErrorProperty.value = result.lastErrorString;
+      startupTimestampProperty.value = result.startupTimestamp;
+    }
   };
   req.onerror = function() {
     setTimeout( snapshotStatusLoop, 1000 );
