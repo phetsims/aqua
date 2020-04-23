@@ -429,7 +429,7 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
 
   const padding = 3;
 
-  const snapshotLabels = report.snapshots.map( snapshot => {
+  const snapshotLabels = report.snapshots.map( ( snapshot, index ) => {
     const label = new VBox( {
       spacing: 2,
       children: [
@@ -439,7 +439,16 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
     } );
     label.addInputListener( new FireListener( {
       fire: () => {
-        popup( label, `${snapshot.timestamp}\n${JSON.stringify( snapshot.shas, null, 2 )}` );
+        let diffString = '';
+
+        const previousSnapshot = report.snapshots[ index + 1 ];
+        if ( previousSnapshot ) {
+          diffString = _.uniq( Object.keys( snapshot.shas ).concat( Object.keys( previousSnapshot.shas ) ) ).sort().filter( repo => {
+            return snapshot.shas[ repo ] !== previousSnapshot.shas[ repo ];
+          } ).map( repo => `${repo}: ${previousSnapshot.shas[ repo ]} => ${snapshot.shas[ repo ]}` ).join( '\n' );
+        }
+
+        popup( label, `${snapshot.timestamp}\n\n${diffString}\n\n${JSON.stringify( snapshot.shas, null, 2 )}` );
       }
     } ) );
     return label;
