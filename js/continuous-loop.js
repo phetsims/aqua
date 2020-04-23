@@ -69,7 +69,8 @@ function nextTest() {
       // kick off loading our iframe
       iframe.src = QueryStringMachine.appendQueryString( data.url, 'testInfo=' + encodeURIComponent( JSON.stringify( {
         test: data.test,
-        snapshotName: data.snapshotName
+        snapshotName: data.snapshotName,
+        timestamp: data.timestamp
       } ) ) );
 
       infoElement.textContent = JSON.stringify( data, null, 2 );
@@ -107,6 +108,7 @@ function sendTestResult( message, testInfo, passed ) {
     passed: passed,
     test: testInfo.test,
     snapshotName: testInfo.snapshotName,
+    timestamp: testInfo.timestamp,
     message: message,
     id: options.id
   };

@@ -72,7 +72,8 @@ statusProperty.lazyLink( status => console.log( `Status: ${status}` ) );
 // {Property.<Object|null>}
 const reportProperty = new Property( {
   snapshots: [],
-  testNames: []
+  testNames: [],
+  testAverageTimes: []
 } );
 
 (function reportLoop() {
@@ -208,7 +209,8 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
 
   tests.push( {
     names: [ everythingName ],
-    indices: _.range( 0, report.testNames.length )
+    indices: _.range( 0, report.testNames.length ),
+    averageTimes: report.testAverageTimes
   } );
 
   // scan to determine what tests we are showing
@@ -217,20 +219,28 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
       const lastTest = tests[ tests.length - 1 ];
       if ( lastTest && lastTest.names[ 0 ] === names[ 0 ] ) {
         lastTest.indices.push( index );
+        lastTest.averageTimes.push( report.testAverageTimes[ index ] );
       }
       else {
         tests.push( {
           names: [ names[ 0 ] ],
-          indices: [ index ]
+          indices: [ index ],
+          averageTimes: [ report.testAverageTimes[ index ] ]
         } );
       }
     }
     else {
       tests.push( {
         names: names,
-        indices: [ index ]
+        indices: [ index ],
+        averageTimes: [ report.testAverageTimes[ index ] ]
       } );
     }
+  } );
+
+  // compute average times
+  tests.forEach( test => {
+    test.averageTime = _.mean( test.averageTimes.filter( _.identity ) ) || 0;
   } );
 
   if ( filterString.length ) {

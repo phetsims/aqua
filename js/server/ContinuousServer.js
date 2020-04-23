@@ -102,11 +102,12 @@ class ContinuousServer {
                 if ( !result.passed ) {
                   message = ( result.message ? ( result.message + '\n' ) : '' ) + 'id: ' + result.id;
                 }
+                const milliseconds = Date.now() - result.timestamp;
                 if ( result.passed ) {
-                  ContinuousServer.testPass( test, message );
+                  ContinuousServer.testPass( test, milliseconds, message );
                 }
                 else {
-                  ContinuousServer.testFail( test, message );
+                  ContinuousServer.testFail( test, milliseconds, message );
                 }
                 this.saveToFile();
               }
@@ -260,22 +261,24 @@ class ContinuousServer {
    * Records a test pass from any source.
    *
    * @param {Test} test
+   * @param {number} milliseconds
    * @param {string|undefined} message
    */
-  static testPass( test, message ) {
+  static testPass( test, milliseconds, message ) {
     winston.info( `[PASS] ${test.snapshot.name} ${test.names.join( ',' )}` );
-    test.recordResult( true, message );
+    test.recordResult( true, milliseconds, message );
   }
 
   /**
    * Records a test failure from any source.
    *
    * @param {Test} test
+   * @param {number} milliseconds
    * @param {string|undefined} message
    */
-  static testFail( test, message ) {
+  static testFail( test, milliseconds, message ) {
     winston.info( `[FAIL] ${test.snapshot.name} ${test.names.join( ',' )}` );
-    test.recordResult( false, message );
+    test.recordResult( false, milliseconds, message );
   }
 
   /**
@@ -407,6 +410,7 @@ class ContinuousServer {
         }
 
         const test = _.sample( availableTests );
+        const startTimestamp = Date.now();
 
         if ( test.type === 'lint' ) {
           test.complete = true;
@@ -414,10 +418,10 @@ class ContinuousServer {
           try {
             const output = await execute( gruntCommand, [ 'lint' ], `../${test.repo}` );
 
-            ContinuousServer.testPass( test, output );
+            ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
           }
           catch ( e ) {
-            ContinuousServer.testFail( test, `Build failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
+            ContinuousServer.testFail( test, Date.now() - startTimestamp, `Build failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
           }
           this.saveToFile();
         }
@@ -427,11 +431,11 @@ class ContinuousServer {
           try {
             const output = await execute( gruntCommand, [ `--brands=${test.brands.join( ',' )}`, '--lint=false' ], `../${test.repo}` );
 
-            ContinuousServer.testPass( test, output );
+            ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
             test.success = true;
           }
           catch ( e ) {
-            ContinuousServer.testFail( test, `Build failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
+            ContinuousServer.testFail( test, Date.now() - startTimestamp, `Build failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
           }
           this.saveToFile();
         }
@@ -450,34 +454,53 @@ class ContinuousServer {
     while ( true ) { // eslint-disable-line
       try {
         const testNames = _.sortBy( _.uniqWith( _.flatten( this.snapshots.map( snapshot => snapshot.tests.map( test => test.names ) ) ), _.isEqual ), names => names.toString() );
-        const report = {
-          snapshots: this.snapshots.map( snapshot => {
-            return {
-              timestamp: snapshot.timestamp,
-              shas: snapshot.shas,
-              tests: testNames.map( names => {
-                const test = snapshot.findTest( names );
-                if ( test ) {
-                  const passedTestResults = test.results.filter( testResult => testResult.passed );
-                  const failedTestResults = test.results.filter( testResult => !testResult.passed );
-                  const failMessages = _.uniq( failedTestResults.map( testResult => testResult.message ).filter( _.identity ) );
-
-                  const result = {
-                    y: passedTestResults.length,
-                    n: failedTestResults.length
-                  };
-                  if ( failMessages.length ) {
-                    result.m = failMessages;
+        const elapsedTimes = testNames.map( () => 0 );
+        const numElapsedTimes = testNames.map( () => 0 );
+        const snapshotSummaries = this.snapshots.map( snapshot => {
+          return {
+            timestamp: snapshot.timestamp,
+            shas: snapshot.shas,
+            tests: testNames.map( ( names, i ) => {
+              const test = snapshot.findTest( names );
+              if ( test ) {
+                const passedTestResults = test.results.filter( testResult => testResult.passed );
+                const failedTestResults = test.results.filter( testResult => !testResult.passed );
+                const failMessages = _.uniq( failedTestResults.map( testResult => testResult.message ).filter( _.identity ) );
+                test.results.forEach( testResult => {
+                  if ( testResult.milliseconds ) {
+                    elapsedTimes[ i ] += testResult.milliseconds;
+                    numElapsedTimes[ i ]++;
                   }
-                  return result;
+                } );
+
+                const result = {
+                  y: passedTestResults.length,
+                  n: failedTestResults.length
+                };
+                if ( failMessages.length ) {
+                  result.m = failMessages;
                 }
-                else {
-                  return {};
-                }
-              } )
-            };
-          } ),
-          testNames: testNames
+                return result;
+              }
+              else {
+                return {};
+              }
+            } )
+          };
+        } );
+        const testAverageTimes = numElapsedTimes.map( ( time, i ) => {
+          if ( time === 0 ) {
+            return time;
+          }
+          else {
+            return time / numElapsedTimes[ i ];
+          }
+        } );
+
+        const report = {
+          snapshots: snapshotSummaries,
+          testNames: testNames,
+          testAverageTimes: testAverageTimes
         };
 
         this.reportJSON = JSON.stringify( report );

@@ -14,9 +14,10 @@ class TestResult {
   /**
    * @param {Test} test
    * @param {boolean} passed
+   * @param {number} [milliseconds]
    * @param {string|null} [message]
    */
-  constructor( test, passed, message ) {
+  constructor( test, passed, milliseconds = 0, message = null ) {
     assert( typeof passed === 'boolean', 'passed should be a boolean' );
 
     // @public {Test}
@@ -24,6 +25,9 @@ class TestResult {
 
     // @public {boolean}
     this.passed = passed;
+
+    // @public {number}
+    this.milliseconds = milliseconds;
 
     // @public {string|null}
     this.message = message || null;

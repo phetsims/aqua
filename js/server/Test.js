@@ -112,10 +112,11 @@ class Test {
    * @public
    *
    * @param {boolean} passed
+   * @param {number} milliseconds
    * @param {string|null} [message]
    */
-  recordResult( passed, message ) {
-    this.results.push( new TestResult( this, passed, message ) );
+  recordResult( passed, milliseconds, message ) {
+    this.results.push( new TestResult( this, passed, milliseconds, message ) );
   }
 
   /**
@@ -186,7 +187,8 @@ class Test {
     return {
       snapshotName: this.snapshot.name,
       test: this.names,
-      url: url
+      url: url,
+      timestamp: Date.now()
     };
   }
 
