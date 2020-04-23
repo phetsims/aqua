@@ -136,7 +136,12 @@ const statusNode = new Text( '', {
   cursor: 'pointer'
 } );
 Property.multilink( [ statusProperty, startupTimestampProperty, lastErrorProperty ], ( status, startupTimestamp, lastError ) => {
-  statusNode.text = `${lastError.length ? '[ERR] ' : ''}Running since [${new Date( startupTimestamp ).toLocaleString()}], status: ${status}`;
+  if ( startupTimestamp ) {
+    statusNode.text = `${lastError.length ? '[ERR] ' : ''}Running since [${new Date( startupTimestamp ).toLocaleString()}], status: ${status}`;
+  }
+  else {
+    statusNode.text = `${lastError.length ? '[ERR] ' : ''}NOT RUNNING?, status: ${status}`;
+  }
 } );
 statusNode.addInputListener( new FireListener( {
   fire: () => {
