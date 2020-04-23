@@ -98,7 +98,7 @@ const expandedReposProperty = new Property( [] );
 // {Property.<string>}
 const filterStringProperty = new Property( '' );
 
-const Sort = Enumeration.byKeys( [ 'ALPHABETICAL', 'IMPORTANCE' ] );
+const Sort = Enumeration.byKeys( [ 'ALPHABETICAL', 'IMPORTANCE', 'ELAPSED_TIME' ] );
 
 // {Property.<Sort>}
 const sortProperty = new EnumerationProperty( Sort, Sort.ALPHABETICAL );
@@ -160,6 +160,10 @@ rootNode.addChild( new VBox( {
           {
             value: Sort.IMPORTANCE,
             node: new Text( 'Importance', { font: new PhetFont( { size: 12 } ) } )
+          },
+          {
+            value: Sort.ELAPSED_TIME,
+            node: new Text( 'Elapsed Time', { font: new PhetFont( { size: 12 } ) } )
           }
         ], {
           spacing: 10
@@ -264,6 +268,9 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
         return 10000;
       }
     } );
+  }
+  else if ( sort === Sort.ELAPSED_TIME ) {
+    tests = _.sortBy( tests, test => -test.averageTime );
   }
 
   let testLabels = tests.map( test => {

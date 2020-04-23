@@ -514,7 +514,7 @@ class ContinuousServer {
             } )
           };
         } );
-        const testAverageTimes = numElapsedTimes.map( ( time, i ) => {
+        const testAverageTimes = elapsedTimes.map( ( time, i ) => {
           if ( time === 0 ) {
             return time;
           }
