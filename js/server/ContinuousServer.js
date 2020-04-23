@@ -303,7 +303,7 @@ class ContinuousServer {
     } );
     const lastFailedIndex = _.findIndex( this.snapshots, snapshot => {
       const snapshotTest = snapshot.findTest( test.names );
-      return snapshotTest && _.some( snapshotTest.results, testResult => testResult.passed );
+      return snapshotTest && _.some( snapshotTest.results, testResult => !testResult.passed );
     } );
 
     let weight = test.priority;
