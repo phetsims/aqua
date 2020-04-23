@@ -2,99 +2,57 @@
 <html lang="en">
 <!--
   Displays a self-updating report of continuous test results based on the continuous-server.js prototype.
-  See continuous-report.js
+  See report.js
 -->
 <head>
   <meta charset="utf-8"/>
   <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 
-  <title>Continuous Report</title>
-
-  <style type="text/css">
-    .table, .tr, .td {
-      padding: 0;
-      margin: 0;
-      border-spacing: 0;
-    }
-
-    html, body {
-      font-size: 12px;
-      font-family: serif;
-    }
-
-    .cell-ratio {
-      text-align: center;
-    }
-
-    .linky {
-      color: blue;
-      cursor: pointer;
-    }
-
-    .snapshot-header {
-      font-size: 70%;
-      font-family: sans-serif;
-    }
-
-    .status-empty {
-
-    }
-
-    .status-pass {
-      background-color: rgb(60,255,60);
-    }
-
-    .status-fail {
-      background-color: rgb(255,90,90);
-    }
-
-    .status-mixed {
-      background-color: rgb(255,210,80);
-    }
-
-    .status-pass.coverage-partial {
-      background-color: rgb(170,255,170);
-    }
-
-    span.snapshotDialog {
-      text-align: left;
-      font-size: 10px;
-      position: fixed;
-      top: 30px;
-      left: 20px;
-      border: 2px solid black;
-      padding: 10px;
-      background-color: rgba(255, 255, 255, 0.9);
-    }
-  </style>
+  <title>Continuous Testing</title>
 </head>
 
 <body>
-
-<h1>Continuous Testing Results</h1>
-
-<p>
-  Each column is a specific snapshot of SHAs at one point in time (where iteration through all repos showed no changes). Time shown is approximate.
-</p>
-<p>
-  The number shown in each cell is the (rounded) percentage of tests that have passed. A hyphen indicates no tests have been run. The bolder green indicates that all tests have at least one passing run (and no failures), while lighter green may have some sub-tests that haven't been run yet.
-</p>
-<p>
-  Black borders around a cell means it can be clicked to display recorded information about the runs (usually errors). Click anywhere else (besides the dialog and cell) to dismiss. Errors can be copy-pasted out of the dialog.
-</p>
-
-<p>
-  Snapshot status: <span id="snapshotStatus"></span><br>
-  Remaining browser tests for latest: <span id="testStatus"></span>
-</p>
-
-<p>
-  <label><input type="checkbox" id="collapsedCheckbox" checked></input> Collapse Results</label>
-</p>
-
-<div id="report-container">
-</div>
+<script src="../../assert/js/assert.js"></script>
+<script src="../../tandem/js/PhetioIDUtils.js"></script>
+<script src="../../sherpa/lib/jquery-2.1.0.js"></script>
+<script src="../../sherpa/lib/lodash-4.17.4.min.js"></script>
+<script src="../../sherpa/lib/himalaya-0.2.7.js"></script>
+<script src="../../sherpa/lib/he-1.1.1.js"></script>
 <script src="../../query-string-machine/js/QueryStringMachine.js"></script>
-<script src="../js/continuous-report.js"></script>
+<script type="text/javascript">
+
+  window.phet = window.phet || {};
+  window.phet.chipper = window.phet.chipper || {};
+  window.phet.chipper.packageObject =
+    {
+      "name": "aqua",
+      "version": "1.0.0-dev.0",
+      "phet": {
+        "buildStandalone": true
+      }
+    };
+  window.phet.chipper.stringRepos = [
+    {
+      "repo": "joist",
+      "requirejsNamespace": "JOIST"
+    },
+    {
+      "repo": "scenery-phet",
+      "requirejsNamespace": "SCENERY_PHET"
+    },
+    {
+      "repo": "sun",
+      "requirejsNamespace": "SUN"
+    },
+    {
+      "repo": "tambo",
+      "requirejsNamespace": "TAMBO"
+    }
+  ];
+
+</script>
+<script src="../../chipper/js/initialize-globals.js"></script>
+
+<script src="../build/aqua.min.js"></script>
 </body>
 </html>

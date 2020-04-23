@@ -21,7 +21,7 @@ module.exports = grunt => {
 
   grunt.registerTask(
     'continuous-server',
-    'Launches a local continuous server',
+    'Launches a continuous server',
     () => {
       // We don't finish! Don't tell grunt this...
       grunt.task.current.async();
@@ -33,8 +33,8 @@ module.exports = grunt => {
       const snapshot = grunt.option( 'snapshot' ) !== false;
 
       const serverQueryParameter = encodeURIComponent( `http://localhost:${port}` );
-      const unbuiltReportURL = `${buildLocal.localTestingURL}aqua/html/local-report.html?server=${serverQueryParameter}`;
-      const builtReportURL = `${buildLocal.localTestingURL}aqua/html/local-built-report.html?server=${serverQueryParameter}`;
+      const unbuiltReportURL = `${buildLocal.localTestingURL}aqua/html/continuous-unbuilt-report.html?server=${serverQueryParameter}`;
+      const builtReportURL = `${buildLocal.localTestingURL}aqua/html/continuous-report.html?server=${serverQueryParameter}`;
       const loopURL = `${buildLocal.localTestingURL}aqua/html/continuous-loop.html?server=${serverQueryParameter}&id=replaceme`;
 
       console.log( unbuiltReportURL );
