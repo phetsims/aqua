@@ -24,8 +24,8 @@ import Text from '../../../scenery/js/nodes/Text.js';
 import VBox from '../../../scenery/js/nodes/VBox.js';
 import Color from '../../../scenery/js/util/Color.js';
 import Checkbox from '../../../sun/js/Checkbox.js';
-import HorizontalAquaRadioButtonGroup from '../../../sun/js/HorizontalAquaRadioButtonGroup.js';
 import Panel from '../../../sun/js/Panel.js';
+import VerticalAquaRadioButtonGroup from '../../../sun/js/VerticalAquaRadioButtonGroup.js';
 import TextPushButton from '../../../sun/js/buttons/TextPushButton.js';
 
 // window.assertions.enableAssert();
@@ -44,6 +44,10 @@ const passColorPartial = new Color( 170, 255, 170 );
 const failColor = new Color( 255, 90, 90 );
 const failColorPartial = new Color( 255, 190, 190 );
 const untestedColor = new Color( 240, 240, 240 );
+const buttonBaseColor = new Color( 240, 240, 240 );
+
+const interfaceFont = new PhetFont( { size: 12 } );
+const categoryFont = new PhetFont( { size: 12, weight: 'bold' } );
 
 // {Property.<string>}
 const statusProperty = new Property( 'loading...' );
@@ -118,7 +122,7 @@ const display = new Display( rootNode, {
 document.body.appendChild( display.domElement );
 
 const statusNode = new Text( '', {
-  font: new PhetFont( { size: 12 } ),
+  font: interfaceFont,
   cursor: 'pointer'
 } );
 Property.multilink( [ statusProperty, startupTimestampProperty, lastErrorProperty ], ( status, startupTimestamp, lastError ) => {
@@ -144,51 +148,87 @@ filterElement.addEventListener( 'change', () => {
 const filterNode = new HBox( {
   spacing: 5,
   children: [
-    new Text( 'Filter:', { font: new PhetFont( { size: 12 } ) } ),
+    new Text( 'Filter:', { font: interfaceFont } ),
     new DOM( filterElement )
+  ]
+} );
+
+const sortNode = new VBox( {
+  spacing: 5,
+  children: [
+    new Text( 'Sort', { font: categoryFont } ),
+    new VerticalAquaRadioButtonGroup( sortProperty, [
+      {
+        value: Sort.ALPHABETICAL,
+        node: new Text( 'Alphabetical', { font: interfaceFont } )
+      },
+      {
+        value: Sort.IMPORTANCE,
+        node: new Text( 'Importance', { font: interfaceFont } )
+      },
+      {
+        value: Sort.AVERAGE_TIME,
+        node: new Text( 'Average Time', { font: interfaceFont } )
+      }
+    ], {
+      spacing: 5
+    } )
+  ]
+} );
+
+const expansionNode = new VBox( {
+  spacing: 5,
+  children: [
+    new Text( 'Expansion', { font: categoryFont } ),
+    new TextPushButton( 'Expand all', {
+      listener: () => {
+        expandedReposProperty.value = _.uniq( reportProperty.value.testNames.map( names => names[ 0 ] ) );
+      },
+      baseColor: buttonBaseColor
+    } ),
+    new TextPushButton( 'Collapse all', {
+      listener: () => {
+        expandedReposProperty.value = [];
+      },
+      baseColor: buttonBaseColor
+    } )
+  ]
+} );
+
+const optionsNode = new VBox( {
+  spacing: 5,
+  children: [
+    new Text( 'Options', { font: categoryFont } ),
+    new Checkbox( new Text( 'Show average time', { font: interfaceFont } ), showAverageTimeProperty, {
+      boxWidth: 14
+    } )
+  ]
+} );
+
+const filteringNode = new VBox( {
+  spacing: 5,
+  children: [
+    new Text( 'Filtering', { font: categoryFont } ),
+    filterNode
   ]
 } );
 
 rootNode.addChild( new VBox( {
   x: 10,
   y: 10,
-  spacing: 10,
+  spacing: 15,
   align: 'left',
   children: [
+    new Text( 'Continuous Testing', { font: new PhetFont( { size: 24 } ) } ),
     statusNode,
     new HBox( {
-      spacing: 15,
+      align: 'top',
+      spacing: 25,
       children: [
-        new TextPushButton( 'Expand all', {
-          listener: () => {
-            expandedReposProperty.value = _.uniq( reportProperty.value.testNames.map( names => names[ 0 ] ) );
-          }
-        } ),
-        new TextPushButton( 'Collapse all', {
-          listener: () => {
-            expandedReposProperty.value = [];
-          }
-        } ),
-        new Checkbox( new Text( 'Show average time', { font: new PhetFont( { size: 12 } ) } ), showAverageTimeProperty, {
-          boxWidth: 14
-        } ),
-        new HorizontalAquaRadioButtonGroup( sortProperty, [
-          {
-            value: Sort.ALPHABETICAL,
-            node: new Text( 'Alphabetical', { font: new PhetFont( { size: 12 } ) } )
-          },
-          {
-            value: Sort.IMPORTANCE,
-            node: new Text( 'Importance', { font: new PhetFont( { size: 12 } ) } )
-          },
-          {
-            value: Sort.AVERAGE_TIME,
-            node: new Text( 'Average Time', { font: new PhetFont( { size: 12 } ) } )
-          }
-        ], {
-          spacing: 10
-        } ),
-        filterNode
+        sortNode,
+        expansionNode,
+        optionsNode,
+        filteringNode
       ]
     } ),
     reportNode
@@ -210,7 +250,7 @@ document.addEventListener( 'copy', e => {
 const popup = ( triggerNode, message ) => {
   const messageHTML = message.split( '\n' ).map( escapeHTML ).join( '<br>' ) + '<br><br>Press command/ctrl-C to copy this to the clipboard';
   const messagesNode = new RichText( messageHTML, {
-    font: new PhetFont( { size: 12 } ),
+    font: interfaceFont,
     align: 'left'
   } );
   const panel = new Panel( messagesNode, {
@@ -296,7 +336,7 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
 
   const testLabels = tests.map( test => {
     const label = new Text( test.names.join( ' : ' ), {
-      font: new PhetFont( { size: 12 } ),
+      font: interfaceFont,
       left: 0,
       top: 0
     } );
