@@ -7,6 +7,7 @@
  */
 
 import EnumerationProperty from '../../../axon/js/EnumerationProperty.js';
+import NumberProperty from '../../../axon/js/NumberProperty.js';
 import Property from '../../../axon/js/Property.js';
 import Enumeration from '../../../phet-core/js/Enumeration.js';
 import escapeHTML from '../../../phet-core/js/escapeHTML.js';
@@ -43,21 +44,28 @@ const failColorPartial = new Color( 255, 190, 190 );
 const untestedColor = new Color( 240, 240, 240 );
 
 // {Property.<string>}
-const snapshotStatusProperty = new Property( 'loading...' );
+const statusProperty = new Property( 'loading...' );
+const lastErrorProperty = new Property( '' );
 
-snapshotStatusProperty.lazyLink( status => console.log( `Status: ${status}` ) );
+// {Property.<number>}
+const startupTimestampProperty = new NumberProperty( 0 );
+
+statusProperty.lazyLink( status => console.log( `Status: ${status}` ) );
 
 (function snapshotStatusLoop() {
   const req = new XMLHttpRequest();
   req.onload = function() {
     setTimeout( snapshotStatusLoop, 1000 );
-    snapshotStatusProperty.value = JSON.parse( req.responseText ).status;
+    const result = JSON.parse( req.responseText );
+    statusProperty.value = result.status;
+    lastErrorProperty.value = result.lastErrorString;
+    startupTimestampProperty.value = result.startupTimestamp;
   };
   req.onerror = function() {
     setTimeout( snapshotStatusLoop, 1000 );
-    snapshotStatusProperty.value = 'Could not contact server';
+    statusProperty.value = 'Could not contact server';
   };
-  req.open( 'get', options.server + '/aquaserver/snapshot-status', true );
+  req.open( 'get', options.server + '/aquaserver/status', true );
   req.send();
 })();
 
@@ -102,7 +110,7 @@ const display = new Display( rootNode, {
 document.body.appendChild( display.domElement );
 
 const statusNode = new Text( '', { font: new PhetFont( { size: 14 } ) } );
-snapshotStatusProperty.link( status => {
+statusProperty.link( status => {
   statusNode.text = status;
 } );
 

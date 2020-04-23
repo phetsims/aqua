@@ -54,11 +54,17 @@ class ContinuousServer {
     // @public {string}
     this.status = 'Starting up';
 
+    // @public {string}
+    this.lastErrorString = '';
+
+    // @public {number}
+    this.startupTimestamp = Date.now();
+
     try {
       this.loadFromFile();
     }
     catch ( e ) {
-      winston.error( `error loading from file: ${e}` );
+      this.setError( `error loading from file: ${e}` );
     }
   }
 
@@ -116,10 +122,12 @@ class ContinuousServer {
           res.writeHead( 200, jsonHeaders );
           res.end( JSON.stringify( { received: 'true' } ) );
         }
-        if ( requestInfo.pathname === '/aquaserver/snapshot-status' ) {
+        if ( requestInfo.pathname === '/aquaserver/status' ) {
           res.writeHead( 200, jsonHeaders );
           res.end( JSON.stringify( {
-            status: this.status
+            status: this.status,
+            startupTimestamp: this.startupTimestamp,
+            lastErrorString: this.lastErrorString
           } ) );
         }
         if ( requestInfo.pathname === '/aquaserver/report' ) {
@@ -128,7 +136,7 @@ class ContinuousServer {
         }
       }
       catch ( e ) {
-        winston.error( e );
+        this.setError( `server error: ${e}` );
       }
     } ).listen( port );
 
@@ -214,6 +222,18 @@ class ContinuousServer {
   setStatus( str ) {
     this.status = `[${new Date().toLocaleString().replace( /^.*, /g, '' ).replace( ' AM', 'am' ).replace( ' PM', 'pm' )}] ${str}`;
     winston.info( `status: ${this.status}` );
+  }
+
+  /**
+   * Sets the last error message.
+   * @public
+   *
+   * @param {string} message
+   */
+  setError( message ) {
+    this.lastErrorString = `${new Date().toUTCString()}: ${message}`;
+
+    winston.error( message );
   }
 
   /**
@@ -358,7 +378,7 @@ class ContinuousServer {
         }
       }
       catch ( e ) {
-        winston.error( e );
+        this.setError( `snapshot error: ${e}` );
       }
     }
   }
@@ -421,7 +441,7 @@ class ContinuousServer {
         }
       }
       catch ( e ) {
-        winston.error( e );
+        this.setError( `local error: ${e}` );
       }
     }
   }
@@ -463,7 +483,7 @@ class ContinuousServer {
         this.reportJSON = JSON.stringify( report );
       }
       catch ( e ) {
-        winston.error( e );
+        this.setError( `report error: ${e}` );
       }
 
       await sleep( 5000 );
