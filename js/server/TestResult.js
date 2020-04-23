@@ -41,7 +41,8 @@ class TestResult {
   serialize() {
     return {
       passed: this.passed,
-      message: this.message
+      message: this.message,
+      milliseconds: this.milliseconds
     };
   }
 
@@ -53,7 +54,7 @@ class TestResult {
    * @returns {TestResult}
    */
   static deserialize( test, serialization ) {
-    return new TestResult( test, serialization.passed, serialization.message );
+    return new TestResult( test, serialization.passed, serialization.milliseconds, serialization.message );
   }
 }
 

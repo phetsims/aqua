@@ -76,6 +76,8 @@ const reportProperty = new Property( {
   testAverageTimes: []
 } );
 
+window.reportProperty = reportProperty;
+
 (function reportLoop() {
   const req = new XMLHttpRequest();
   req.onload = function() {
