@@ -15,6 +15,7 @@ const _ = require( 'lodash' ); // eslint-disable-line
 // constants
 const TEST_TYPES = [
   'lint',
+  'lint-everything',
   'build',
   'sim-test',
   'qunit-test',
@@ -149,7 +150,7 @@ class Test {
    * @returns {boolean}
    */
   isLocallyAvailable() {
-    return !this.complete && ( this.type === 'lint' || this.type === 'build' );
+    return !this.complete && ( this.type === 'lint' || this.type === 'lint-everything' || this.type === 'build' );
   }
 
   /**
