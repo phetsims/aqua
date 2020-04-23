@@ -291,15 +291,50 @@ class ContinuousServer {
   static weightedSampleTest( tests ) {
     assert( tests.length );
 
-    const totalWeight = _.sum( tests.map( test => test.priority ) );
+    const weights = tests.map( test => {
+      const lastTestedIndex = _.findIndex( this.snapshots, snapshot => {
+        const snapshotTest = snapshot.findTest( test.names );
+        return snapshotTest && snapshotTest.results.length > 0;
+      } );
+      const lastFailedIndex = _.findIndex( this.snapshots, snapshot => {
+        const snapshotTest = snapshot.findTest( test.names );
+        return snapshotTest && _.some( snapshotTest.results, testResult => testResult.passed );
+      } );
+
+      let weight = test.priority;
+
+      if ( lastFailedIndex >= 0 ) {
+        if ( lastFailedIndex < 3 ) {
+          weight *= 6;
+        }
+        else {
+          weight *= 3;
+        }
+      }
+      else {
+        if ( lastTestedIndex === -1 ) {
+          weight *= 1.5;
+        }
+        else if ( lastTestedIndex === 0 ) {
+          weight *= 0.3;
+        }
+        else if ( lastTestedIndex === 1 ) {
+          weight *= 0.7;
+        }
+      }
+
+      return weight;
+    } );
+
+    const totalWeight = _.sum( weights );
 
     const cutoffWeight = totalWeight * Math.random();
     let cumulativeWeight = 0;
 
-    for ( const test of tests ) {
-      cumulativeWeight += test.priority;
+    for ( let i = 0; i < tests.length; i++ ) {
+      cumulativeWeight += weights[ i ];
       if ( cumulativeWeight >= cutoffWeight ) {
-        return test;
+        return tests[ i ];
       }
     }
 
