@@ -224,7 +224,8 @@ const filteringNode = new VBox( {
   spacing: 5,
   children: [
     new Text( 'Filtering', { font: categoryFont } ),
-    filterNode
+    filterNode,
+    new Text( '(tab out to finalize)', { font: interfaceFont } )
   ]
 } );
 

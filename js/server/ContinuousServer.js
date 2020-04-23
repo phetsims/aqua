@@ -27,14 +27,18 @@ const path = require( 'path' );
 const url = require( 'url' );
 const winston = require( 'winston' );
 
-const NUMBER_OF_DAYS_TO_KEEP_SNAPSHOTS = 2; // in days, any shapshots that are older will be removed from the continuous report
+// in days, any shapshots that are older will be removed from the continuous report
+const NUMBER_OF_DAYS_TO_KEEP_SNAPSHOTS = 2;
+
 const DEBUG_PRETEND_CLEAN = false;
 
+// Headers that we'll include in all server replies
 const jsonHeaders = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*'
 };
 
+// Useful, and we can't import dot's Util here
 const linear = ( a1, a2, b1, b2, a3 ) => {
   return ( b2 - b1 ) / ( a2 - a1 ) * ( a3 - a1 ) + b1;
 };
