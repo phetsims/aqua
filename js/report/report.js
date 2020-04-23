@@ -6,6 +6,7 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
+import BooleanProperty from '../../../axon/js/BooleanProperty.js';
 import EnumerationProperty from '../../../axon/js/EnumerationProperty.js';
 import NumberProperty from '../../../axon/js/NumberProperty.js';
 import Property from '../../../axon/js/Property.js';
@@ -22,6 +23,7 @@ import RichText from '../../../scenery/js/nodes/RichText.js';
 import Text from '../../../scenery/js/nodes/Text.js';
 import VBox from '../../../scenery/js/nodes/VBox.js';
 import Color from '../../../scenery/js/util/Color.js';
+import Checkbox from '../../../sun/js/Checkbox.js';
 import HorizontalAquaRadioButtonGroup from '../../../sun/js/HorizontalAquaRadioButtonGroup.js';
 import Panel from '../../../sun/js/Panel.js';
 import TextPushButton from '../../../sun/js/buttons/TextPushButton.js';
@@ -100,10 +102,13 @@ const expandedReposProperty = new Property( [] );
 // {Property.<string>}
 const filterStringProperty = new Property( '' );
 
-const Sort = Enumeration.byKeys( [ 'ALPHABETICAL', 'IMPORTANCE', 'ELAPSED_TIME' ] );
+const Sort = Enumeration.byKeys( [ 'ALPHABETICAL', 'IMPORTANCE', 'AVERAGE_TIME' ] );
 
 // {Property.<Sort>}
 const sortProperty = new EnumerationProperty( Sort, Sort.ALPHABETICAL );
+
+// Property.<boolean>}
+const showAverageTimeProperty = new BooleanProperty( false );
 
 const rootNode = new Node();
 const display = new Display( rootNode, {
@@ -112,10 +117,20 @@ const display = new Display( rootNode, {
 
 document.body.appendChild( display.domElement );
 
-const statusNode = new Text( '', { font: new PhetFont( { size: 14 } ) } );
-statusProperty.link( status => {
-  statusNode.text = status;
+const statusNode = new Text( '', {
+  font: new PhetFont( { size: 12 } ),
+  cursor: 'pointer'
 } );
+Property.multilink( [ statusProperty, startupTimestampProperty, lastErrorProperty ], ( status, startupTimestamp, lastError ) => {
+  statusNode.text = `${lastError.length ? '[ERR] ' : ''}Running since [${new Date( startupTimestamp ).toLocaleString()}], status: ${status}`;
+} );
+statusNode.addInputListener( new FireListener( {
+  fire: () => {
+    if ( lastErrorProperty.value.length ) {
+      popup( statusNode, lastErrorProperty.value );
+    }
+  }
+} ) );
 
 const reportNode = new Node();
 
@@ -154,6 +169,9 @@ rootNode.addChild( new VBox( {
             expandedReposProperty.value = [];
           }
         } ),
+        new Checkbox( new Text( 'Show average time', { font: new PhetFont( { size: 12 } ) } ), showAverageTimeProperty, {
+          boxWidth: 14
+        } ),
         new HorizontalAquaRadioButtonGroup( sortProperty, [
           {
             value: Sort.ALPHABETICAL,
@@ -164,8 +182,8 @@ rootNode.addChild( new VBox( {
             node: new Text( 'Importance', { font: new PhetFont( { size: 12 } ) } )
           },
           {
-            value: Sort.ELAPSED_TIME,
-            node: new Text( 'Elapsed Time', { font: new PhetFont( { size: 12 } ) } )
+            value: Sort.AVERAGE_TIME,
+            node: new Text( 'Average Time', { font: new PhetFont( { size: 12 } ) } )
           }
         ], {
           spacing: 10
@@ -190,13 +208,14 @@ document.addEventListener( 'copy', e => {
 } );
 
 const popup = ( triggerNode, message ) => {
-  const messageHTML = message.split( '\n' ).map( escapeHTML ).join( '<br>' );
+  const messageHTML = message.split( '\n' ).map( escapeHTML ).join( '<br>' ) + '<br><br>Press command/ctrl-C to copy this to the clipboard';
   const messagesNode = new RichText( messageHTML, {
     font: new PhetFont( { size: 12 } ),
     align: 'left'
   } );
   const panel = new Panel( messagesNode, {
-    backgroundPickable: true
+    backgroundPickable: true,
+    cursor: 'pointer'
   } );
   rootNode.addChild( panel );
   // TODO: align if it's at the bottom
@@ -208,7 +227,7 @@ const popup = ( triggerNode, message ) => {
   } ) );
 };
 
-Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filterStringProperty ], ( report, expandedRepos, sort, filterString ) => {
+Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filterStringProperty, showAverageTimeProperty ], ( report, expandedRepos, sort, filterString, showAverageTime ) => {
   let tests = [];
 
   const everythingName = '(everything)';
@@ -271,16 +290,25 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
       }
     } );
   }
-  else if ( sort === Sort.ELAPSED_TIME ) {
+  else if ( sort === Sort.AVERAGE_TIME ) {
     tests = _.sortBy( tests, test => -test.averageTime );
   }
 
-  let testLabels = tests.map( test => {
-    const label = new Text( test.names.join( ' : ' ), { font: new PhetFont( { size: 12 } ) } );
+  const testLabels = tests.map( test => {
+    const label = new Text( test.names.join( ' : ' ), {
+      font: new PhetFont( { size: 12 } ),
+      left: 0,
+      top: 0
+    } );
+    const background = new Rectangle( 0, 0, 0, 0, {
+      fill: '#fafafa',
+      children: [ label ],
+      cursor: 'pointer'
+    } );
     if ( test.names[ 0 ] === everythingName ) {
       label.fill = '#999';
     }
-    label.addInputListener( new FireListener( {
+    background.addInputListener( new FireListener( {
       fire: () => {
         const topLevelName = test.names[ 0 ];
         if ( test.names.length > 1 ) {
@@ -291,8 +319,28 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
         }
       }
     } ) );
-    return label;
+    return background;
   } );
+
+  const averageTimeLabels = showAverageTime ? tests.map( test => {
+
+    const background = new Rectangle( 0, 0, 0, 0, {
+      fill: '#fafafa'
+    } );
+
+    if ( test.averageTime ) {
+      const tenthsOfSeconds = Math.ceil( test.averageTime / 100 );
+      const label = new Text( `${Math.floor( tenthsOfSeconds / 10 )}.${tenthsOfSeconds % 10}s`, {
+        font: new PhetFont( { size: 10 } ),
+        left: 0,
+        top: 0,
+        fill: '#888'
+      } );
+      background.addChild( label );
+    }
+
+    return background;
+  } ) : null;
 
   const padding = 3;
 
@@ -301,7 +349,8 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
       spacing: 2,
       children: [
         ...new Date( snapshot.timestamp ).toLocaleString().replace( ',', '' ).replace( ' AM', 'am' ).replace( ' PM', 'pm' ).split( ' ' ).map( str => new Text( str, { font: new PhetFont( { size: 10 } ) } ) )
-      ]
+      ],
+      cursor: 'pointer'
     } );
     label.addInputListener( new FireListener( {
       fire: () => {
@@ -315,20 +364,28 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
   const maxTestLabelHeight = _.max( testLabels.map( node => node.height ) );
   const maxSnapshotLabelWidth = _.max( snapshotLabels.map( node => node.width ) );
   const maxSnapshotLabelHeight = _.max( snapshotLabels.map( node => node.height ) );
+  const maxAverageTimeLabelWidth = averageTimeLabels ? _.max( averageTimeLabels.map( node => node.width ) ) : 0;
 
-  testLabels = testLabels.map( label => {
-    label.left = 0;
-    label.top = 0;
-    return new Rectangle( 0, 0, maxTestLabelWidth, maxTestLabelHeight, {
-      fill: '#fafafa',
-      children: [ label ]
-    } );
+  testLabels.forEach( label => {
+    label.rectWidth = maxTestLabelWidth;
+    label.rectHeight = maxTestLabelHeight;
   } );
+  averageTimeLabels && averageTimeLabels.forEach( label => {
+    if ( label.children[ 0 ] ) {
+      label.children[ 0 ].right = maxAverageTimeLabelWidth;
+      label.children[ 0 ].centerY = maxTestLabelHeight / 2;
+    }
+    label.rectWidth = maxAverageTimeLabelWidth;
+    label.rectHeight = maxTestLabelHeight;
+  } );
+
+  const getX = index => maxTestLabelWidth + padding + index * ( maxSnapshotLabelWidth + padding ) + ( showAverageTime ? 1 : 0 ) * ( maxAverageTimeLabelWidth + padding );
+  const getY = index => maxSnapshotLabelHeight + padding + index * ( maxTestLabelHeight + padding );
 
   const snapshotsTestNodes = _.flatten( report.snapshots.map( ( snapshot, i ) => {
     return tests.map( ( test, j ) => {
-      const x = maxTestLabelWidth + padding + i * ( maxSnapshotLabelWidth + padding );
-      const y = maxSnapshotLabelHeight + padding + j * ( maxTestLabelHeight + padding );
+      const x = getX( i );
+      const y = getY( j );
       const background = new Rectangle( 0, 0, maxSnapshotLabelWidth, maxTestLabelHeight, {
         x: x,
         y: y
@@ -396,6 +453,7 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
             popup( background, messages.join( '\n\n' ) );
           }
         } ) );
+        background.cursor = 'pointer';
       }
 
       return background;
@@ -404,17 +462,22 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
 
   testLabels.forEach( ( label, i ) => {
     label.left = 0;
-    label.top = i * ( maxTestLabelHeight + padding ) + maxSnapshotLabelHeight + padding;
+    label.top = getY( i );
   } );
   snapshotLabels.forEach( ( label, i ) => {
     label.top = 0;
-    label.left = ( maxTestLabelWidth + padding ) + i * ( maxSnapshotLabelWidth + padding );
+    label.left = getX( i );
+  } );
+  averageTimeLabels && averageTimeLabels.forEach( ( label, i ) => {
+    label.left = maxTestLabelWidth + padding;
+    label.top = getY( i );
   } );
 
   reportNode.children = [
     ...testLabels,
     ...snapshotLabels,
-    ...snapshotsTestNodes
+    ...snapshotsTestNodes,
+    ...( showAverageTime ? averageTimeLabels : [] )
   ];
 } );
 
