@@ -79,7 +79,8 @@ statusProperty.lazyLink( status => console.log( `Status: ${status}` ) );
 const reportProperty = new Property( {
   snapshots: [],
   testNames: [],
-  testAverageTimes: []
+  testAverageTimes: [],
+  testWeights: []
 } );
 
 window.reportProperty = reportProperty;

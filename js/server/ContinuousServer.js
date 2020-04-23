@@ -35,6 +35,14 @@ const jsonHeaders = {
   'Access-Control-Allow-Origin': '*'
 };
 
+const linear = ( a1, a2, b1, b2, a3 ) => {
+  return ( b2 - b1 ) / ( a2 - a1 ) * ( a3 - a1 ) + b1;
+};
+
+// {number} - in milliseconds
+const twoHours = 1000 * 60 * 60 * 2;
+const twelveHours = 1000 * 60 * 60 * 12;
+
 class ContinuousServer {
   constructor() {
 
@@ -207,7 +215,7 @@ class ContinuousServer {
 
     // Deliver a random available test currently
     if ( lowestTests.length ) {
-      ContinuousServer.deliverTest( res, ContinuousServer.weightedSampleTest( lowestTests ) );
+      ContinuousServer.deliverTest( res, this.weightedSampleTest( lowestTests ) );
     }
     else {
       ContinuousServer.deliverEmptyTest( res );
@@ -282,75 +290,77 @@ class ContinuousServer {
   }
 
   /**
+   * Returns the weight used for a given test at the moment.
+   * @public
+   *
+   * @param {Test} test
+   * @returns {number}
+   */
+  getTestWeight( test ) {
+    const lastTestedIndex = _.findIndex( this.snapshots, snapshot => {
+      const snapshotTest = snapshot.findTest( test.names );
+      return snapshotTest && snapshotTest.results.length > 0;
+    } );
+    const lastFailedIndex = _.findIndex( this.snapshots, snapshot => {
+      const snapshotTest = snapshot.findTest( test.names );
+      return snapshotTest && _.some( snapshotTest.results, testResult => testResult.passed );
+    } );
+
+    let weight = test.priority;
+
+    const adjustPriority = ( immediatePriorityMultiplier, twoHourPriorityMultiplier, twelveHourPriorityMultiplier, elapsed ) => {
+      if ( elapsed < twoHours ) {
+        weight *= linear( 0, twoHours, immediatePriorityMultiplier, twoHourPriorityMultiplier, elapsed );
+      }
+      else if ( elapsed < twelveHours ) {
+        weight *= linear( twoHours, twelveHours, twoHourPriorityMultiplier, twelveHourPriorityMultiplier, elapsed );
+      }
+      else {
+        weight *= twelveHourPriorityMultiplier;
+      }
+    };
+
+    if ( test.repoCommitTimestamp ) {
+      adjustPriority( 2, 1, 0.5, Date.now() - test.repoCommitTimestamp );
+    }
+    if ( test.dependenciesCommitTimestamp ) {
+      adjustPriority( 1.5, 1, 0.75, Date.now() - test.dependenciesCommitTimestamp );
+    }
+
+    if ( lastFailedIndex >= 0 ) {
+      if ( lastFailedIndex < 3 ) {
+        weight *= 6;
+      }
+      else {
+        weight *= 3;
+      }
+    }
+    else {
+      if ( lastTestedIndex === -1 ) {
+        weight *= 1.5;
+      }
+      else if ( lastTestedIndex === 0 ) {
+        weight *= 0.3;
+      }
+      else if ( lastTestedIndex === 1 ) {
+        weight *= 0.7;
+      }
+    }
+
+    return weight;
+  }
+
+  /**
    * Picks a test based on the tests' relative weights.
    * @public
    *
    * @param {Array.<Test>} tests
    * @returns {Test}
    */
-  static weightedSampleTest( tests ) {
+  weightedSampleTest( tests ) {
     assert( tests.length );
 
-    const linear = ( a1, a2, b1, b2, a3 ) => {
-      return ( b2 - b1 ) / ( a2 - a1 ) * ( a3 - a1 ) + b1;
-    };
-    const twoHours = 1000 * 60 * 60 * 2;
-    const twelveHours = 1000 * 60 * 60 * 12;
-
-    const weights = tests.map( test => {
-      const lastTestedIndex = _.findIndex( this.snapshots, snapshot => {
-        const snapshotTest = snapshot.findTest( test.names );
-        return snapshotTest && snapshotTest.results.length > 0;
-      } );
-      const lastFailedIndex = _.findIndex( this.snapshots, snapshot => {
-        const snapshotTest = snapshot.findTest( test.names );
-        return snapshotTest && _.some( snapshotTest.results, testResult => testResult.passed );
-      } );
-
-      let weight = test.priority;
-
-      const adjustPriority = ( immediatePriorityMultiplier, twoHourPriorityMultiplier, twelveHourPriorityMultiplier, elapsed ) => {
-        if ( elapsed < twoHours ) {
-          weight *= linear( 0, twoHours, immediatePriorityMultiplier, twoHourPriorityMultiplier, elapsed );
-        }
-        else if ( elapsed < twelveHours ) {
-          weight *= linear( twoHours, twelveHours, twoHourPriorityMultiplier, twelveHourPriorityMultiplier, elapsed );
-        }
-        else {
-          weight *= twelveHourPriorityMultiplier;
-        }
-      };
-
-      if ( test.repoCommitTimestamp ) {
-        adjustPriority( 2, 1, 0.5, Date.now() - test.repoCommitTimestamp );
-      }
-      if ( test.dependenciesCommitTimestamp ) {
-        adjustPriority( 1.5, 1, 0.75, Date.now() - test.dependenciesCommitTimestamp );
-      }
-
-      if ( lastFailedIndex >= 0 ) {
-        if ( lastFailedIndex < 3 ) {
-          weight *= 6;
-        }
-        else {
-          weight *= 3;
-        }
-      }
-      else {
-        if ( lastTestedIndex === -1 ) {
-          weight *= 1.5;
-        }
-        else if ( lastTestedIndex === 0 ) {
-          weight *= 0.3;
-        }
-        else if ( lastTestedIndex === 1 ) {
-          weight *= 0.7;
-        }
-      }
-
-      return weight;
-    } );
-
+    const weights = tests.map( test => this.getTestWeight( test ) );
     const totalWeight = _.sum( weights );
 
     const cutoffWeight = totalWeight * Math.random();
@@ -495,7 +505,7 @@ class ContinuousServer {
           continue;
         }
 
-        const test = ContinuousServer.weightedSampleTest( availableTests );
+        const test = this.weightedSampleTest( availableTests );
         const startTimestamp = Date.now();
 
         if ( test.type === 'lint' ) {
@@ -582,11 +592,21 @@ class ContinuousServer {
             return time / numElapsedTimes[ i ];
           }
         } );
+        const testWeights = testNames.map( names => {
+          const test = this.snapshots[ 0 ] && this.snapshots[ 0 ].findTest( names );
+          if ( test ) {
+            return Math.ceil( this.getTestWeight( test ) * 100 ) / 100;
+          }
+          else {
+            return 0;
+          }
+        } );
 
         const report = {
           snapshots: snapshotSummaries,
           testNames: testNames,
-          testAverageTimes: testAverageTimes
+          testAverageTimes: testAverageTimes,
+          testWeights: testWeights
         };
 
         this.reportJSON = JSON.stringify( report );
