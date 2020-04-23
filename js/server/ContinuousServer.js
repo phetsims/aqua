@@ -291,6 +291,12 @@ class ContinuousServer {
   static weightedSampleTest( tests ) {
     assert( tests.length );
 
+    const linear = ( a1, a2, b1, b2, a3 ) => {
+      return ( b2 - b1 ) / ( a2 - a1 ) * ( a3 - a1 ) + b1;
+    };
+    const twoHours = 1000 * 60 * 60 * 2;
+    const twelveHours = 1000 * 60 * 60 * 12;
+
     const weights = tests.map( test => {
       const lastTestedIndex = _.findIndex( this.snapshots, snapshot => {
         const snapshotTest = snapshot.findTest( test.names );
@@ -302,6 +308,25 @@ class ContinuousServer {
       } );
 
       let weight = test.priority;
+
+      const adjustPriority = ( immediatePriorityMultiplier, twoHourPriorityMultiplier, twelveHourPriorityMultiplier, elapsed ) => {
+        if ( elapsed < twoHours ) {
+          weight *= linear( 0, twoHours, immediatePriorityMultiplier, twoHourPriorityMultiplier, elapsed );
+        }
+        else if ( elapsed < twelveHours ) {
+          weight *= linear( twoHours, twelveHours, twoHourPriorityMultiplier, twelveHourPriorityMultiplier, elapsed );
+        }
+        else {
+          weight *= twelveHourPriorityMultiplier;
+        }
+      };
+
+      if ( test.repoCommitTimestamp ) {
+        adjustPriority( 2, 1, 0.5, Date.now() - test.repoCommitTimestamp );
+      }
+      if ( test.dependenciesCommitTimestamp ) {
+        adjustPriority( 1.5, 1, 0.75, Date.now() - test.dependenciesCommitTimestamp );
+      }
 
       if ( lastFailedIndex >= 0 ) {
         if ( lastFailedIndex < 3 ) {

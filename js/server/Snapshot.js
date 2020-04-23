@@ -12,11 +12,14 @@ const copyDirectory = require( '../../../perennial/js/common/copyDirectory' );
 const createDirectory = require( '../../../perennial/js/common/createDirectory' );
 const deleteDirectory = require( '../../../perennial/js/common/deleteDirectory' );
 const execute = require( '../../../perennial/js/common/execute' );
+const getDependencies = require( '../../../perennial/js/common/getDependencies' );
 const getRepoList = require( '../../../perennial/js/common/getRepoList' );
+const gitLastCommitTimestamp = require( '../../../perennial/js/common/gitLastCommitTimestamp' );
 const gitRevParse = require( '../../../perennial/js/common/gitRevParse' );
 const Test = require( './Test' );
 const fs = require( 'fs' );
 const _ = require( 'lodash' ); // eslint-disable-line
+const winston = require( 'winston' );
 
 class Snapshot {
   /**
@@ -73,11 +76,42 @@ class Snapshot {
       await copyDirectory( `${this.rootDir}/${repo}`, `${this.directory}/${repo}`, {} );
     }
 
+    this.setStatus( 'Scanning commit timestamps' );
+
+    const lastRepoTimestamps = {};
+    for ( const repo of this.repos ) {
+      lastRepoTimestamps[ repo ] = await gitLastCommitTimestamp( repo );
+    }
+
+    this.setStatus( 'Scanning dependencies for timestamps' );
+
+    const lastRunnableTimestamps = {};
+    for ( const repo of getRepoList( 'active-runnables' ) ) {
+      try {
+        const dependencies = getDependencies( repo );
+        let timestamp = 0;
+        for ( const dependency of Object.keys( dependencies ).filter( dep => dep !== 'comment' ) ) {
+          const dependencyTime = lastRepoTimestamps[ dependency ];
+          if ( dependencyTime && dependencyTime > timestamp ) {
+            timestamp = dependencyTime;
+          }
+        }
+        if ( timestamp ) {
+          lastRunnableTimestamps[ repo ] = timestamp;
+        }
+      }
+      catch ( e ) {
+        winston.error( `Could not read dependencies of repo ${repo}: ${e}` );
+      }
+    }
+
     this.setStatus( 'Loading tests from perennial' );
 
     // @public {Array.<Test>}
     this.tests = JSON.parse( await execute( 'node', [ 'js/listContinuousTests.js' ], '../perennial' ) ).map( description => {
-      return new Test( this, description );
+      const potentialRepo = description && description.test && description.test[ 0 ];
+
+      return new Test( this, description, lastRepoTimestamps[ potentialRepo ] || 0, lastRunnableTimestamps[ potentialRepo ] || 0 );
     } );
   }
 

@@ -25,8 +25,10 @@ class Test {
   /**
    * @param {Snapshot} snapshot
    * @param {Object} description - from listContinuousTests.js
+   * @param {number} repoCommitTimestamp
+   * @param {number} dependenciesCommitTimestamp
    */
-  constructor( snapshot, description ) {
+  constructor( snapshot, description, repoCommitTimestamp, dependenciesCommitTimestamp ) {
     assert( Array.isArray( description.test ), 'Test descriptions should have a test-name array' );
     assert( typeof description.type === 'string', 'Test descriptions should have a type' );
     assert( TEST_TYPES.includes( description.type ), `Unknown type: ${description.type}` );
@@ -36,6 +38,10 @@ class Test {
 
     // @private {Object} - Saved for future serialization
     this.description = description;
+
+    // @public {number}
+    this.repoCommitTimestamp = repoCommitTimestamp;
+    this.dependenciesCommitTimestamp = dependenciesCommitTimestamp;
 
     // @public {Array.<string>}
     this.names = description.test;
@@ -223,7 +229,9 @@ class Test {
       results: this.results.map( testResult => testResult.serialize() ),
       complete: this.complete,
       success: this.success,
-      count: this.count
+      count: this.count,
+      repoCommitTimestamp: this.repoCommitTimestamp,
+      dependenciesCommitTimestamp: this.dependenciesCommitTimestamp
     };
   }
 
@@ -235,7 +243,7 @@ class Test {
    * @returns {Test}
    */
   static deserialize( snapshot, serialization ) {
-    const test = new Test( snapshot, serialization.description );
+    const test = new Test( snapshot, serialization.description, serialization.repoCommitTimestamp, serialization.dependenciesCommitTimestamp );
 
     test.complete = serialization.complete;
     test.success = serialization.success;
