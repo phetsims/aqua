@@ -107,13 +107,14 @@ const expandedReposProperty = new Property( [] );
 // {Property.<string>}
 const filterStringProperty = new Property( '' );
 
-const Sort = Enumeration.byKeys( [ 'ALPHABETICAL', 'IMPORTANCE', 'AVERAGE_TIME' ] );
+const Sort = Enumeration.byKeys( [ 'ALPHABETICAL', 'IMPORTANCE', 'AVERAGE_TIME', 'WEIGHT' ] );
 
 // {Property.<Sort>}
 const sortProperty = new EnumerationProperty( Sort, Sort.ALPHABETICAL );
 
 // Property.<boolean>}
 const showAverageTimeProperty = new BooleanProperty( false );
+const showWeightsProperty = new BooleanProperty( false );
 
 const rootNode = new Node();
 const display = new Display( rootNode, {
@@ -170,6 +171,10 @@ const sortNode = new VBox( {
       {
         value: Sort.AVERAGE_TIME,
         node: new Text( 'Average Time', { font: interfaceFont } )
+      },
+      {
+        value: Sort.WEIGHT,
+        node: new Text( 'Weight', { font: interfaceFont } )
       }
     ], {
       spacing: 5
@@ -200,8 +205,17 @@ const optionsNode = new VBox( {
   spacing: 5,
   children: [
     new Text( 'Options', { font: categoryFont } ),
-    new Checkbox( new Text( 'Show average time', { font: interfaceFont } ), showAverageTimeProperty, {
-      boxWidth: 14
+    new VBox( {
+      align: 'left',
+      spacing: 5,
+      children: [
+        new Checkbox( new Text( 'Show average time', { font: interfaceFont } ), showAverageTimeProperty, {
+          boxWidth: 14
+        } ),
+        new Checkbox( new Text( 'Show weight', { font: interfaceFont } ), showWeightsProperty, {
+          boxWidth: 14
+        } )
+      ]
     } )
   ]
 } );
@@ -268,7 +282,7 @@ const popup = ( triggerNode, message ) => {
   } ) );
 };
 
-Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filterStringProperty, showAverageTimeProperty ], ( report, expandedRepos, sort, filterString, showAverageTime ) => {
+Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filterStringProperty, showAverageTimeProperty, showWeightsProperty ], ( report, expandedRepos, sort, filterString, showAverageTime, showWeights ) => {
   let tests = [];
 
   const everythingName = '(everything)';
@@ -276,7 +290,8 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
   tests.push( {
     names: [ everythingName ],
     indices: _.range( 0, report.testNames.length ),
-    averageTimes: report.testAverageTimes
+    averageTimes: report.testAverageTimes,
+    weights: report.testWeights
   } );
 
   // scan to determine what tests we are showing
@@ -286,12 +301,14 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
       if ( lastTest && lastTest.names[ 0 ] === names[ 0 ] ) {
         lastTest.indices.push( index );
         lastTest.averageTimes.push( report.testAverageTimes[ index ] );
+        lastTest.weights.push( report.testWeights[ index ] );
       }
       else {
         tests.push( {
           names: [ names[ 0 ] ],
           indices: [ index ],
-          averageTimes: [ report.testAverageTimes[ index ] ]
+          averageTimes: [ report.testAverageTimes[ index ] ],
+          weights: [ report.testWeights[ index ] ]
         } );
       }
     }
@@ -299,14 +316,17 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
       tests.push( {
         names: names,
         indices: [ index ],
-        averageTimes: [ report.testAverageTimes[ index ] ]
+        averageTimes: [ report.testAverageTimes[ index ] ],
+        weights: [ report.testWeights[ index ] ]
       } );
     }
   } );
 
-  // compute average times
+  // compute summations
   tests.forEach( test => {
     test.averageTime = _.mean( test.averageTimes.filter( _.identity ) ) || 0;
+    test.minWeight = _.min( test.weights ) || 0;
+    test.maxWeight = _.max( test.weights ) || 0;
   } );
 
   if ( filterString.length ) {
@@ -333,6 +353,9 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
   }
   else if ( sort === Sort.AVERAGE_TIME ) {
     tests = _.sortBy( tests, test => -test.averageTime );
+  }
+  else if ( sort === Sort.WEIGHT ) {
+    tests = _.sortBy( tests, test => -test.maxWeight );
   }
 
   const testLabels = tests.map( test => {
@@ -383,6 +406,25 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
     return background;
   } ) : null;
 
+  const weightLabels = showWeights ? tests.map( test => {
+
+    const background = new Rectangle( 0, 0, 0, 0, {
+      fill: '#fafafa'
+    } );
+
+    if ( test.minWeight || test.maxWeight ) {
+      const label = new Text( test.minWeight === test.maxWeight ? test.minWeight : `${test.minWeight}-${test.maxWeight}`, {
+        font: new PhetFont( { size: 10 } ),
+        left: 0,
+        top: 0,
+        fill: '#888'
+      } );
+      background.addChild( label );
+    }
+
+    return background;
+  } ) : null;
+
   const padding = 3;
 
   const snapshotLabels = report.snapshots.map( snapshot => {
@@ -406,6 +448,7 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
   const maxSnapshotLabelWidth = _.max( snapshotLabels.map( node => node.width ) );
   const maxSnapshotLabelHeight = _.max( snapshotLabels.map( node => node.height ) );
   const maxAverageTimeLabelWidth = averageTimeLabels ? _.max( averageTimeLabels.map( node => node.width ) ) : 0;
+  const maxWeightLabelWidth = weightLabels ? _.max( weightLabels.map( node => node.width ) ) : 0;
 
   testLabels.forEach( label => {
     label.rectWidth = maxTestLabelWidth;
@@ -419,8 +462,16 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
     label.rectWidth = maxAverageTimeLabelWidth;
     label.rectHeight = maxTestLabelHeight;
   } );
+  weightLabels && weightLabels.forEach( label => {
+    if ( label.children[ 0 ] ) {
+      label.children[ 0 ].right = maxWeightLabelWidth;
+      label.children[ 0 ].centerY = maxTestLabelHeight / 2;
+    }
+    label.rectWidth = maxWeightLabelWidth;
+    label.rectHeight = maxTestLabelHeight;
+  } );
 
-  const getX = index => maxTestLabelWidth + padding + index * ( maxSnapshotLabelWidth + padding ) + ( showAverageTime ? 1 : 0 ) * ( maxAverageTimeLabelWidth + padding );
+  const getX = index => maxTestLabelWidth + padding + index * ( maxSnapshotLabelWidth + padding ) + ( showAverageTime ? 1 : 0 ) * ( maxAverageTimeLabelWidth + padding ) + ( showWeights ? 1 : 0 ) * ( maxWeightLabelWidth + padding );
   const getY = index => maxSnapshotLabelHeight + padding + index * ( maxTestLabelHeight + padding );
 
   const snapshotsTestNodes = _.flatten( report.snapshots.map( ( snapshot, i ) => {
@@ -513,12 +564,17 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
     label.left = maxTestLabelWidth + padding;
     label.top = getY( i );
   } );
+  weightLabels && weightLabels.forEach( ( label, i ) => {
+    label.left = maxTestLabelWidth + padding + ( showAverageTime ? 1 : 0 ) * ( maxAverageTimeLabelWidth + padding );
+    label.top = getY( i );
+  } );
 
   reportNode.children = [
     ...testLabels,
     ...snapshotLabels,
     ...snapshotsTestNodes,
-    ...( showAverageTime ? averageTimeLabels : [] )
+    ...( showAverageTime ? averageTimeLabels : [] ),
+    ...( showWeights ? weightLabels : [] )
   ];
 } );
 
