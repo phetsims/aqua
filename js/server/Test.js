@@ -81,6 +81,14 @@ class Test {
       this.queryParameters = description.queryParameters;
     }
 
+    // @public {string|null}
+    this.testQueryParameters = null;
+
+    if ( description.testQueryParameters ) {
+      assert( typeof description.testQueryParameters === 'string', 'testQueryParameters should be a string if provided' );
+      this.testQueryParameters = description.testQueryParameters;
+    }
+
     // @public {boolean} - If false, we won't send this test to browsers that only support es5 (IE11, etc.)
     this.es5 = false;
 
@@ -182,6 +190,9 @@ class Test {
     }
     else if ( this.type === 'pageload-test' ) {
       url = 'pageload-test.html?url=' + encodeURIComponent( `${baseURL}/${this.url}` );
+    }
+    if ( this.testQueryParameters ) {
+      url = url + '&' + this.testQueryParameters;
     }
 
     return {
