@@ -95,7 +95,9 @@ window.reportProperty = reportProperty;
   const req = new XMLHttpRequest();
   req.onload = function() {
     setTimeout( reportLoop, 20000 );
-    reportProperty.value = JSON.parse( req.responseText );
+    if ( !req.responseText.includes( '<title>503 Service Unavailable</title>' ) ) {
+      reportProperty.value = JSON.parse( req.responseText );
+    }
   };
   req.onerror = function() {
     setTimeout( reportLoop, 20000 );
