@@ -265,7 +265,7 @@ class ContinuousServer {
    * @param {string|undefined} message
    */
   static testPass( test, milliseconds, message ) {
-    winston.info( `[PASS] ${test.snapshot.name} ${test.names.join( ',' )}` );
+    winston.info( `[PASS] ${test.snapshot.name} ${test.names.join( ',' )} ${milliseconds}` );
     test.recordResult( true, milliseconds, message );
   }
 
@@ -277,7 +277,7 @@ class ContinuousServer {
    * @param {string|undefined} message
    */
   static testFail( test, milliseconds, message ) {
-    winston.info( `[FAIL] ${test.snapshot.name} ${test.names.join( ',' )}` );
+    winston.info( `[FAIL] ${test.snapshot.name} ${test.names.join( ',' )} ${milliseconds}` );
     test.recordResult( false, milliseconds, message );
   }
 
