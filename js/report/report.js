@@ -44,6 +44,7 @@ const passColorPartial = new Color( 170, 255, 170 );
 const failColor = new Color( 255, 90, 90 );
 const failColorPartial = new Color( 255, 190, 190 );
 const untestedColor = new Color( 240, 240, 240 );
+const unavailableColor = new Color( 200, 200, 200 );
 const buttonBaseColor = new Color( 240, 240, 240 );
 
 const interfaceFont = new PhetFont( { size: 12 } );
@@ -486,6 +487,7 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
 
       let totalCount = 0;
       let untestedCount = 0;
+      let unavailableCount = 0;
       let passCount = 0;
       let failCount = 0;
       let messages = [];
@@ -509,6 +511,7 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
         }
         else {
           untestedCount++;
+          unavailableCount++;
         }
       } );
 
@@ -535,6 +538,9 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
             fill: passColor
           } ) );
         }
+      }
+      else if ( unavailableCount > 0 ) {
+        background.fill = unavailableColor;
       }
       else {
         background.fill = untestedColor;
