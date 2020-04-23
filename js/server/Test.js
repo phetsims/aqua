@@ -46,6 +46,15 @@ class Test {
     // @public {Array.<TestResult>}
     this.results = [];
 
+    // @public {number}
+    this.priority = 1;
+
+    if ( description.priority ) {
+      assert( typeof description.priority === 'number', 'priority should be a number' );
+
+      this.priority = description.priority;
+    }
+
     // @public {string|null}
     this.repo = null;
 

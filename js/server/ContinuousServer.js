@@ -207,7 +207,7 @@ class ContinuousServer {
 
     // Deliver a random available test currently
     if ( lowestTests.length ) {
-      ContinuousServer.deliverTest( res, _.sample( lowestTests ) );
+      ContinuousServer.deliverTest( res, ContinuousServer.weightedSampleTest( lowestTests ) );
     }
     else {
       ContinuousServer.deliverEmptyTest( res );
@@ -279,6 +279,32 @@ class ContinuousServer {
   static testFail( test, milliseconds, message ) {
     winston.info( `[FAIL] ${test.snapshot.name} ${test.names.join( ',' )}` );
     test.recordResult( false, milliseconds, message );
+  }
+
+  /**
+   * Picks a test based on the tests' relative weights.
+   * @public
+   *
+   * @param {Array.<Test>} tests
+   * @returns {Test}
+   */
+  static weightedSampleTest( tests ) {
+    assert( tests.length );
+
+    const totalWeight = _.sum( tests.map( test => test.priority ) );
+
+    const cutoffWeight = totalWeight * Math.random();
+    let cumulativeWeight = 0;
+
+    for ( const test of tests ) {
+      cumulativeWeight += test.priority;
+      if ( cumulativeWeight >= cutoffWeight ) {
+        return test;
+      }
+    }
+
+    // The fallback is the last test
+    return tests[ tests.length - 1 ];
   }
 
   /**
@@ -409,7 +435,7 @@ class ContinuousServer {
           continue;
         }
 
-        const test = _.sample( availableTests );
+        const test = ContinuousServer.weightedSampleTest( availableTests );
         const startTimestamp = Date.now();
 
         if ( test.type === 'lint' ) {
