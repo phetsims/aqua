@@ -12,7 +12,6 @@ const copyDirectory = require( '../../../perennial/js/common/copyDirectory' );
 const createDirectory = require( '../../../perennial/js/common/createDirectory' );
 const deleteDirectory = require( '../../../perennial/js/common/deleteDirectory' );
 const execute = require( '../../../perennial/js/common/execute' );
-const getDependencies = require( '../../../perennial/js/common/getDependencies' );
 const getRepoList = require( '../../../perennial/js/common/getRepoList' );
 const gitLastCommitTimestamp = require( '../../../perennial/js/common/gitLastCommitTimestamp' );
 const gitRevParse = require( '../../../perennial/js/common/gitRevParse' );
@@ -83,14 +82,14 @@ class Snapshot {
       lastRepoTimestamps[ repo ] = await gitLastCommitTimestamp( repo );
     }
 
-    this.setStatus( 'Scanning dependencies for timestamps' );
-
     const lastRunnableTimestamps = {};
     for ( const repo of getRepoList( 'active-runnables' ) ) {
+      this.setStatus( `Scanning dependencies for timestamps: ${repo}` );
       try {
-        const dependencies = getDependencies( repo );
+        const output = await execute( 'node', [ 'js/scripts/print-dependencies.js', repo ], `${this.rootDir}/chipper` );
+        const dependencies = output.trim().split( ',' );
         let timestamp = 0;
-        for ( const dependency of Object.keys( dependencies ).filter( dep => dep !== 'comment' ) ) {
+        for ( const dependency of dependencies ) {
           const dependencyTime = lastRepoTimestamps[ dependency ];
           if ( dependencyTime && dependencyTime > timestamp ) {
             timestamp = dependencyTime;
