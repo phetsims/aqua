@@ -57,8 +57,15 @@ class ContinuousServer {
     // @public {string} - Where we'll load/save our state
     this.saveFile = `${this.rootDir}/aqua/.continuous-testing-state.json`;
 
-    // @public {Array.<Snapshot>} All of our snapshots
+    // @public {Array.<Snapshot>} - All of our snapshots
     this.snapshots = [];
+
+    // @public {Snapshot|null} - The snapshot being created, so that if we're interrupted, we can clear the directory.
+    this.pendingSnapshot = null;
+
+    // @public {Array.<Snapshot>} - Snapshots being actively removed, but we'll want to track them in case we restart
+    // before they're fully removed.
+    this.trashSnapshots = [];
 
     // @public {string}
     this.reportJSON = '{}';
@@ -255,7 +262,9 @@ class ContinuousServer {
    */
   saveToFile() {
     fs.writeFileSync( this.saveFile, JSON.stringify( {
-      snapshots: this.snapshots.map( snapshot => snapshot.serialize() )
+      snapshots: this.snapshots.map( snapshot => snapshot.serialize() ),
+      pendingSnapshot: this.pendingSnapshot ? this.pendingSnapshot.serializeStub() : null,
+      trashSnapshots: this.trashSnapshots.map( snapshot => snapshot.serializeStub() )
     }, null, 2 ), 'utf-8' );
   }
 
@@ -265,7 +274,12 @@ class ContinuousServer {
    */
   loadFromFile() {
     if ( fs.existsSync( this.saveFile ) ) {
-      this.snapshots = JSON.parse( fs.readFileSync( this.saveFile, 'utf-8' ) ).snapshots.map( Snapshot.deserialize );
+      const serialization = JSON.parse( fs.readFileSync( this.saveFile, 'utf-8' ) );
+      this.snapshots = serialization.snapshots.map( Snapshot.deserialize );
+      this.trashSnapshots = serialization.trashSnapshots ? serialization.trashSnapshots.map( Snapshot.deserializeStub ) : [];
+      if ( serialization.pendingSnapshot && serialization.pendingSnapshot.directory ) {
+        this.trashSnapshots.push( Snapshot.deserializeStub( serialization.pendingSnapshot ) );
+      }
     }
   }
 
@@ -382,6 +396,23 @@ class ContinuousServer {
   }
 
   /**
+   * Deletes a snapshot marked for removal
+   * @private
+   *
+   * @param {Snapshot} snapshot
+   */
+  async deleteTrashSnapshot( snapshot ) {
+    winston.info( `Deleting snapshot files: ${snapshot.directory}` );
+
+    await snapshot.remove();
+
+    // Remove it from the snapshots
+    this.trashSnapshots = this.trashSnapshots.filter( snap => snap !== snapshot );
+
+    this.saveToFile();
+  }
+
+  /**
    * Kicks off a loop that will create snapshots.
    * @public
    */
@@ -402,6 +433,12 @@ class ContinuousServer {
       }
 
       winston.info( `Initial wasStale: ${wasStale}` );
+    }
+
+    // Kick off initial old snapshot removal
+    for ( const snapshot of this.trashSnapshots ) {
+      // NOTE: NO await here, we're going to do that asynchronously so we don't block
+      this.deleteTrashSnapshot( snapshot );
     }
 
     // initial NPM checks, so that all repos will have node_modules that need them
@@ -454,9 +491,12 @@ class ContinuousServer {
             winston.info( 'Stable point reached' );
 
             const snapshot = new Snapshot( this.rootDir, this.setStatus.bind( this ) );
+            this.pendingSnapshot = snapshot;
+
             await snapshot.create();
 
             this.snapshots.unshift( snapshot );
+            this.pendingSnapshot = null;
 
             const cutoffTimestamp = Date.now() - 1000 * 60 * 60 * 24 * NUMBER_OF_DAYS_TO_KEEP_SNAPSHOTS;
             while ( this.snapshots.length > 70 || this.snapshots[ this.snapshots.length - 1 ].timestamp < cutoffTimestamp && !this.snapshots[ this.snapshots.length - 1 ].exists ) {
@@ -468,11 +508,15 @@ class ContinuousServer {
             this.setStatus( 'Removing old snapshot files' );
             const numActiveSnapshots = 3;
             for ( const snapshot of this.snapshots.slice( numActiveSnapshots ) ) {
-              if ( snapshot.exists ) {
-                await snapshot.remove();
-                this.saveToFile();
+              if ( snapshot.exists && !this.trashSnapshots.includes( snapshot ) ) {
+                this.trashSnapshots.push( snapshot );
+
+                // NOTE: NO await here, we're going to do that asynchronously so we don't block
+                this.deleteTrashSnapshot( snapshot );
               }
             }
+
+            this.saveToFile();
           }
         }
 

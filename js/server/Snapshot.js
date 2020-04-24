@@ -31,6 +31,9 @@ class Snapshot {
 
     // @private {function}
     this.setStatus = setStatus;
+
+    // @private {boolean}
+    this.constructed = false;
   }
 
   /**
@@ -53,7 +56,7 @@ class Snapshot {
     // @public {boolean}
     this.exists = true;
 
-    // @public {string}
+    // @public {string|null} - Set to null when it's deleted fully
     this.directory = `${snapshotDir}/${timestamp}`;
 
     if ( !fs.existsSync( snapshotDir ) ) {
@@ -112,6 +115,8 @@ class Snapshot {
 
       return new Test( this, description, lastRepoTimestamps[ potentialRepo ] || 0, lastRunnableTimestamps[ potentialRepo ] || 0 );
     } );
+
+    this.constructed = true;
   }
 
   /**
@@ -122,6 +127,8 @@ class Snapshot {
     this.exists = false;
 
     await deleteDirectory( this.directory );
+
+    this.directory = null;
   }
 
   /**
@@ -163,15 +170,35 @@ class Snapshot {
    * @returns {Object}
    */
   serialize() {
+    if ( !this.constructed ) {
+      return this.serializeStub();
+    }
+    else {
+      return {
+        rootDir: this.rootDir,
+        timestamp: this.timestamp,
+        constructed: this.constructed,
+        name: this.name,
+        exists: this.exists,
+        directory: this.directory,
+        repos: this.repos,
+        shas: this.shas,
+        tests: this.tests.map( test => test.serialize() )
+      };
+    }
+  }
+
+  /**
+   * Creates a pojo-style object for saving/restoring, but meant for tracking references so we can clean up things.
+   * @public
+   *
+   * @returns {Object}
+   */
+  serializeStub() {
     return {
       rootDir: this.rootDir,
-      timestamp: this.timestamp,
-      name: this.name,
-      exists: this.exists,
-      directory: this.directory,
-      repos: this.repos,
-      shas: this.shas,
-      tests: this.tests.map( test => test.serialize() )
+      constructed: this.constructed,
+      directory: this.directory
     };
   }
 
@@ -184,6 +211,7 @@ class Snapshot {
   static deserialize( serialization ) {
     const snapshot = new Snapshot( serialization.rootDir, () => {} );
 
+    snapshot.constructed = serialization.constructed === undefined ? true : serialization.constructed;
     snapshot.timestamp = serialization.timestamp;
     snapshot.name = serialization.name;
     snapshot.exists = serialization.exists;
@@ -193,6 +221,19 @@ class Snapshot {
     snapshot.tests = serialization.tests.map( testSerialization => Test.deserialize( snapshot, testSerialization ) );
 
     return snapshot;
+  }
+
+  /**
+   * Creates the in-memory representation from the stub serialized form
+   *
+   * @param {Object} serialization
+   * @returns {Snapshot}
+   */
+  static deserializeStub( serialization ) {
+    const snapshot = new Snapshot( serialization.rootDir, () => {} );
+
+    snapshot.constructed = serialization.constructed === undefined ? true : serialization.constructed;
+    snapshot.directory = serialization.directory;
   }
 }
 
