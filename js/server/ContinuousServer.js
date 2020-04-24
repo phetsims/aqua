@@ -570,8 +570,10 @@ class ContinuousServer {
         const testNames = _.sortBy( _.uniqWith( _.flatten( this.snapshots.map( snapshot => snapshot.tests.map( test => test.names ) ) ), _.isEqual ), names => names.toString() );
         const elapsedTimes = testNames.map( () => 0 );
         const numElapsedTimes = testNames.map( () => 0 );
-        const snapshotSummaries = this.snapshots.map( snapshot => {
-          return {
+
+        const snapshotSummaries = [];
+        for ( const snapshot of this.snapshots ) {
+          snapshotSummaries.push( {
             timestamp: snapshot.timestamp,
             shas: snapshot.shas,
             tests: testNames.map( ( names, i ) => {
@@ -600,8 +602,10 @@ class ContinuousServer {
                 return {};
               }
             } )
-          };
-        } );
+          } );
+          await sleep( 0 ); // allow other async stuff to happen
+        }
+
         const testAverageTimes = elapsedTimes.map( ( time, i ) => {
           if ( time === 0 ) {
             return time;
@@ -610,15 +614,17 @@ class ContinuousServer {
             return time / numElapsedTimes[ i ];
           }
         } );
-        const testWeights = testNames.map( names => {
+        const testWeights = [];
+        for ( const names of testNames ) {
           const test = this.snapshots[ 0 ] && this.snapshots[ 0 ].findTest( names );
           if ( test ) {
-            return Math.ceil( this.getTestWeight( test ) * 100 ) / 100;
+            testWeights.push( Math.ceil( this.getTestWeight( test ) * 100 ) / 100 );
           }
           else {
-            return 0;
+            testWeights.push( 0 );
           }
-        } );
+          await sleep( 0 ); // allow other async stuff to happen
+        }
 
         const report = {
           snapshots: snapshotSummaries,
@@ -626,6 +632,8 @@ class ContinuousServer {
           testAverageTimes: testAverageTimes,
           testWeights: testWeights
         };
+
+        await sleep( 0 ); // allow other async stuff to happen
 
         this.reportJSON = JSON.stringify( report );
       }
