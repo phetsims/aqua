@@ -21,7 +21,11 @@ module.exports = grunt => {
 
   grunt.registerTask(
     'continuous-server',
-    'Launches a continuous server',
+    'Launches a continuous server with the following options:\n' +
+    '--localCount=COUNT : [REQUIRED] specifies how many local build/grunt/etc. tasks should run in the background\n' +
+    '--port=PORT : specify a custom port for the server interface\n' +
+    '--useRootDir : when provided, files will not be copied (it will create one snapshot pointing to the root directly)\n' +
+    '--snapshot=false : when set to false, it will avoid creating any snapshots at all (loading previous state only)\n',
     () => {
       // We don't finish! Don't tell grunt this...
       grunt.task.current.async();
@@ -31,6 +35,7 @@ module.exports = grunt => {
       const port = grunt.option( 'port' ) ? Number.parseInt( grunt.option( 'port' ), 10 ) : 45366;
       const localCount = Number.parseInt( grunt.option( 'localCount' ), 10 );
       const snapshot = grunt.option( 'snapshot' ) !== false;
+      const useRootDir = !!grunt.option( 'useRootDir' );
 
       const serverQueryParameter = encodeURIComponent( `http://localhost:${port}` );
       const unbuiltReportURL = `${buildLocal.localTestingURL}aqua/html/continuous-unbuilt-report.html?server=${serverQueryParameter}`;
@@ -41,7 +46,7 @@ module.exports = grunt => {
       console.log( builtReportURL );
       console.log( loopURL );
 
-      const server = new ContinuousServer();
+      const server = new ContinuousServer( useRootDir );
       server.startServer( port );
       server.generateReportLoop();
 

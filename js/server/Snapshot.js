@@ -39,13 +39,18 @@ class Snapshot {
   /**
    * Creates this snapshot.
    * @public
+   *
+   * @param {boolean} [useRootDir] - If true, we won't create/copy, and we'll just use the files there instead
    */
-  async create() {
+  async create( useRootDir = false ) {
 
     const timestamp = Date.now();
     const snapshotDir = `${this.rootDir}/ct-snapshots`;
 
     this.setStatus( `Initializing new snapshot: ${timestamp}` );
+
+    // @public {boolean}
+    this.useRootDir = useRootDir;
 
     // @public {number}
     this.timestamp = timestamp;
@@ -57,12 +62,14 @@ class Snapshot {
     this.exists = true;
 
     // @public {string|null} - Set to null when it's deleted fully
-    this.directory = `${snapshotDir}/${timestamp}`;
+    this.directory = useRootDir ? this.rootDir : `${snapshotDir}/${timestamp}`;
 
-    if ( !fs.existsSync( snapshotDir ) ) {
-      await createDirectory( snapshotDir );
+    if ( !useRootDir ) {
+      if ( !fs.existsSync( snapshotDir ) ) {
+        await createDirectory( snapshotDir );
+      }
+      await createDirectory( this.directory );
     }
-    await createDirectory( this.directory );
 
     // @public {Array.<string>}
     this.repos = getRepoList( 'active-repos' );
@@ -73,9 +80,11 @@ class Snapshot {
       this.shas[ repo ] = await gitRevParse( repo, 'master' );
     }
 
-    for ( const repo of this.repos ) {
-      this.setStatus( `Copying snapshot files: ${repo}` );
-      await copyDirectory( `${this.rootDir}/${repo}`, `${this.directory}/${repo}`, {} );
+    if ( !useRootDir ) {
+      for ( const repo of this.repos ) {
+        this.setStatus( `Copying snapshot files: ${repo}` );
+        await copyDirectory( `${this.rootDir}/${repo}`, `${this.directory}/${repo}`, {} );
+      }
     }
 
     this.setStatus( 'Scanning commit timestamps' );
@@ -126,7 +135,9 @@ class Snapshot {
   async remove() {
     this.exists = false;
 
-    await deleteDirectory( this.directory );
+    if ( !this.useRootDir ) {
+      await deleteDirectory( this.directory );
+    }
 
     this.directory = null;
   }
@@ -176,6 +187,7 @@ class Snapshot {
     else {
       return {
         rootDir: this.rootDir,
+        useRootDir: this.useRootDir,
         timestamp: this.timestamp,
         constructed: this.constructed,
         name: this.name,
@@ -198,7 +210,8 @@ class Snapshot {
     return {
       rootDir: this.rootDir,
       constructed: this.constructed,
-      directory: this.directory
+      directory: this.directory,
+      useRootDir: this.useRootDir
     };
   }
 
@@ -211,6 +224,7 @@ class Snapshot {
   static deserialize( serialization ) {
     const snapshot = new Snapshot( serialization.rootDir, () => {} );
 
+    snapshot.useRootDir = serialization.useRootDir || false;
     snapshot.constructed = serialization.constructed === undefined ? true : serialization.constructed;
     snapshot.timestamp = serialization.timestamp;
     snapshot.name = serialization.name;
@@ -234,6 +248,7 @@ class Snapshot {
 
     snapshot.constructed = serialization.constructed === undefined ? true : serialization.constructed;
     snapshot.directory = serialization.directory;
+    snapshot.useRootDir = serialization.useRootDir || false;
 
     return snapshot;
   }

@@ -30,8 +30,6 @@ const winston = require( 'winston' );
 // in days, any shapshots that are older will be removed from the continuous report
 const NUMBER_OF_DAYS_TO_KEEP_SNAPSHOTS = 2;
 
-const DEBUG_PRETEND_CLEAN = false;
-
 // Headers that we'll include in all server replies
 const jsonHeaders = {
   'Content-Type': 'application/json',
@@ -48,7 +46,15 @@ const twoHours = 1000 * 60 * 60 * 2;
 const twelveHours = 1000 * 60 * 60 * 12;
 
 class ContinuousServer {
-  constructor() {
+  /**
+   * @param {boolean} useRootDir - If true, we won't create/copy, and we'll just use the files there instead
+   */
+  constructor( useRootDir = false ) {
+
+    winston.info( `useRootDir: ${useRootDir}` );
+
+    // @public {boolean}
+    this.useRootDir = useRootDir;
 
     // @public {string} - root of your GitHub working copy, relative to the name of the directory that the
     // currently-executing script resides in
@@ -261,6 +267,11 @@ class ContinuousServer {
    * @public
    */
   saveToFile() {
+    // Don't save or load state if useRootDir is true
+    if ( this.useRootDir ) {
+      return;
+    }
+
     fs.writeFileSync( this.saveFile, JSON.stringify( {
       snapshots: this.snapshots.map( snapshot => snapshot.serialize() ),
       pendingSnapshot: this.pendingSnapshot ? this.pendingSnapshot.serializeStub() : null,
@@ -273,6 +284,11 @@ class ContinuousServer {
    * @public
    */
   loadFromFile() {
+    // Don't save or load state if useRootDir is true
+    if ( this.useRootDir ) {
+      return;
+    }
+
     if ( fs.existsSync( this.saveFile ) ) {
       const serialization = JSON.parse( fs.readFileSync( this.saveFile, 'utf-8' ) );
       this.snapshots = serialization.snapshots.map( Snapshot.deserialize );
@@ -436,9 +452,11 @@ class ContinuousServer {
     }
 
     // Kick off initial old snapshot removal
-    for ( const snapshot of this.trashSnapshots ) {
-      // NOTE: NO await here, we're going to do that asynchronously so we don't block
-      this.deleteTrashSnapshot( snapshot );
+    if ( !this.useRootDir ) {
+      for ( const snapshot of this.trashSnapshots ) {
+        // NOTE: NO await here, we're going to do that asynchronously so we don't block
+        this.deleteTrashSnapshot( snapshot );
+      }
     }
 
     // initial NPM checks, so that all repos will have node_modules that need them
@@ -449,7 +467,16 @@ class ContinuousServer {
       }
     }
 
-    while ( true ) { // eslint-disable-line
+    if ( this.useRootDir ) {
+      const snapshot = new Snapshot( this.rootDir, this.setStatus.bind( this ) );
+
+      // Create a snapshot without copying files
+      await snapshot.create( true );
+
+      this.snapshots.push( snapshot );
+    }
+
+    while ( !this.useRootDir ) {
       try {
         const staleMessage = wasStale ? 'Changes detected, waiting for stable SHAs' : 'No changes';
 
@@ -457,12 +484,7 @@ class ContinuousServer {
 
         const staleRepos = await asyncFilter( reposToCheck, async repo => {
           this.setStatus( `${staleMessage}; checking ${repo}` );
-          if ( DEBUG_PRETEND_CLEAN ) {
-            return false;
-          }
-          else {
-            return await isStale( repo );
-          }
+          return await isStale( repo );
         } );
 
         if ( staleRepos.length ) {
@@ -518,10 +540,6 @@ class ContinuousServer {
 
             this.saveToFile();
           }
-        }
-
-        if ( DEBUG_PRETEND_CLEAN ) {
-          await sleep( 10000000 );
         }
       }
       catch ( e ) {

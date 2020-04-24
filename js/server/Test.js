@@ -191,7 +191,7 @@ class Test {
   getObjectForBrowser() {
     assert( this.type === 'sim-test' || this.type === 'qunit-test' || this.type === 'pageload-test', 'Needs to be a browser test' );
 
-    const baseURL = `../../ct-snapshots/${this.snapshot.timestamp}`;
+    const baseURL = this.snapshot.useRootDir ? '../..' : `../../ct-snapshots/${this.snapshot.timestamp}`;
     let url;
 
     if ( this.type === 'sim-test' ) {
