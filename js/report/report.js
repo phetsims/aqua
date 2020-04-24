@@ -140,7 +140,7 @@ Property.multilink( [ statusProperty, startupTimestampProperty, lastErrorPropert
     statusNode.text = `${lastError.length ? '[ERR] ' : ''}Running since [${new Date( startupTimestamp ).toLocaleString()}], status: ${status}`;
   }
   else {
-    statusNode.text = `${lastError.length ? '[ERR] ' : ''}NOT RUNNING?, status: ${status}`;
+    statusNode.text = `${lastError.length ? '[ERR] ' : ''}status: ${status}`;
   }
 } );
 statusNode.addInputListener( new FireListener( {
