@@ -510,13 +510,14 @@ class ContinuousServer {
         }
 
         const test = this.weightedSampleTest( availableTests );
+        const snapshot = test.snapshot;
         const startTimestamp = Date.now();
 
         if ( test.type === 'lint' ) {
           test.complete = true;
           this.saveToFile();
           try {
-            const output = await execute( gruntCommand, [ 'lint' ], `../${test.repo}` );
+            const output = await execute( gruntCommand, [ 'lint' ], `${snapshot.directory}/${test.repo}` );
 
             ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
           }
@@ -529,7 +530,7 @@ class ContinuousServer {
           test.complete = true;
           this.saveToFile();
           try {
-            const output = await execute( gruntCommand, [ 'lint-everything' ], '../perennial' );
+            const output = await execute( gruntCommand, [ 'lint-everything' ], `${snapshot.directory}/perennial` );
 
             ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
           }
@@ -542,7 +543,7 @@ class ContinuousServer {
           test.complete = true;
           this.saveToFile();
           try {
-            const output = await execute( gruntCommand, [ `--brands=${test.brands.join( ',' )}`, '--lint=false' ], `../${test.repo}` );
+            const output = await execute( gruntCommand, [ `--brands=${test.brands.join( ',' )}`, '--lint=false' ], `${snapshot.directory}/${test.repo}` );
 
             ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
             test.success = true;

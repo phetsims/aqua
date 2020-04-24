@@ -26,7 +26,7 @@ class Snapshot {
    * @param {function({string})} setStatus
    */
   constructor( rootDir, setStatus ) {
-    // @private {string}
+    // @public {string}
     this.rootDir = rootDir;
 
     // @private {function}
