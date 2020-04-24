@@ -234,6 +234,8 @@ class Snapshot {
 
     snapshot.constructed = serialization.constructed === undefined ? true : serialization.constructed;
     snapshot.directory = serialization.directory;
+
+    return snapshot;
   }
 }
 
