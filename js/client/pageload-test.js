@@ -1,4 +1,4 @@
-// Copyright 2018-2020, University of Colorado Boulder
+// Copyright 2020, University of Colorado Boulder
 
 /*
  * Runs arbitrary content in an iframe (that presumably loads pageload-connector.js) and reports if it successfully
