@@ -29,6 +29,9 @@
     }
   },
   "phet": {
-    "buildStandalone": true
+    "buildStandalone": true,
+    "standaloneTranspiles": [
+      "../query-string-machine/js/QueryStringMachine.js"
+    ]
   }
 }

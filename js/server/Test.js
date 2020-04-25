@@ -19,7 +19,8 @@ const TEST_TYPES = [
   'build',
   'sim-test',
   'qunit-test',
-  'pageload-test'
+  'pageload-test',
+  'wrapper-test'
 ];
 
 class Test {
@@ -83,7 +84,7 @@ class Test {
     // @public {string|null}
     this.url = null;
 
-    if ( this.type === 'sim-test' || this.type === 'qunit-test' || this.type === 'pageload-test' ) {
+    if ( this.type === 'sim-test' || this.type === 'qunit-test' || this.type === 'pageload-test' || this.type === 'wrapper-test' ) {
       assert( typeof description.url === 'string', `${this.type} tests should have a url` );
 
       this.url = description.url;
@@ -161,7 +162,7 @@ class Test {
    * @returns {boolean}
    */
   isBrowserAvailable( es5Only ) {
-    if ( this.type !== 'sim-test' && this.type !== 'qunit-test' && this.type !== 'pageload-test' ) {
+    if ( this.type !== 'sim-test' && this.type !== 'qunit-test' && this.type !== 'pageload-test' && this.type !== 'wrapper-test' ) {
       return false;
     }
 
@@ -189,7 +190,7 @@ class Test {
    * @returns {Object}
    */
   getObjectForBrowser() {
-    assert( this.type === 'sim-test' || this.type === 'qunit-test' || this.type === 'pageload-test', 'Needs to be a browser test' );
+    assert( this.type === 'sim-test' || this.type === 'qunit-test' || this.type === 'pageload-test' || this.type === 'wrapper-test', 'Needs to be a browser test' );
 
     const baseURL = this.snapshot.useRootDir ? '../..' : `../../ct-snapshots/${this.snapshot.timestamp}`;
     let url;
@@ -206,6 +207,9 @@ class Test {
     }
     else if ( this.type === 'pageload-test' ) {
       url = 'pageload-test.html?url=' + encodeURIComponent( `${baseURL}/${this.url}` );
+    }
+    else if ( this.type === 'wrapper-test' ) {
+      url = 'wrapper-test.html?url=' + encodeURIComponent( `${baseURL}/${this.url}` );
     }
     if ( this.testQueryParameters ) {
       url = url + '&' + this.testQueryParameters;
