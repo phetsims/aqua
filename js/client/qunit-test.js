@@ -18,22 +18,27 @@ var options = QueryStringMachine.getAll( {
   },
   duration: {
     type: 'number',
-    defaultValue: 400000
+    defaultValue: 200000
   }
 } );
 
 var iframe = aqua.createFrame();
 iframe.src = options.url;
 
-// Since QUnit doesn't give us an accurate "done" message, we just tally pass/fail counts and wait for a certain amount of time to report back.
+// Since QUnit doesn't give us an accurate "done" message, we just tally pass/fail counts
 var passed = 0;
 var failed = 0;
+var receivedDone = false;
 var message = '';
 
 var done = function() {
   if ( id !== null ) {
     message = iframe.src + '\n' + passed + ' out of ' + ( passed + failed ) + ' tests passed. ' + failed + ' failed.\n' + message;
-    if ( passed > 0 && failed === 0 ) {
+    if ( !receivedDone ) {
+      message += '\nDid not complete in ' + options.duration + 'ms, may not have completed all tests';
+      aqua.testFail( message );
+    }
+    else if ( passed > 0 && failed === 0 ) {
       aqua.testPass( message );
     }
     else {
@@ -73,6 +78,7 @@ window.addEventListener( 'message', function( evt ) {
 
     if ( id !== null ) {
       clearTimeout( id );
+      receivedDone = true;
       done();
     }
   }
