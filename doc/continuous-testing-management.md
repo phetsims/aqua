@@ -1,15 +1,35 @@
 
 # How to manage Continuous Testing (CT) service
 
-_Everything in this document is intended to be run on bayes.colorado.edu while logged in as user phet-admin._
+_Everything in this document is intended to be run on bayes.colorado.edu while logged in as user phet-admin._ VPN may be required to reach bayes.colorado.edu if off campus.
 
-There are currently two separate pieces that need to run for it to behave as expected: the server, and Chrome processes doing browser tests.
+At a high level, there is:
 
-# The server
+- The server process (running on bayes.colorado.edu, but can also be run anywhere)
+- Browsers running tests (we run Chrome processes on bayes, pointed to the main server)
+- The report interface (e.g. https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-report.html) which displays the CT state.
 
-Continuous testing has all of our repositories checked out at `/data/share/phet/continuous-testing`. Everything under this directory is served via HTTPS at https://bayes.colorado.edu/continuous-testing/. The server, when running, will be continually pulling every repository (with the exception of aqua itself, which it will leave on the same SHA, so that it doesn't automatically start running new continuous server code). In addition to these repositories, the `continuous-testing` directory also contains snapshot directories, e.g. `snapshot-1514489753139` and `snapshot-1514489753139-phet-io` that contain full copies of all of our repositories. All browser-based testing will load files from under a snapshot's directory, and a snapshot directory will never change SHAs or contents (besides what is built during tests).
+# Tests, and changing what is tested
 
-The main server code is contained in `aqua/js/continuous-server.js`. So far, we've used pm2 (https://github.com/Unitech/pm2) to handle running the server process (handling automatic restarting, logging, etc.).
+perennial/js/listContinuousTests.js controls what tests are run. Simply commit/push to change what will be tested on the next CT snapshot. Run `node js/listContinuousTests.js` in perennial in order to test the output.
+
+There is no need to restart the CT server or other interfaces to change what is tested (unless a new test type is added, etc.)
+
+# Server process
+
+The CT server runs from the `continuous-server` grunt task, and on bayes is kept running (and logging) with pm2 (more information below). The code is under `aqua/js/server`, and launches from aqua's `Gruntfile.js`.
+
+The server by default will scan the (clean) working copy (pulling/cloning repos as needed), and when changes are detected will (by default) copy things over into a snapshot directory (under `ct-snapshots/`). Browser-based testing will load files from under that directory, and builds will be done there also. This snapshot will never change SHAs or contents (besides the builds and being deleted when it is not needed).
+
+Continuous testing on bayes.colorado.edu has all of our repositories checked out at `/data/share/phet/continuous-testing`. Everything under this directory is served via HTTPS at https://bayes.colorado.edu/continuous-testing/. Requests to the server are made to https://bayes.colorado.edu/aquaserver/* (internal API) which is redirected to the port 45366 internally to our server process.
+
+The server will have a certain number of locally running loops, doing build/lint tasks for tests. This is specified with a command-line flag when starting (currently we're using 8 concurrent builds/lints on bayes.colorado.edu).
+
+It also saves state information in `aqua/.continuous-testing-state.json`, so on relaunches it won't lose data. This will need to be wiped when the internal server formats change.
+
+## pm2 on bayes.colorado.edu
+
+So far, we've used pm2 (https://github.com/Unitech/pm2) to handle running the server process (handling automatic restarting, logging, etc.).
 
 Typically, you can run `pm2 list` to display the running processes, and it will display something like:
 ```
@@ -29,7 +49,7 @@ Sometimes on a system reboot, pm2 will forget about everything (we may need to s
 ```sh
 pm2 list # see if it is started, and also starts the pm2 daemon if it wasn't running
 cd /data/share/phet/continuous-testing/aqua
-pm2 start js/continuous-server.js # starts the process, and adds it to the list seen in pm2 list
+pm2 start grunt --name=continuous-server -- continuous-server --localCount=8 # starts the process, and adds it to the list seen in pm2 list
 ```
 
 It may not remember GitHub credentials across reboots also, so if the following error message happens (or similar):
@@ -38,25 +58,43 @@ It may not remember GitHub credentials across reboots also, so if the following 
 0|continuo |
 0|continuo | fatal: could not read Username for 'https://github.com': No such device or address
 ```
-then `cd` into a private repo directory, `git pull`, and put in the phet-dev credentials (username: phet-dev, password 
+then `cd` into a private repo directory, `git pull`, and put in the phet-dev credentials (username: phet-dev, password
 is in the PhET credentials document for "GitHub Machine User"). The credential helper should then remember the password
 for future pulls.
 
-Additionally, if the server crashes, it currently doesn't clear the snapshot directories that it was using. Currently 
-if I restart the server, I'll typically wipe `/data/share/phet/continuous-testing/snapshot-1*` so that we won't run out 
-of disk space. Can be skipped for a while if restarting a lot. Also should hopefully be improved in the future if we 
-continue to run into this.
+## Updating the bayes server code
 
-# Chrome processes
+Test locally for server changes, and push when ready. Notify the team on slack#dev-public
 
-To test in-browser things (like fuzzing sims or unit tests), the server provides a page at 
-https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-loop.html that will continuously request tests from 
-the server, run them, and report back results in a loop. It should still work while the server is down, and will 
-"reconnect" once the server comes back up. It takes a query parameter `id` that will be shown with the testing results.
+1. Shut down the server (`pm2 stop continuous-server`)
+2. If the save-file format has changed, or state needs to be wiped, remove the save file (`rm /data/share/phet/continuous-testing/aqua/.continuous-testing-state.json`). This generally won't be needed.
+3. `git pull` under aqua (`/data/share/phet/continuous-testing/aqua`)
+4. Start the server (`pm2 start continuous-server`)
+5. Check the logs (`pm2 logs continuous-server`)
 
-Since we still don't have actual devices set up and running tests, we have a semi-sufficient solution of running 
-headless Chrome processes server-side. I'll typically run 9 processes or so (running too much more actually taxes things 
-too much, and can cause "failed to load in time" errors and such).
+## Running locally
+
+The documentation under `aqua/js/Gruntfile.js` specifies more details for running, but if you want to run some CT tests locally (without the full server experience) it's best to use the `--useRootDir` flag (it will not copy files into snapshots, but will use your working copy, creating only one "CT" column, and without saving state to disk). The `--localCount` parameter is required, and specifies how many concurrent build/lint tasks should happen (which can be zero).
+
+For example, you can run:
+```sh
+grunt continuous-server --useRootDir --localCount=2
+```
+which will launch on the default port 45366.
+
+Then, the report and loop interfaces can be given the query paramter `?server=http%3A%2F%2Flocalhost%3A45366` to specify the server location (for API access). Depending on your local testing URL, the report interface then would be http://localhost/aqua/html/continuous-unbuilt-report.html?server=http%3A%2F%2Flocalhost%3A45366 and browser-based tests can be run with http://localhost/aqua/html/continuous-loop.html?server=http%3A%2F%2Flocalhost%3A45366&id=local (more details are specified in the report and browser sections).
+
+# Testing loop
+
+Browsers should be pointed to `aqua/html/continuous-loop.html` to test for any continuous server. For the main bayes CT, this will be https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-loop.html. It will continuously request tests from the server, run them, and report back results in a loop. It should still work while the server is down, and will "reconnect" once the server comes back up. This will do things like fuzz sims, run unit tests, check page loads, etc.
+
+It's important to note the REQUIRED query parameter `id`, which should be provided to identify what browser is doing the testing. This will be shown in error reports, and can help track what computer/os/browser were used for specific failures.
+
+It can take a `server` query parameter, which determines where API requests should be made. This isn't needed for bayes' testing.
+
+# Chrome processes (bayes testing loop)
+
+Since we don't have actual devices set up and running tests, we have a semi-sufficient solution of running headless Chrome processes server-side. I'll typically run 9 processes or so (running too much more actually taxes things too much, and can cause "failed to load in time" errors and such).
 
 I'll typically have 9 screens (see https://www.gnu.org/software/screen/manual/screen.html) open, so I can get console
 output and restart things. Rebooting resets everything.
@@ -84,6 +122,20 @@ If I need to come back and inspect the chrome instance (see if it is erroring ou
 
 This process should leave 9 chrome processes (think more like processes per tab, running under potentially one main Chrome process) constantly running tests from the server.
 
+# Report interface
+
+The main interface is available at https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-report.html. It will send API requests `https://bayes.colorado.edu/aquaserver/*` (which on the server will be mapped to the port 45366, to our running node server process).
+
+The reports can also be directed to point to any server API with the `?server` query parameter, e.g. `?server=http%3A%2F%2Flocalhost%3A45366` to point to a CT server running locally with the default port.
+
+There are two ways of running the report interface from any location: `continuous-report.html` (which uses a built form of aqua), and `continuous-unbuilt-report.html` (which loads the aqua interface with modules, and should be used while developing the interface).
+
+## Updating the interface on bayes
+
+Notify the team on slack#dev-public
+
+To move interface changes to bayes, you'll want to go to the aqua directory for CT (`/data/share/phet/continuous-testing/aqua`), pull (since it will not pull aqua during its testing loop), and run `grunt`. This will build the interface under `aqua/build` which is used by `continuous-report.html`.
+
 # Debugging
 
 Usually, inspect `pm2 logs` to see if something is going on. If it's scrolled past an error, you can tail the actual file that the logs stream to. Typically it might be a missing repo, a private repo that it can't resolve, or sometimes you'll need to re-clone a repo if there was a history-changing operation. (Since bayes is constantly pulling, if someone pushes a history change and then reverts it or something like that, a `git pull` won't work and recloning will be necessary).
@@ -91,14 +143,3 @@ Usually, inspect `pm2 logs` to see if something is going on. If it's scrolled pa
 Because pm2 stores logs under `/home/phet-admin/.pm2/logs`, it's filled up the partition for `/home` before. We've increased the size for that, but it may be an issue in the future.
 
 We'll add any future ways of fixing things as we run across them here.
-
-# Pulling aqua
-
-Follow these steps to pull changes to aqua, which are not automatically pulled (see above).
-
-1. Notify the team on slack#dev-public that you will be restarting Bayes CT
-2. Log in to bayes.colorado.edu as phet-admin, requires VPN.
-3. `cd /data/share/phet/continuous-testing/aqua`
-4. `pm2 stop continuous-server`
-5. `git pull`
-6. `pm2 start continuous-server`
