@@ -19,12 +19,10 @@ import DOM from '../../../scenery/js/nodes/DOM.js';
 import HBox from '../../../scenery/js/nodes/HBox.js';
 import Node from '../../../scenery/js/nodes/Node.js';
 import Rectangle from '../../../scenery/js/nodes/Rectangle.js';
-import RichText from '../../../scenery/js/nodes/RichText.js';
 import Text from '../../../scenery/js/nodes/Text.js';
 import VBox from '../../../scenery/js/nodes/VBox.js';
 import Color from '../../../scenery/js/util/Color.js';
 import Checkbox from '../../../sun/js/Checkbox.js';
-import Panel from '../../../sun/js/Panel.js';
 import VerticalAquaRadioButtonGroup from '../../../sun/js/VerticalAquaRadioButtonGroup.js';
 import TextPushButton from '../../../sun/js/buttons/TextPushButton.js';
 
@@ -130,6 +128,11 @@ const display = new Display( rootNode, {
 } );
 
 document.body.appendChild( display.domElement );
+
+const backgroundNode = new Rectangle( {
+  fill: 'white'
+} );
+rootNode.addChild( backgroundNode );
 
 const statusNode = new Text( '', {
   font: interfaceFont,
@@ -242,7 +245,7 @@ const filteringNode = new VBox( {
   ]
 } );
 
-rootNode.addChild( new VBox( {
+const contentNode = new VBox( {
   x: 10,
   y: 10,
   spacing: 15,
@@ -262,38 +265,59 @@ rootNode.addChild( new VBox( {
     } ),
     reportNode
   ]
-} ) );
+} );
+rootNode.addChild( contentNode );
 
-let clipboard = '';
-document.addEventListener( 'copy', e => {
-  console.log( 'clipboard' );
-  e.preventDefault();
-  if ( e.clipboardData) {
-    e.clipboardData.setData( 'text/plain', clipboard );
-  }
-  else if ( window.clipboardData ) {
-    window.clipboardData.setData( 'Text', clipboard );
+
+let popupIframe = null;
+
+display.addInputListener( {
+  down: () => {
+    if ( popupIframe ) {
+      document.body.removeChild( popupIframe );
+      popupIframe = null;
+    }
   }
 } );
 
 const popup = ( triggerNode, message ) => {
-  const messageHTML = message.split( '\n' ).map( escapeHTML ).join( '<br>' ) + '<br><br>Press command/ctrl-C to copy this to the clipboard';
-  const messagesNode = new RichText( messageHTML, {
-    font: interfaceFont,
-    align: 'left'
-  } );
-  const panel = new Panel( messagesNode, {
-    backgroundPickable: true,
-    cursor: 'pointer'
-  } );
-  rootNode.addChild( panel );
-  // TODO: align if it's at the bottom
-  panel.left = triggerNode.right;
-  panel.top = triggerNode.top;
-  clipboard = message;
-  panel.addInputListener( new FireListener( {
-    fire: () => panel.detach()
-  } ) );
+  const messageHTML = message.split( '\n' ).map( escapeHTML ).join( '<br>' );
+
+  const iframe = document.createElement( 'iframe' );
+  document.body.appendChild( iframe );
+
+  // Content
+  iframe.contentWindow.document.open();
+  iframe.contentWindow.document.write(
+     '<!DOCTYPE html>' +
+     '<html lang="en">' +
+     '<head><title>CT Info</title></head>' +
+     '<body style="font-size: 12px; font-family: Arial">' + messageHTML + '</body>' +
+     '</html>'
+  );
+  iframe.contentWindow.document.close();
+
+  // Styles
+  iframe.contentWindow.document.body.style.background = 'white';
+  iframe.style.border = '1px solid black';
+
+  // Make it wide before measuring
+  iframe.style.width = 1000 + 'px';
+
+  // Measure the width and adjust
+  iframe.style.width = iframe.contentWindow.document.documentElement.scrollWidth + 'px';
+
+  // Set height after, measuring after the width change to make sure it has room
+  iframe.style.height = iframe.contentWindow.document.documentElement.scrollHeight + 'px';
+
+  // Positioning
+  const point = triggerNode.parentToGlobalPoint( triggerNode.rightTop );
+  iframe.style.position = 'absolute';
+  iframe.style.left = Math.ceil( point.x ) + 'px';
+  iframe.style.top = Math.ceil( point.y ) + 'px';
+  iframe.style.zIndex = '10000';
+
+  popupIframe = iframe;
 };
 
 Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filterStringProperty, showAverageTimeProperty, showWeightsProperty ], ( report, expandedRepos, sort, filterString, showAverageTime, showWeights ) => {
@@ -608,6 +632,8 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
 
 display.initializeEvents();
 display.updateOnRequestAnimationFrame( dt => {
+  backgroundNode.rectWidth = contentNode.width;
+  backgroundNode.rectHeight = contentNode.height;
   display.width = Math.max( window.innerWidth, Math.ceil( rootNode.width ) );
   display.height = Math.max( 400, Math.ceil( rootNode.height ) ) + 100;
 } );
