@@ -550,7 +550,11 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
           }
           if ( snapshotTest.m ) {
             messages = messages.concat( snapshotTest.m.map( message => {
-              return `${report.testNames[ index ].join( ' : ' )}\n${message}`;
+              let resultMessage = `${report.testNames[ index ].join( ' : ' )}\n${message}\nSnapshot from ${new Date( snapshot.timestamp ).toLocaleString()}`;
+              while ( resultMessage.includes( '\n\n\n' ) ) {
+                resultMessage = resultMessage.replace( '\n\n\n', '\n\n' );
+              }
+              return resultMessage;
             } ) );
           }
         }
@@ -594,7 +598,7 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
       if ( messages.length ) {
         background.addInputListener( new FireListener( {
           fire: () => {
-            popup( background, messages.join( '\n\n' ) );
+            popup( background, messages.join( '\n\n----------------------------------\n\n' ) );
           }
         } ) );
         background.cursor = 'pointer';
