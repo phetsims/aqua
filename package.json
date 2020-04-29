@@ -16,6 +16,11 @@
   },
   "eslintConfig": {
     "extends": "../chipper/eslint/node_eslintrc.js",
+    "parser": "../chipper/node_modules/babel-eslint",
+    "parserOptions": {
+      "sourceType": "module",
+      "allowImportExportEverywhere": true
+    },
     "globals": {
       "aqua": false,
       "XMLHttpRequest": false,
