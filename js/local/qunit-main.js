@@ -1,7 +1,8 @@
 // Copyright 2020, University of Colorado Boulder
 
 /**
- * Runs unit tests on a single repo.  If no unit tests are defined, this succeeds.
+ * Runs unit tests on a single repo.  If no unit tests are defined, this succeeds.  This outputs exit codes
+ * in order to be compatible with usage as a precommit hook.
  *
  * USAGE:
  * cd ${repo}
