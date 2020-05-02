@@ -26,7 +26,11 @@ const buildLocal = require( '../../../perennial/js/common/buildLocal' );
   const exists = fs.existsSync( `../${testFilePath}` );
   if ( exists ) {
     const browser = await puppeteer.launch();
-    const result = await puppeteerQUnit( browser, `${buildLocal.localTestingURL}/${testFilePath}?ea` );
+
+    // phet-io repo unit tests must be run with brand=phet-io
+    const queryString = repo === 'phet-io' ? '&brand=phet-io' : '';
+
+    const result = await puppeteerQUnit( browser, `${buildLocal.localTestingURL}/${testFilePath}?ea${queryString}` );
     await browser.close();
     console.log( `${repo}: ${result.ok}` );
     process.exit( result.ok ? 0 : 1 );
