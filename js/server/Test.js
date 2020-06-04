@@ -225,6 +225,7 @@ class Test {
 
   /**
    * Creates a pojo-style object for saving/restoring
+   * @public
    *
    * @returns {Object}
    */
@@ -242,6 +243,7 @@ class Test {
 
   /**
    * Creates the in-memory representation from the serialized form
+   * @public
    *
    * @param {Snapshot} snapshot
    * @param {Object} serialization

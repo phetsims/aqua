@@ -171,6 +171,7 @@ class ContinuousServer {
 
   /**
    * Respond to an HTTP request with a response
+   * @private
    *
    * @param {ServerResponse} res
    * @param {Test|null} test
@@ -301,6 +302,7 @@ class ContinuousServer {
 
   /**
    * Records a test pass from any source.
+   * @private
    *
    * @param {Test} test
    * @param {number} milliseconds
@@ -313,6 +315,7 @@ class ContinuousServer {
 
   /**
    * Records a test failure from any source.
+   * @private
    *
    * @param {Test} test
    * @param {number} milliseconds
@@ -626,6 +629,11 @@ class ContinuousServer {
     }
   }
 
+  /**
+   * Starts generating reports from the available data.
+   *
+   * @public
+   */
   async generateReportLoop() {
     while ( true ) { // eslint-disable-line
       try {

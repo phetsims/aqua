@@ -35,6 +35,7 @@ class TestResult {
 
   /**
    * Creates a pojo-style object for saving/restoring
+   * @public
    *
    * @returns {Object}
    */
@@ -48,6 +49,7 @@ class TestResult {
 
   /**
    * Creates the in-memory representation from the serialized form
+   * @public
    *
    * @param {Test} test
    * @param {Object} serialization

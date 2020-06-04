@@ -177,6 +177,7 @@ class Snapshot {
 
   /**
    * Creates a pojo-style object for saving/restoring
+   * @public
    *
    * @returns {Object}
    */
@@ -217,6 +218,7 @@ class Snapshot {
 
   /**
    * Creates the in-memory representation from the serialized form
+   * @public
    *
    * @param {Object} serialization
    * @returns {Snapshot}
@@ -239,6 +241,7 @@ class Snapshot {
 
   /**
    * Creates the in-memory representation from the stub serialized form
+   * @public
    *
    * @param {Object} serialization
    * @returns {Snapshot}
