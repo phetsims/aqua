@@ -20,7 +20,7 @@
 
 #### Boxes:
 
-- Left: Status running require.js mode
+- Left: Status running unbuilt mode
   - Gray: not yet reached
   - Blue: loading
   - Orange: failure loading (before running sim)

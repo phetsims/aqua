@@ -321,7 +321,7 @@
       simNames.forEach( function( simName ) {
         createStatusElement( simName );
 
-        // First, if enabled, put require.js testing on the queue
+        // First, if enabled, put unbuilt testing on the queue
         if ( options.testUnbuilt ) {
           testQueue.push( {
             simName: simName,
