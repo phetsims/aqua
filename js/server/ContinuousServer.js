@@ -649,7 +649,7 @@ class ContinuousServer {
         this.computeRecentTestWeights();
       }
       catch ( e ) {
-        this.setError( `weights error: ${e}` );
+        this.setError( `weights error: ${e} ${e.stack}` );
       }
 
       await sleep( 30 * 1000 );
