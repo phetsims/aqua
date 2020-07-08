@@ -663,7 +663,13 @@ class ContinuousServer {
   async generateReportLoop() {
     while ( true ) { // eslint-disable-line
       try {
-        const testNames = _.sortBy( _.uniqWith( _.flatten( this.snapshots.map( snapshot => snapshot.tests.map( test => test.names ) ) ), _.isEqual ), names => names.toString() );
+        const testNameMap = {};
+        this.snapshots.forEach( snapshot => snapshot.tests.forEach( test => {
+          testNameMap[ test.nameString ] = test.names;
+        } ) );
+        const testNameStrings = _.sortBy( Object.keys( testNameMap ) );
+        const testNames = testNameStrings.map( nameString => testNameMap[ nameString ] );
+
         const elapsedTimes = testNames.map( () => 0 );
         const numElapsedTimes = testNames.map( () => 0 );
 
