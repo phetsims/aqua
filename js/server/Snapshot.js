@@ -125,6 +125,12 @@ class Snapshot {
       return new Test( this, description, lastRepoTimestamps[ potentialRepo ] || 0, lastRunnableTimestamps[ potentialRepo ] || 0 );
     } );
 
+    // @public {Object.<nameString:string,Test>} - ephemeral, we use this.tests for saving things
+    this.testMap = {};
+    this.tests.forEach( test => {
+      this.testMap[ test.nameString ] = test;
+    } );
+
     this.constructed = true;
   }
 
@@ -150,8 +156,7 @@ class Snapshot {
    * @returns {Test|null}
    */
   findTest( names ) {
-    // TODO: can increase performance with different lookups (e.g. binary?)
-    return _.find( this.tests, test => _.isEqual( test.names, names ) );
+    return this.testMap[ Test.namesToNameString( names ) ] || null;
   }
 
   /**

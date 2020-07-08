@@ -334,14 +334,10 @@ class ContinuousServer {
    * @returns {number}
    */
   getTestWeight( test ) {
-    const lastTestedIndex = _.findIndex( this.snapshots, snapshot => {
-      const snapshotTest = snapshot.findTest( test.names );
-      return snapshotTest && snapshotTest.results.length > 0;
-    } );
-    const lastFailedIndex = _.findIndex( this.snapshots, snapshot => {
-      const snapshotTest = snapshot.findTest( test.names );
-      return snapshotTest && _.some( snapshotTest.results, testResult => !testResult.passed );
-    } );
+    const snapshotTests = this.snapshots.map( snapshot => snapshot.findTest( test.names ) ).filter( test => !!test );
+
+    const lastTestedIndex = _.findIndex( snapshotTests, snapshotTest => snapshotTest.results.length > 0 );
+    const lastFailedIndex = _.findIndex( snapshotTests, snapshotTest => _.some( snapshotTest.results, testResult => !testResult.passed ) );
 
     let weight = test.priority;
 
@@ -388,6 +384,16 @@ class ContinuousServer {
   }
 
   /**
+   * Recomputes the desired weights for all recent tests.
+   * @private
+   */
+  computeRecentTestWeights() {
+    this.snapshots.slice( 0, 2 ).forEach( snapshot => snapshot.tests.forEach( test => {
+      test.weight = this.getTestWeight( test );
+    } ) );
+  }
+
+  /**
    * Picks a test based on the tests' relative weights.
    * @public
    *
@@ -397,7 +403,7 @@ class ContinuousServer {
   weightedSampleTest( tests ) {
     assert( tests.length );
 
-    const weights = tests.map( test => this.getTestWeight( test ) );
+    const weights = tests.map( test => test.weight );
     const totalWeight = _.sum( weights );
 
     const cutoffWeight = totalWeight * Math.random();
@@ -477,6 +483,8 @@ class ContinuousServer {
       await snapshot.create( true );
 
       this.snapshots.push( snapshot );
+
+      this.computeRecentTestWeights();
     }
 
     while ( !this.useRootDir ) {
@@ -527,6 +535,8 @@ class ContinuousServer {
             while ( this.snapshots.length > 70 || this.snapshots[ this.snapshots.length - 1 ].timestamp < cutoffTimestamp && !this.snapshots[ this.snapshots.length - 1 ].exists ) {
               this.snapshots.pop();
             }
+
+            this.computeRecentTestWeights();
 
             this.saveToFile();
 
@@ -630,8 +640,24 @@ class ContinuousServer {
   }
 
   /**
+   * Starts computing weights for tests.
+   * @public
+   */
+  async computeWeightsLoop() {
+    while ( true ) { // eslint-disable-line
+      try {
+        this.computeRecentTestWeights();
+      }
+      catch ( e ) {
+        this.setError( `weights error: ${e}` );
+      }
+
+      await sleep( 30 * 1000 );
+    }
+  }
+
+  /**
    * Starts generating reports from the available data.
-   *
    * @public
    */
   async generateReportLoop() {
@@ -688,7 +714,7 @@ class ContinuousServer {
         for ( const names of testNames ) {
           const test = this.snapshots[ 0 ] && this.snapshots[ 0 ].findTest( names );
           if ( test ) {
-            testWeights.push( Math.ceil( this.getTestWeight( test ) * 100 ) / 100 );
+            testWeights.push( Math.ceil( test.weight * 100 ) / 100 );
           }
           else {
             testWeights.push( 0 );

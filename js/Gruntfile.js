@@ -49,6 +49,7 @@ module.exports = grunt => {
       const server = new ContinuousServer( useRootDir );
       server.startServer( port );
       server.generateReportLoop();
+      server.computeWeightsLoop();
 
       if ( snapshot ) {
         server.createSnapshotLoop();

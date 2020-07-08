@@ -48,6 +48,9 @@ class Test {
     // @public {Array.<string>}
     this.names = description.test;
 
+    // @public {string} - Used for faster lookups, single tests, etc. - ephemeral
+    this.nameString = Test.namesToNameString( this.names );
+
     // @public {string}
     this.type = description.type;
 
@@ -56,6 +59,9 @@ class Test {
 
     // @public {number}
     this.priority = 1;
+
+    // @public {number} - ephemeral
+    this.weight = 1; // a default so things will work in case it isn't immediately set
 
     if ( description.priority ) {
       assert( typeof description.priority === 'number', 'priority should be a number' );
@@ -221,6 +227,17 @@ class Test {
       url: url,
       timestamp: Date.now()
     };
+  }
+
+  /**
+   * Returns a single string from a list of names
+   * @public
+   *
+   * @param {Array.<string>} names
+   * @returns {string}
+   */
+  static namesToNameString( names ) {
+    return names.join( '.' );
   }
 
   /**
