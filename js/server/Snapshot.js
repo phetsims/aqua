@@ -240,6 +240,10 @@ class Snapshot {
     snapshot.repos = serialization.repos;
     snapshot.shas = serialization.shas;
     snapshot.tests = serialization.tests.map( testSerialization => Test.deserialize( snapshot, testSerialization ) );
+    snapshot.testMap = {};
+    snapshot.tests.forEach( test => {
+      snapshot.testMap[ test.nameString ] = test;
+    } );
 
     return snapshot;
   }
