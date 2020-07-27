@@ -28,13 +28,13 @@ http://localhost/main/aqua/html/gameup-harness.html?sim=http://localhost/main/ph
 
   // When the button is pressed, request a capture from the simulation.
   document.getElementById( 'captureButton' ).addEventListener( 'click', () => {
-    simFrame.contentWindow.postMessage( "captureImage", "http://localhost" );
+    simFrame.contentWindow.postMessage( "captureImage", self.origin );
   } );
   window.addEventListener( "message", event => {
 
     // When the simulation indicates it is ready, we tell it to stop broadcasting the ready messages
     if ( event.data === 'captureReady' ) {
-      simFrame.contentWindow.postMessage( "GameUpCaptureReady", "http://localhost" );
+      simFrame.contentWindow.postMessage( "GameUpCaptureReady", self.origin );
     }
     else {
 
