@@ -32,10 +32,29 @@ http://localhost/main/aqua/html/gameup-harness.html?sim=http://localhost/main/ph
   } );
   window.addEventListener( "message", event => {
 
+    const isReportColorMessage = data => {
+      let parsed = null;
+      try {
+        parsed = JSON.parse( data );
+      }
+      catch( e ) {
+        return false;
+      }
+      if ( parsed && parsed.type === 'reportColor' ) {
+        return true;
+      }
+      return false;
+    };
+
     // When the simulation indicates it is ready, we tell it to stop broadcasting the ready messages
     if ( event.data === 'captureReady' ) {
       simFrame.contentWindow.postMessage( "GameUpCaptureReady", '*' );
     }
+    else if ( isReportColorMessage( event.data ) ) {
+
+      // Ignore messages from ColorProfile
+    }
+
     else {
 
       // Received an image from the simulation, show it on the screen
