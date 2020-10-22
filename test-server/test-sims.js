@@ -55,6 +55,9 @@
     testConcurrentBuilds: {
       type: 'number',
       defaultValue: 1
+    },
+    randomize: {
+      type: 'flag'
     }
   } );
 
@@ -316,6 +319,9 @@
       simNames = simListText.trim().replace( /\r/g, '' ).split( '\n' );
       if ( options.testSims.length ) {
         simNames = options.testSims;
+      }
+      if ( options.randomize ) {
+        simNames = _.shuffle( simNames );
       }
 
       simNames.forEach( function( simName ) {
