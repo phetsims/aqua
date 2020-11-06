@@ -34,6 +34,10 @@ const options = QueryStringMachine.getAll( {
 
     // Origin for our server (ignoring current port), so that we don't require localhost
     defaultValue: window.location.protocol + '//' + window.location.hostname
+  },
+  maxColumns: {
+    type: 'number',
+    defaultValue: -1 // when -1, will show all columns
   }
 } );
 
@@ -81,7 +85,7 @@ statusProperty.lazyLink( status => console.log( `Status: ${status}` ) );
 
 // {Property.<Object|null>}
 const reportProperty = new Property( {
-  snapshots: [],
+  snapshots: [], // latest snapshots first
   testNames: [],
   testAverageTimes: [],
   testWeights: []
@@ -324,6 +328,11 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
   ( report, expandedRepos, sort, filterString, showAverageTime, showWeights ) => {
     let tests = [];
 
+    let snapshots = report.snapshots;
+    if ( options.maxColumns === -1 ) {
+      snapshots = snapshots.filter( ( snapshot, index ) => index < options.maxColumns );
+    }
+
     const everythingName = '(everything)';
 
     tests.push( {
@@ -377,8 +386,8 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
 
     if ( sort === Sort.IMPORTANCE ) {
       tests = _.sortBy( tests, test => {
-        const failIndex = _.findIndex( report.snapshots, snapshot => _.some( test.indices, index => snapshot.tests[ index ].n ) );
-        const passIndex = _.findIndex( report.snapshots, snapshot => _.some( test.indices, index => snapshot.tests[ index ].y ) );
+        const failIndex = _.findIndex( snapshots, snapshot => _.some( test.indices, index => snapshot.tests[ index ].n ) );
+        const passIndex = _.findIndex( snapshots, snapshot => _.some( test.indices, index => snapshot.tests[ index ].y ) );
         if ( failIndex >= 0 ) {
           return failIndex;
         }
@@ -466,7 +475,7 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
 
     const padding = 3;
 
-    const snapshotLabels = report.snapshots.map( ( snapshot, index ) => {
+    const snapshotLabels = snapshots.map( ( snapshot, index ) => {
       const label = new VBox( {
         spacing: 2,
         children: [
@@ -478,7 +487,7 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
         fire: () => {
           let diffString = '';
 
-          const previousSnapshot = report.snapshots[ index + 1 ];
+          const previousSnapshot = snapshots[ index + 1 ];
           if ( previousSnapshot ) {
             diffString = _.uniq( Object.keys( snapshot.shas ).concat( Object.keys( previousSnapshot.shas ) ) ).sort().filter( repo => {
               return snapshot.shas[ repo ] !== previousSnapshot.shas[ repo ];
@@ -522,7 +531,7 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
     const getX = index => maxTestLabelWidth + padding + index * ( maxSnapshotLabelWidth + padding ) + ( showAverageTime ? 1 : 0 ) * ( maxAverageTimeLabelWidth + padding ) + ( showWeights ? 1 : 0 ) * ( maxWeightLabelWidth + padding );
     const getY = index => maxSnapshotLabelHeight + padding + index * ( maxTestLabelHeight + padding );
 
-    const snapshotsTestNodes = _.flatten( report.snapshots.map( ( snapshot, i ) => {
+    const snapshotsTestNodes = _.flatten( snapshots.map( ( snapshot, i ) => {
       return tests.map( ( test, j ) => {
         const x = getX( i );
         const y = getY( j );
