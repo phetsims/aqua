@@ -329,7 +329,7 @@ Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filte
     let tests = [];
 
     let snapshots = report.snapshots;
-    if ( options.maxColumns === -1 ) {
+    if ( options.maxColumns !== -1 ) {
       snapshots = snapshots.filter( ( snapshot, index ) => index < options.maxColumns );
     }
 
