@@ -8,10 +8,7 @@
 
 'use strict';
 
-// Because ES5 for IE11 compatibility
-/* eslint-disable no-var */
-
-var aquaOptions = QueryStringMachine.getAll( {
+const aquaOptions = QueryStringMachine.getAll( {
   testInfo: {
     type: 'string',
     defaultValue: '{}'
@@ -26,8 +23,8 @@ var aquaOptions = QueryStringMachine.getAll( {
   }
 } );
 
-var sentMessage = false;
-var iframe = null;
+let sentMessage = false;
+let iframe = null;
 
 window.aqua = {
   // @public {Object}

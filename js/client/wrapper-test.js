@@ -8,10 +8,7 @@
 
 'use strict';
 
-// Because ES5 for IE11 compatibility
-/* eslint-disable no-var */
-
-var options = QueryStringMachine.getAll( {
+const options = QueryStringMachine.getAll( {
   url: {
     type: 'string',
     defaultValue: ''
@@ -28,12 +25,12 @@ var options = QueryStringMachine.getAll( {
 } );
 
 // Add those two to our query parameters, so we get load/error messages
-var iframe = aqua.createFrame();
+const iframe = aqua.createFrame();
 iframe.src = QueryStringMachine.appendQueryStringArray( options.url, [
   '?wrapperContinuousTest=' + encodeURIComponent( aqua.options.testInfo )
 ] );
 
-var hasLoaded = false;
+let hasLoaded = false;
 
 setTimeout( function() {
   if ( hasLoaded ) {
@@ -49,14 +46,14 @@ setTimeout( function() {
   }
 }, options.duration );
 
-var testInfo = JSON.parse( aqua.options.testInfo );
+const testInfo = JSON.parse( aqua.options.testInfo );
 
 // handling messages from sims
 window.addEventListener( 'message', function( evt ) {
   if ( typeof evt.data !== 'string' ) {
     return;
   }
-  var data = JSON.parse( evt.data );
+  const data = JSON.parse( evt.data );
 
   // Filter out any message that isn't directly from this test
   if ( data.continuousTest && _.isEqual( testInfo, data.continuousTest ) ) {

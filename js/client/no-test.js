@@ -8,10 +8,7 @@
 
 'use strict';
 
-// Because ES5 for IE11 compatibility
-/* eslint-disable no-var */
-
-var options = QueryStringMachine.getAll( {
+const options = QueryStringMachine.getAll( {
   duration: {
     type: 'number',
     defaultValue: 10000

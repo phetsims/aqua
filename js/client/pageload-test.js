@@ -9,10 +9,7 @@
 
 'use strict';
 
-// Because ES5 for IE11 compatibility
-/* eslint-disable no-var */
-
-var options = QueryStringMachine.getAll( {
+const options = QueryStringMachine.getAll( {
   url: {
     type: 'string',
     defaultValue: ''
@@ -24,7 +21,7 @@ var options = QueryStringMachine.getAll( {
   }
 } );
 
-var iframe = aqua.createFrame();
+const iframe = aqua.createFrame();
 iframe.src = options.url;
 
 setTimeout( function() {
@@ -37,7 +34,7 @@ window.addEventListener( 'message', function( evt ) {
     return;
   }
 
-  var data = JSON.parse( evt.data );
+  const data = JSON.parse( evt.data );
 
   // Sent by Joist due to the postMessage* query parameters
   if ( data.type === 'pageload-load' ) {

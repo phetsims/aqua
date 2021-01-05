@@ -8,10 +8,7 @@
 
 'use strict';
 
-// Because ES5 for IE11 compatibility
-/* eslint-disable no-var */
-
-var options = QueryStringMachine.getAll( {
+const options = QueryStringMachine.getAll( {
   url: {
     type: 'string',
     defaultValue: ''
@@ -22,16 +19,16 @@ var options = QueryStringMachine.getAll( {
   }
 } );
 
-var iframe = aqua.createFrame();
+const iframe = aqua.createFrame();
 iframe.src = options.url;
 
 // Since QUnit doesn't give us an accurate "done" message, we just tally pass/fail counts
-var passed = 0;
-var failed = 0;
-var receivedDone = false;
-var message = '';
+let passed = 0;
+let failed = 0;
+let receivedDone = false;
+let message = '';
 
-var done = function() {
+const done = function() {
   if ( id !== null ) {
     message = iframe.src + '\n' + passed + ' out of ' + ( passed + failed ) + ' tests passed. ' + failed + ' failed.\n' + message;
     if ( !receivedDone ) {
@@ -50,14 +47,14 @@ var done = function() {
 };
 
 // Supports old tests (which do not know when they are done)
-var id = setTimeout( done, options.duration );
+let id = setTimeout( done, options.duration );
 
 window.addEventListener( 'message', function( evt ) {
   if ( typeof evt.data !== 'string' ) {
     return;
   }
 
-  var data = JSON.parse( evt.data );
+  const data = JSON.parse( evt.data );
 
   // Sent from all of our QUnit wrappers
   if ( data.type === 'qunit-test' ) {
