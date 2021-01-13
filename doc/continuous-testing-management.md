@@ -1,7 +1,7 @@
 
 # How to manage Continuous Testing (CT) service
 
-_Everything in this document is intended to be run on bayes.colorado.edu while logged in as user phet-admin._ VPN may be required to reach bayes.colorado.edu if off campus.
+_Everything in this document is intended to be run on bayes.colorado.edu while logged in as user phet-admin._ The simplest way to accomplish this is to login to bayes with your CU Identikey, then run `sudo -i -u phet-admin`.  VPN may be required to reach bayes.colorado.edu if off campus.
 
 At a high level, there is:
 
