@@ -8,13 +8,15 @@
 
 'use strict';
 
-const options = QueryStringMachine.getAll( {
-  duration: {
-    type: 'number',
-    defaultValue: 10000
-  }
-} );
+(() => {
+  const options = QueryStringMachine.getAll( {
+    duration: {
+      type: 'number',
+      defaultValue: 10000
+    }
+  } );
 
-setTimeout( function() {
-  aqua.nextTest();
-}, options.duration );
+  setTimeout( function() {
+    aqua.nextTest();
+  }, options.duration );
+})();
