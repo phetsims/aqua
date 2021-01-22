@@ -120,7 +120,7 @@ function sendFuzz( averageEventQuantity ) {
 }
 
 function getScreenshot( callback ) {
-  iframe.contentWindow.phet.joist.sim.display.foreignObjectRasterization( function( url ) {
+  iframe.contentWindow.phet.joist.display.foreignObjectRasterization( function( url ) {
     callback( url );
   } );
 }
@@ -226,7 +226,7 @@ window.addEventListener( 'message', function( evt ) {
     random = new iframe.contentWindow.phet.dot.Random( options );
 
     iframe.contentWindow.phet.joist.launchSimulation();
-    iframe.contentWindow.phet.joist.sim.display.interactive = false;
+    iframe.contentWindow.phet.joist.display.interactive = false;
   }
   else if ( data.type === 'load' ) {
     console.log( 'loaded' );

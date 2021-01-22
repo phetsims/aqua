@@ -92,7 +92,7 @@ body.addEventListener( 'mouseup', e => {
 
 // Capture a screenshot from the given iframe
 function getScreenshot( iframe, callback ) {
-  iframe.contentWindow.phet.joist.sim.display.canvasSnapshot( callback );
+  iframe.contentWindow.phet.joist.display.canvasSnapshot( callback );
 }
 
 /**
