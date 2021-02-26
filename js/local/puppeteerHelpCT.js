@@ -26,7 +26,7 @@ process.on( 'SIGINT', () => process.exit() );
     await page.goto( `https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-loop.html?id=localPuppeteer${process.argv[ 2 ]}` );
   }
   catch( e ) {
-    throw  e;
+    throw e;
   }
 } )();
 
