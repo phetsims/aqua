@@ -8,7 +8,7 @@
 
 'use strict';
 
-(() => {
+( () => {
   const options = QueryStringMachine.getAll( {
     url: {
       type: 'string',
@@ -73,4 +73,4 @@
       }
     }
   } );
-})();
+} )();

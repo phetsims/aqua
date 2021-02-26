@@ -111,7 +111,7 @@ class Snapshot {
           lastRunnableTimestamps[ repo ] = timestamp;
         }
       }
-      catch ( e ) {
+      catch( e ) {
         winston.error( `Could not read dependencies of repo ${repo}: ${e}` );
       }
     }

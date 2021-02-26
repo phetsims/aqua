@@ -9,7 +9,7 @@
 
 'use strict';
 
-(function() {
+( function() {
   const req = new XMLHttpRequest();
   req.onload = function() {
     const simListText = req.responseText;
@@ -20,7 +20,7 @@
   // location of active sims
   req.open( 'GET', '../../perennial/data/active-runnables', true );
   req.send();
-})();
+} )();
 
 function setup( simNames ) {
   const snapshots = [];
@@ -69,9 +69,11 @@ function setup( simNames ) {
     context.drawImage( image, 0, 0 );
     return context;
   }
+
   function contextToData( context ) {
     return context.getImageData( 0, 0, options.simWidth, options.simHeight );
   }
+
   function dataToCanvas( data ) {
     const canvas = document.createElement( 'canvas' );
     const context = canvas.getContext( '2d' );
@@ -80,6 +82,7 @@ function setup( simNames ) {
     context.putImageData( data, 0, 0 );
     return canvas;
   }
+
   function compare( imageA, imageB, msg ) {
     const threshold = 0;
 
@@ -108,10 +111,10 @@ function setup( simNames ) {
 
       totalDifference += alphaMultipliedDiff;
       // if ( alphaMultipliedDiff > threshold ) {
-        // console.log( message + ': ' + Math.abs( a.data[i] - b.data[i] ) );
+      // console.log( message + ': ' + Math.abs( a.data[i] - b.data[i] ) );
       largestDifference = Math.max( largestDifference, alphaMultipliedDiff );
-        // isEqual = false;
-        // break;
+      // isEqual = false;
+      // break;
       // }
     }
 
@@ -172,6 +175,7 @@ function setup( simNames ) {
     };
     iframe.src = 'take-snapshot.html?' + childQueryParams + '&url=' + encodeURIComponent( '../../' + sim + '/' + sim + '_en.html' );
   }
+
   function nextSim() {
     if ( queue.length ) {
       loadSim( queue.shift() );
@@ -216,6 +220,7 @@ function setup( simNames ) {
           const oldScreenshots = snapshots[ snapshots.indexOf( snapshot ) - 1 ][ sim ].screenshots;
 
           let nextIndex = 0;
+
           function run() {
             const index = nextIndex++;
             if ( index < newScreenshots.length && index < oldScreenshots.length ) {
@@ -231,6 +236,7 @@ function setup( simNames ) {
               newImage.src = newScreenshots[ index ].url;
             }
           }
+
           run();
         } );
       }

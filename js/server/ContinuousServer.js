@@ -88,7 +88,7 @@ class ContinuousServer {
     try {
       this.loadFromFile();
     }
-    catch ( e ) {
+    catch( e ) {
       this.setError( `error loading from file: ${e}` );
     }
   }
@@ -161,7 +161,7 @@ class ContinuousServer {
           res.end( this.reportJSON );
         }
       }
-      catch ( e ) {
+      catch( e ) {
         this.setError( `server error: ${e}` );
       }
     } ).listen( port );
@@ -555,7 +555,7 @@ class ContinuousServer {
           }
         }
       }
-      catch ( e ) {
+      catch( e ) {
         this.setError( `snapshot error: ${e}` );
       }
     }
@@ -596,7 +596,7 @@ class ContinuousServer {
 
             ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
           }
-          catch ( e ) {
+          catch( e ) {
             ContinuousServer.testFail( test, Date.now() - startTimestamp, `Lint failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
           }
           this.saveToFile();
@@ -609,7 +609,7 @@ class ContinuousServer {
 
             ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
           }
-          catch ( e ) {
+          catch( e ) {
             ContinuousServer.testFail( test, Date.now() - startTimestamp, `Lint-everything failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
           }
           this.saveToFile();
@@ -623,7 +623,7 @@ class ContinuousServer {
             ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
             test.success = true;
           }
-          catch ( e ) {
+          catch( e ) {
             ContinuousServer.testFail( test, Date.now() - startTimestamp, `Build failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
           }
           this.saveToFile();
@@ -633,7 +633,7 @@ class ContinuousServer {
           await sleep( 1000 );
         }
       }
-      catch ( e ) {
+      catch( e ) {
         this.setError( `local error: ${e}` );
       }
     }
@@ -648,7 +648,7 @@ class ContinuousServer {
       try {
         this.computeRecentTestWeights();
       }
-      catch ( e ) {
+      catch( e ) {
         this.setError( `weights error: ${e} ${e.stack}` );
       }
 
@@ -739,7 +739,7 @@ class ContinuousServer {
 
         this.reportJSON = JSON.stringify( report );
       }
-      catch ( e ) {
+      catch( e ) {
         this.setError( `report error: ${e}` );
       }
 

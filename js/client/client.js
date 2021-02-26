@@ -8,7 +8,7 @@
 
 'use strict';
 
-(() => {
+( () => {
   const aquaOptions = QueryStringMachine.getAll( {
     testInfo: {
       type: 'string',
@@ -151,4 +151,4 @@
       console.log( '[NEXT TEST]' );
     }
   };
-})();
+} )();

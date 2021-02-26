@@ -9,7 +9,7 @@
 
 'use strict';
 
-(() => {
+( () => {
   const options = QueryStringMachine.getAll( {
     url: {
       type: 'string',
@@ -45,4 +45,4 @@
       aqua.simpleFail( data.message + '\n' + data.stack );
     }
   } );
-})();
+} )();

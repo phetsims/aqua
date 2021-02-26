@@ -8,7 +8,7 @@
 
 'use strict';
 
-(() => {
+( () => {
   const options = QueryStringMachine.getAll( {
     duration: {
       type: 'number',
@@ -19,4 +19,4 @@
   setTimeout( function() {
     aqua.nextTest();
   }, options.duration );
-})();
+} )();

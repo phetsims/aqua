@@ -232,7 +232,8 @@ window.addEventListener( 'message', function( evt ) {
     console.log( 'loaded' );
     sendStep( 0.016 );
     loaded = true;
-  } else if (data.type === 'error' ) {
+  }
+  else if ( data.type === 'error' ) {
     window.parent && window.parent.postMessage( evt.data );
   }
 } );
