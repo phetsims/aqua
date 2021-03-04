@@ -17,15 +17,15 @@
   "eslintConfig": {
     "extends": "../chipper/eslint/node_eslintrc.js",
     "globals": {
-      "aqua": false,
-      "XMLHttpRequest": false,
-      "Hashes": false,
-      "phetCore": false,
-      "axon": false,
-      "dot": false,
-      "kite": false,
-      "scenery": false,
-      "__dirname": false
+      "aqua": "readonly",
+      "XMLHttpRequest": "readonly",
+      "Hashes": "readonly",
+      "phetCore": "readonly",
+      "axon": "readonly",
+      "dot": "readonly",
+      "kite": "readonly",
+      "scenery": "readonly",
+      "__dirname": "readonly"
     }
   },
   "phet": {
