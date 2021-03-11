@@ -22,11 +22,7 @@ process.on( 'SIGINT', () => process.exit() );
   page.on( 'error', msg => console.error( 'error from puppeteer', msg ) );
   page.on( 'pageerror', msg => console.error( 'pageerror from puppeteer', msg ) );
 
-  try {
-    await page.goto( `https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-loop.html?id=localPuppeteer${process.argv[ 2 ]}` );
-  }
-  catch( e ) {
-    throw e;
-  }
+  // may throw an Error
+  await page.goto( `https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-loop.html?id=localPuppeteer${process.argv[ 2 ]}` );
 } )();
 
