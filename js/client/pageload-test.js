@@ -25,12 +25,12 @@
   const iframe = aqua.createFrame();
   iframe.src = options.url;
 
-  setTimeout( function() {
+  setTimeout( () => {
     aqua.simpleFail( 'Did not load in the time allowed: ' + options.duration + 'ms' );
   }, options.duration );
 
   // handling messages from the page
-  window.addEventListener( 'message', function( evt ) {
+  window.addEventListener( 'message', evt => {
     if ( typeof evt.data !== 'string' ) {
       return;
     }

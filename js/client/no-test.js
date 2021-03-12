@@ -16,7 +16,7 @@
     }
   } );
 
-  setTimeout( function() {
+  setTimeout( () => {
     aqua.nextTest();
   }, options.duration );
 } )();

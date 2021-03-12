@@ -151,7 +151,7 @@ function setup( simNames ) {
 
   const rowMap = {};
   const table = document.createElement( 'table' );
-  options.sims.forEach( function( sim ) {
+  options.sims.forEach( sim => {
     const row = document.createElement( 'tr' );
     rowMap[ sim ] = row;
     table.appendChild( row );
@@ -194,7 +194,7 @@ function setup( simNames ) {
 
   snapshotButton.addEventListener( 'click', snapshot );
 
-  window.addEventListener( 'message', function( evt ) {
+  window.addEventListener( 'message', evt => {
     if ( typeof evt.data !== 'string' ) {
       return;
     }
@@ -215,7 +215,7 @@ function setup( simNames ) {
       td.textContent = data.hash.slice( 0, 6 ) + ( options.showTime ? ' ' + ( Date.now() - globalStartTime ) : '' );
       if ( snapshots.length > 1 && data.hash !== snapshots[ snapshots.length - 2 ][ sim ].hash ) {
         td.style.fontWeight = 'bold';
-        td.addEventListener( 'click', function() {
+        td.addEventListener( 'click', () => {
           const newScreenshots = snapshot[ sim ].screenshots;
           const oldScreenshots = snapshots[ snapshots.indexOf( snapshot ) - 1 ][ sim ].screenshots;
 
@@ -225,9 +225,9 @@ function setup( simNames ) {
             const index = nextIndex++;
             if ( index < newScreenshots.length && index < oldScreenshots.length ) {
               const newImage = document.createElement( 'img' );
-              newImage.addEventListener( 'load', function() {
+              newImage.addEventListener( 'load', () => {
                 const oldImage = document.createElement( 'img' );
-                oldImage.addEventListener( 'load', function() {
+                oldImage.addEventListener( 'load', () => {
                   compare( oldImage, newImage, 'Snapshot ' + index );
                   run();
                 } );

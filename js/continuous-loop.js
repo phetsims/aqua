@@ -118,7 +118,7 @@ function sendTestResult( message, testInfo, passed ) {
 }
 
 // Listen to messages from our iframe (fired in test-client.js)
-window.addEventListener( 'message', function( evt ) {
+window.addEventListener( 'message', evt => {
   if ( typeof evt.data !== 'string' ) {
     return;
   }

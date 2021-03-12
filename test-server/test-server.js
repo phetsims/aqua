@@ -21,7 +21,7 @@ const jsonHeaders = {
 // root of your GitHub working copy, relative to the name of the directory that the currently-executing script resides in
 const rootDir = path.normalize( __dirname + '/../../' ); // eslint-disable-line no-undef
 
-const server = http.createServer( function( req, res ) {
+const server = http.createServer( ( req, res ) => {
   const simName = req.url.slice( 1 );
 
   // validate that it is lower-case with hyphens
@@ -50,11 +50,11 @@ const server = http.createServer( function( req, res ) {
     cwd: rootDir + simName
   } );
   simLog( 'npm update' );
-  npmUpdate.stderr.on( 'data', function( data ) {
+  npmUpdate.stderr.on( 'data', data => {
     output += data;
     simLog( 'npm update stderr: ' + data );
   } );
-  npmUpdate.on( 'close', function( code ) {
+  npmUpdate.on( 'close', code => {
     simLog( 'npm update exit code: ' + code );
 
     // npm update failure
@@ -74,17 +74,17 @@ const server = http.createServer( function( req, res ) {
       simLog( 'grunt' );
 
       // accumulate output, send success response if we detect it
-      grunt.stdout.on( 'data', function( data ) {
+      grunt.stdout.on( 'data', data => {
         output += data.toString();
       } );
 
-      grunt.stderr.on( 'data', function( data ) {
+      grunt.stderr.on( 'data', data => {
         output += data;
         simLog( 'grunt stderr: ' + data );
       } );
 
       // if no success has been sent, send a response when closed (failure depending on the code)
-      grunt.on( 'close', function( code ) {
+      grunt.on( 'close', code => {
         simLog( 'grunt exited with code ' + code );
         if ( !success ) {
           res.writeHead( 200, jsonHeaders );

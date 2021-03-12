@@ -70,10 +70,10 @@
   // Track whether 'shift' key is pressed, so that we can change how windows are opened.  If shift is pressed, the
   // page is launched in a separate tab.
   let shiftPressed = false;
-  window.addEventListener( 'keydown', function( event ) {
+  window.addEventListener( 'keydown', event => {
     shiftPressed = event.shiftKey;
   } );
-  window.addEventListener( 'keyup', function( event ) {
+  window.addEventListener( 'keyup', event => {
     shiftPressed = event.shiftKey;
   } );
 
@@ -282,7 +282,7 @@
   }
 
 // handling messages from sims
-  window.addEventListener( 'message', function( evt ) {
+  window.addEventListener( 'message', evt => {
     if ( typeof evt.data !== 'string' ) {
       return;
     }
@@ -324,7 +324,7 @@
         simNames = _.shuffle( simNames );
       }
 
-      simNames.forEach( function( simName ) {
+      simNames.forEach( simName => {
         createStatusElement( simName );
 
         // First, if enabled, put unbuilt testing on the queue

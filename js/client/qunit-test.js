@@ -50,7 +50,7 @@
   // Supports old tests (which do not know when they are done)
   let id = setTimeout( done, options.duration );
 
-  window.addEventListener( 'message', function( evt ) {
+  window.addEventListener( 'message', evt => {
     if ( typeof evt.data !== 'string' ) {
       return;
     }

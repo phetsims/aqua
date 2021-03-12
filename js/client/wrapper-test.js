@@ -33,7 +33,7 @@
 
   let hasLoaded = false;
 
-  setTimeout( function() {
+  setTimeout( () => {
     if ( hasLoaded ) {
       aqua.simplePass(); // Only pass the 'run' if it loads AND doesn't error for the entire duration
     }
@@ -50,7 +50,7 @@
   const testInfo = JSON.parse( aqua.options.testInfo );
 
   // handling messages from sims
-  window.addEventListener( 'message', function( evt ) {
+  window.addEventListener( 'message', evt => {
     if ( typeof evt.data !== 'string' ) {
       return;
     }

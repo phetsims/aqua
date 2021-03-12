@@ -120,7 +120,7 @@ function sendFuzz( averageEventQuantity ) {
 }
 
 function getScreenshot( callback ) {
-  iframe.contentWindow.phet.joist.display.foreignObjectRasterization( function( url ) {
+  iframe.contentWindow.phet.joist.display.foreignObjectRasterization( url => {
     callback( url );
   } );
 }
@@ -146,7 +146,7 @@ function handleFrame() {
       sendStep( random.nextDouble() * 0.5 + 0.016 );
     }
 
-    getScreenshot( function( url ) {
+    getScreenshot( url => {
       const hashedURL = hash( url );
       console.log( count, hashedURL );
 
@@ -177,7 +177,7 @@ function handleFrame() {
 handleFrame();
 
 // Because of course direct calls to this go through this window object instead.
-window.addEventListener( 'error', function( a ) {
+window.addEventListener( 'error', a => {
   let message = '';
   let stack = '';
   if ( a && a.message ) {
@@ -194,7 +194,7 @@ window.addEventListener( 'error', function( a ) {
 } );
 
 // handling messages from sims
-window.addEventListener( 'message', function( evt ) {
+window.addEventListener( 'message', evt => {
   if ( typeof evt.data !== 'string' ) {
     return;
   }
