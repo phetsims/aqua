@@ -170,7 +170,7 @@
         const data = JSON.parse( req.responseText );
 
         if ( data.sim === simName && data.success ) {
-          console.log( simName + ' built successfully' );
+          console.log( `${simName} built successfully` );
           simStatusElements[ simName ].classList.add( 'complete-grunt' );
           testQueue.push( {
             simName: simName,
@@ -181,27 +181,27 @@
           }
         }
         else {
-          console.log( 'error building ' + simName );
+          console.log( `error building ${simName}` );
           simStatusElements[ simName ].classList.add( 'error-grunt' );
 
           eventLog.style.display = 'block';
           gruntErrors.style.display = 'block';
-          gruntErrors.innerHTML += '<strong>' + simName + '</strong>';
-          gruntErrors.innerHTML += '<pre>' + data.output + '</pre>';
+          gruntErrors.innerHTML += `<strong>${simName}</strong>`;
+          gruntErrors.innerHTML += `<pre>${data.output}</pre>`;
         }
 
         nextBuild();
       };
-      console.log( 'building ' + simName );
-      req.open( 'GET', 'http://' + window.location.hostname + ':45361/' + simName, true );
+      console.log( `building ${simName}` );
+      req.open( 'GET', `http://${window.location.hostname}:45361/${simName}`, true );
       req.send();
     }
   }
 
 // loads a sim into the iframe
   function loadSim( simName, isBuild ) {
-    iframe.src = '../../' + simName + '/' + ( isBuild ? 'build/phet/' : '' ) + simName + '_en' + ( isBuild ? '_phet' : '' ) + '.html' + simulationQueryString;
-    simStatusElements[ simName ].classList.add( 'loading-' + ( isBuild ? 'build' : 'dev' ) );
+    iframe.src = `../../${simName}/${isBuild ? 'build/phet/' : ''}${simName}_en${isBuild ? '_phet' : ''}.html${simulationQueryString}`;
+    simStatusElements[ simName ].classList.add( `loading-${isBuild ? 'build' : 'dev'}` );
   }
 
 // switches to the next sim (if there are any)
@@ -209,7 +209,7 @@
     clearTimeout( timeoutId );
 
     if ( currentTest ) {
-      simStatusElements[ currentTest.simName ].classList.add( 'complete-' + ( currentTest.isBuild ? 'build' : 'dev' ) );
+      simStatusElements[ currentTest.simName ].classList.add( `complete-${currentTest.isBuild ? 'build' : 'dev'}` );
       if ( !currentTest.loaded ) {
         addSimToRerunList( currentTest.simName );
       }
@@ -228,14 +228,14 @@
   }
 
   function onSimLoad( simName ) {
-    console.log( 'loaded ' + simName );
+    console.log( `loaded ${simName}` );
 
     const isBuild = simName === currentTest.simName && currentTest.isBuild;
 
     currentTest.loaded = true;
 
     // not loading anymore
-    simStatusElements[ simName ].classList.remove( 'loading-' + ( isBuild ? 'build' : 'dev' ) );
+    simStatusElements[ simName ].classList.remove( `loading-${isBuild ? 'build' : 'dev'}` );
 
     // window.open stub on child. otherwise we get tons of "Report Problem..." popups that stall
     iframe.contentWindow.open = function() {
@@ -251,25 +251,25 @@
   }
 
   function onSimError( simName, data ) {
-    console.log( 'error on ' + simName );
+    console.log( `error on ${simName}` );
 
     const isBuild = simName === currentTest.simName && currentTest.isBuild;
     const errorLog = isBuild ? buildErrors : devErrors;
 
     eventLog.style.display = 'block';
     errorLog.style.display = 'block';
-    errorLog.innerHTML += '<strong>' + simName + '</strong>';
+    errorLog.innerHTML += `<strong>${simName}</strong>`;
 
     if ( data.message ) {
-      console.log( 'message: ' + data.message );
-      errorLog.innerHTML += '<pre>' + data.message + '</pre>';
+      console.log( `message: ${data.message}` );
+      errorLog.innerHTML += `<pre>${data.message}</pre>`;
     }
     if ( data.stack ) {
       console.log( data.stack );
-      errorLog.innerHTML += '<pre>' + data.stack + '</pre>';
+      errorLog.innerHTML += `<pre>${data.stack}</pre>`;
     }
 
-    simStatusElements[ simName ].classList.add( 'error-' + ( isBuild ? 'build' : 'dev' ) );
+    simStatusElements[ simName ].classList.add( `error-${isBuild ? 'build' : 'dev'}` );
 
     // since we can have multiple errors for a single sim (due to being asynchronous),
     // we need to not move forward more than one sim
@@ -344,7 +344,7 @@
       // kick off the loops
       nextSim();
 
-      console.log( 'starting builds: ' + options.testConcurrentBuilds );
+      console.log( `starting builds: ${options.testConcurrentBuilds}` );
       for ( let k = 0; k < options.testConcurrentBuilds; k++ ) {
         nextBuild();
       }

@@ -15,7 +15,7 @@ const child_process = require( 'child_process' );
   const say = _.includes( process.argv, '--say' );
 
   const browser = await puppeteer.launch();
-  const readList = filename => fs.readFileSync( '../perennial/data/' + filename, 'utf8' ).split( '\n' ).filter( name => name.length > 0 );
+  const readList = filename => fs.readFileSync( `../perennial/data/${filename}`, 'utf8' ).split( '\n' ).filter( name => name.length > 0 );
 
   const activeRepos = readList( 'active-repos' );
 
@@ -62,7 +62,7 @@ const child_process = require( 'child_process' );
 
   // console.log( `passed (${passedPairs.length})\n${passedPairs.map( pair => pair.test.type + ': ' + pair.test.name ).join( '\n' )}\n` );
   if ( failedPairs.length > 0 ) {
-    console.log( `failed (${failedPairs.length})\n${failedPairs.map( pair => pair.test.type + ': ' + pair.test.name + '\n' + JSON.stringify( pair.result ) ).join( '\n' )}\n` );
+    console.log( `failed (${failedPairs.length})\n${failedPairs.map( pair => `${pair.test.type}: ${pair.test.name}\n${JSON.stringify( pair.result )}` ).join( '\n' )}\n` );
     say && child_process.execSync( 'say Unit test failed' );
   }
   else {

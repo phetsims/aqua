@@ -44,8 +44,8 @@ iframe.setAttribute( 'width', options.simWidth );
 iframe.setAttribute( 'height', options.simHeight );
 document.body.appendChild( iframe );
 
-const queryParameters = 'preserveDrawingBuffer&audioVolume=0&sound=disabled&randomSeed=' + options.simSeed + '&playbackMode=true&postMessageOnLoad&postMessageOnError&postMessageOnReady';
-iframe.src = options.url + '?' + options.simQueryParameters + '&' + queryParameters;
+const queryParameters = `preserveDrawingBuffer&audioVolume=0&sound=disabled&randomSeed=${options.simSeed}&playbackMode=true&postMessageOnLoad&postMessageOnError&postMessageOnReady`;
+iframe.src = `${options.url}?${options.simQueryParameters}&${queryParameters}`;
 
 let isMouseDown = false;
 let mouseLastMoved = false;

@@ -33,7 +33,7 @@ const options = QueryStringMachine.getAll( {
     type: 'string',
 
     // Origin for our server (ignoring current port), so that we don't require localhost
-    defaultValue: window.location.protocol + '//' + window.location.hostname
+    defaultValue: `${window.location.protocol}//${window.location.hostname}`
   },
   maxColumns: {
     type: 'number',
@@ -79,7 +79,7 @@ statusProperty.lazyLink( status => console.log( `Status: ${status}` ) );
     setTimeout( snapshotStatusLoop, 1000 );
     statusProperty.value = 'Could not contact server';
   };
-  req.open( 'get', options.server + '/aquaserver/status', true );
+  req.open( 'get', `${options.server}/aquaserver/status`, true );
   req.send();
 } )();
 
@@ -107,7 +107,7 @@ window.reportProperty = reportProperty;
     // Show the most recent results anyway?
     // reportProperty.reset();
   };
-  req.open( 'get', options.server + '/aquaserver/report', true );
+  req.open( 'get', `${options.server}/aquaserver/report`, true );
   req.send();
 } )();
 
@@ -293,10 +293,10 @@ const popup = ( triggerNode, message ) => {
   // Content
   iframe.contentWindow.document.open();
   iframe.contentWindow.document.write(
-    '<!DOCTYPE html>' +
+    `${'<!DOCTYPE html>' +
     '<html lang="en">' +
     '<head><title>CT Info</title></head>' +
-    '<body style="font-size: 12px; font-family: Arial">' + messageHTML + '</body>' +
+    '<body style="font-size: 12px; font-family: Arial">'}${messageHTML}</body>` +
     '</html>'
   );
   iframe.contentWindow.document.close();
@@ -306,19 +306,19 @@ const popup = ( triggerNode, message ) => {
   iframe.style.border = '1px solid black';
 
   // Make it wide before measuring
-  iframe.style.width = 1000 + 'px';
+  iframe.style.width = `${1000}px`;
 
   // Measure the width and adjust
-  iframe.style.width = iframe.contentWindow.document.documentElement.scrollWidth + 'px';
+  iframe.style.width = `${iframe.contentWindow.document.documentElement.scrollWidth}px`;
 
   // Set height after, measuring after the width change to make sure it has room
-  iframe.style.height = iframe.contentWindow.document.documentElement.scrollHeight + 'px';
+  iframe.style.height = `${iframe.contentWindow.document.documentElement.scrollHeight}px`;
 
   // Positioning
   const point = triggerNode.parentToGlobalPoint( triggerNode.rightTop );
   iframe.style.position = 'absolute';
-  iframe.style.left = Math.ceil( point.x ) + 'px';
-  iframe.style.top = Math.ceil( point.y ) + 'px';
+  iframe.style.left = `${Math.ceil( point.x )}px`;
+  iframe.style.top = `${Math.ceil( point.y )}px`;
   iframe.style.zIndex = '10000';
 
   popupIframe = iframe;

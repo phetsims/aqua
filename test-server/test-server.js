@@ -19,7 +19,7 @@ const jsonHeaders = {
 };
 
 // root of your GitHub working copy, relative to the name of the directory that the currently-executing script resides in
-const rootDir = path.normalize( __dirname + '/../../' ); // eslint-disable-line no-undef
+const rootDir = path.normalize( `${__dirname}/../../` ); // eslint-disable-line no-undef
 
 const server = http.createServer( ( req, res ) => {
   const simName = req.url.slice( 1 );
@@ -38,7 +38,7 @@ const server = http.createServer( ( req, res ) => {
   }
 
   function simLog( str ) {
-    console.log( '[' + new Date().toLocaleString() + ' ' + simName + '] ' + str );
+    console.log( `[${new Date().toLocaleString()} ${simName}] ${str}` );
   }
 
   const success = false;
@@ -52,17 +52,17 @@ const server = http.createServer( ( req, res ) => {
   simLog( 'npm update' );
   npmUpdate.stderr.on( 'data', data => {
     output += data;
-    simLog( 'npm update stderr: ' + data );
+    simLog( `npm update stderr: ${data}` );
   } );
   npmUpdate.on( 'close', code => {
-    simLog( 'npm update exit code: ' + code );
+    simLog( `npm update exit code: ${code}` );
 
     // npm update failure
     if ( code !== 0 ) {
       res.writeHead( 500, jsonHeaders );
       res.end( JSON.stringify( {
         sim: simName,
-        output: 'npm update exit code: ' + code,
+        output: `npm update exit code: ${code}`,
         success: false
       } ) );
     }
@@ -80,12 +80,12 @@ const server = http.createServer( ( req, res ) => {
 
       grunt.stderr.on( 'data', data => {
         output += data;
-        simLog( 'grunt stderr: ' + data );
+        simLog( `grunt stderr: ${data}` );
       } );
 
       // if no success has been sent, send a response when closed (failure depending on the code)
       grunt.on( 'close', code => {
-        simLog( 'grunt exited with code ' + code );
+        simLog( `grunt exited with code ${code}` );
         if ( !success ) {
           res.writeHead( 200, jsonHeaders );
           res.end( JSON.stringify( {
@@ -102,4 +102,4 @@ const server = http.createServer( ( req, res ) => {
 server.setTimeout( 0 );
 server.listen( port );
 
-console.log( 'running on port ' + port + ' with root directory ' + rootDir );
+console.log( `running on port ${port} with root directory ${rootDir}` );

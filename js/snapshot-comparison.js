@@ -124,7 +124,7 @@ function setup( simNames ) {
       const container = document.createElement( 'div' );
       comparisonDiv.appendChild( container );
 
-      container.appendChild( document.createTextNode( msg + ', largest: ' + largestDifference + ', average: ' + averageDifference ) );
+      container.appendChild( document.createTextNode( `${msg}, largest: ${largestDifference}, average: ${averageDifference}` ) );
       container.appendChild( document.createElement( 'br' ) );
 
       container.appendChild( dataToCanvas( a ) );
@@ -162,18 +162,18 @@ function setup( simNames ) {
   document.body.appendChild( table );
 
   const childQueryParams =
-    'simSeed=' + encodeURIComponent( options.simSeed ) +
-    '&simWidth=' + encodeURIComponent( options.simWidth ) +
-    '&simHeight=' + encodeURIComponent( options.simHeight ) +
-    '&simQueryParameters=' + encodeURIComponent( options.simQueryParameters ) +
-    '&numFrames=' + encodeURIComponent( options.numFrames );
+    `simSeed=${encodeURIComponent( options.simSeed )
+    }&simWidth=${encodeURIComponent( options.simWidth )
+    }&simHeight=${encodeURIComponent( options.simHeight )
+    }&simQueryParameters=${encodeURIComponent( options.simQueryParameters )
+    }&numFrames=${encodeURIComponent( options.numFrames )}`;
 
   function loadSim( sim ) {
     currentSim = sim;
     currentSnapshot[ currentSim ] = {
       screenshots: []
     };
-    iframe.src = 'take-snapshot.html?' + childQueryParams + '&url=' + encodeURIComponent( '../../' + sim + '/' + sim + '_en.html' );
+    iframe.src = `take-snapshot.html?${childQueryParams}&url=${encodeURIComponent( `../../${sim}/${sim}_en.html` )}`;
   }
 
   function nextSim() {
@@ -212,7 +212,7 @@ function setup( simNames ) {
 
       snapshot[ sim ].hash = data.hash;
       const td = document.createElement( 'td' );
-      td.textContent = data.hash.slice( 0, 6 ) + ( options.showTime ? ' ' + ( Date.now() - globalStartTime ) : '' );
+      td.textContent = data.hash.slice( 0, 6 ) + ( options.showTime ? ` ${Date.now() - globalStartTime}` : '' );
       if ( snapshots.length > 1 && data.hash !== snapshots[ snapshots.length - 2 ][ sim ].hash ) {
         td.style.fontWeight = 'bold';
         td.addEventListener( 'click', () => {
@@ -228,7 +228,7 @@ function setup( simNames ) {
               newImage.addEventListener( 'load', () => {
                 const oldImage = document.createElement( 'img' );
                 oldImage.addEventListener( 'load', () => {
-                  compare( oldImage, newImage, 'Snapshot ' + index );
+                  compare( oldImage, newImage, `Snapshot ${index}` );
                   run();
                 } );
                 oldImage.src = oldScreenshots[ index ].url;

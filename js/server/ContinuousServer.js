@@ -58,7 +58,7 @@ class ContinuousServer {
 
     // @public {string} - root of your GitHub working copy, relative to the name of the directory that the
     // currently-executing script resides in
-    this.rootDir = path.normalize( __dirname + '/../../../' );
+    this.rootDir = path.normalize( `${__dirname}/../../../` );
 
     // @public {string} - Where we'll load/save our state
     this.saveFile = `${this.rootDir}/aqua/.continuous-testing-state.json`;
@@ -125,7 +125,7 @@ class ContinuousServer {
             if ( test ) {
               if ( !message || message.indexOf( 'errors.html#timeout' ) < 0 ) {
                 if ( !result.passed ) {
-                  message = ( result.message ? ( result.message + '\n' ) : '' ) + 'id: ' + result.id;
+                  message = `${result.message ? ( `${result.message}\n` ) : ''}id: ${result.id}`;
                 }
                 const milliseconds = Date.now() - result.timestamp;
                 if ( result.passed ) {

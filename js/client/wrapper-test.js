@@ -28,7 +28,7 @@
   // Add those two to our query parameters, so we get load/error messages
   const iframe = aqua.createFrame();
   iframe.src = QueryStringMachine.appendQueryStringArray( options.url, [
-    '?wrapperContinuousTest=' + encodeURIComponent( aqua.options.testInfo )
+    `?wrapperContinuousTest=${encodeURIComponent( aqua.options.testInfo )}`
   ] );
 
   let hasLoaded = false;
@@ -39,7 +39,7 @@
     }
     else {
       if ( options.failIfNoLoad ) {
-        aqua.simpleFail( 'did not load in ' + options.duration + 'ms' );
+        aqua.simpleFail( `did not load in ${options.duration}ms` );
       }
       else {
         aqua.simpleSkip();
@@ -62,7 +62,7 @@
 
       // Sent by Joist due to the postMessage* query parameters
       if ( data.type === 'continuous-test-wrapper-error' ) {
-        aqua.simpleFail( data.message + '\n' + data.stack );
+        aqua.simpleFail( `${data.message}\n${data.stack}` );
       }
       else if ( data.type === 'continuous-test-wrapper-unload' ) {
         aqua.simpleFail( 'Unloaded frame before complete, window.location probably changed' );

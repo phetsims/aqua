@@ -26,7 +26,7 @@
   iframe.src = options.url;
 
   setTimeout( () => {
-    aqua.simpleFail( 'Did not load in the time allowed: ' + options.duration + 'ms' );
+    aqua.simpleFail( `Did not load in the time allowed: ${options.duration}ms` );
   }, options.duration );
 
   // handling messages from the page
@@ -42,7 +42,7 @@
       aqua.simplePass();
     }
     else if ( data.type === 'pageload-error' ) {
-      aqua.simpleFail( data.message + '\n' + data.stack );
+      aqua.simpleFail( `${data.message}\n${data.stack}` );
     }
   } );
 } )();

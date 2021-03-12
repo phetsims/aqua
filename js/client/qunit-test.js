@@ -31,9 +31,9 @@
 
   const done = function() {
     if ( id !== null ) {
-      message = iframe.src + '\n' + passed + ' out of ' + ( passed + failed ) + ' tests passed. ' + failed + ' failed.\n' + message;
+      message = `${iframe.src}\n${passed} out of ${passed + failed} tests passed. ${failed} failed.\n${message}`;
       if ( !receivedDone ) {
-        message += '\nDid not complete in ' + options.duration + 'ms, may not have completed all tests';
+        message += `\nDid not complete in ${options.duration}ms, may not have completed all tests`;
         aqua.testFail( message );
       }
       else if ( passed > 0 && failed === 0 ) {
@@ -64,7 +64,7 @@
       }
       else {
         failed++;
-        message += data.module + ': ' + data.name + ' failed:\n' + data.message + '\n' + data.source + '\n\n';
+        message += `${data.module}: ${data.name} failed:\n${data.message}\n${data.source}\n\n`;
       }
     }
 

@@ -25,7 +25,7 @@ const options = QueryStringMachine.getAll( {
     type: 'string',
 
     // Ignore current port, keep protocol and host.
-    defaultValue: window.location.protocol + '//' + window.location.hostname
+    defaultValue: `${window.location.protocol}//${window.location.hostname}`
   }
 } );
 
@@ -67,14 +67,14 @@ function nextTest() {
       const data = JSON.parse( req.responseText );
 
       // kick off loading our iframe
-      iframe.src = QueryStringMachine.appendQueryString( data.url, 'testInfo=' + encodeURIComponent( JSON.stringify( {
+      iframe.src = QueryStringMachine.appendQueryString( data.url, `testInfo=${encodeURIComponent( JSON.stringify( {
         test: data.test,
         snapshotName: data.snapshotName,
         timestamp: data.timestamp
-      } ) ) );
+      } ) )}` );
 
       infoElement.textContent = JSON.stringify( data, null, 2 );
-      document.title = 'Continuous Testing loop for: ' + data.test.join( ' : ' );
+      document.title = `Continuous Testing loop for: ${data.test.join( ' : ' )}`;
     }
     catch( e ) {
       console.log( 'parse error?' );
@@ -89,7 +89,7 @@ function nextTest() {
     // On connection failure, just try again with a delay (don't hammer the server)
     setTimeout( nextTest, 60000 ); // 1min
   };
-  req.open( 'get', options.server + '/aquaserver/next-test?old=' + options.old, true );
+  req.open( 'get', `${options.server}/aquaserver/next-test?old=${options.old}`, true );
   req.send();
   resetTimer();
 }
@@ -112,7 +112,7 @@ function sendTestResult( message, testInfo, passed ) {
     message: message,
     id: options.id
   };
-  req.open( 'get', options.server + '/aquaserver/test-result?result=' + encodeURIComponent( JSON.stringify( result ) ) );
+  req.open( 'get', `${options.server}/aquaserver/test-result?result=${encodeURIComponent( JSON.stringify( result ) )}` );
   req.send();
   resetTimer();
 }

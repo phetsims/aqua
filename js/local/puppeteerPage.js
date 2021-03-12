@@ -28,7 +28,7 @@ module.exports = function( browser, targetURL, timeout ) {
       }, timeout );
     }
     catch( e ) {
-      end( { ok: false, message: 'caught exception ' + e } );
+      end( { ok: false, message: `caught exception ${e}` } );
     }
   } );
 };

@@ -202,23 +202,23 @@ class Test {
     let url;
 
     if ( this.type === 'sim-test' ) {
-      url = 'sim-test.html?url=' + encodeURIComponent( `${baseURL}/${this.url}` );
+      url = `sim-test.html?url=${encodeURIComponent( `${baseURL}/${this.url}` )}`;
 
       if ( this.queryParameters ) {
-        url += '&simQueryParameters=' + encodeURIComponent( this.queryParameters );
+        url += `&simQueryParameters=${encodeURIComponent( this.queryParameters )}`;
       }
     }
     else if ( this.type === 'qunit-test' ) {
-      url = 'qunit-test.html?url=' + encodeURIComponent( `${baseURL}/${this.url}` );
+      url = `qunit-test.html?url=${encodeURIComponent( `${baseURL}/${this.url}` )}`;
     }
     else if ( this.type === 'pageload-test' ) {
-      url = 'pageload-test.html?url=' + encodeURIComponent( `${baseURL}/${this.url}` );
+      url = `pageload-test.html?url=${encodeURIComponent( `${baseURL}/${this.url}` )}`;
     }
     else if ( this.type === 'wrapper-test' ) {
-      url = 'wrapper-test.html?url=' + encodeURIComponent( `${baseURL}/${this.url}` );
+      url = `wrapper-test.html?url=${encodeURIComponent( `${baseURL}/${this.url}` )}`;
     }
     if ( this.testQueryParameters ) {
-      url = url + '&' + this.testQueryParameters;
+      url = `${url}&${this.testQueryParameters}`;
     }
 
     return {

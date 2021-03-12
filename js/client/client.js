@@ -41,8 +41,8 @@
       iframe = document.createElement( 'iframe' );
       iframe.setAttribute( 'frameborder', '0' );
       iframe.setAttribute( 'seamless', '1' );
-      iframe.setAttribute( 'width', '' + aquaOptions.width );
-      iframe.setAttribute( 'height', '' + aquaOptions.height );
+      iframe.setAttribute( 'width', `${aquaOptions.width}` );
+      iframe.setAttribute( 'height', `${aquaOptions.height}` );
       document.body.appendChild( iframe );
       return iframe;
     },
@@ -93,7 +93,7 @@
       if ( sentMessage ) { return; }
       sentMessage = true;
 
-      aqua.testFail( ( iframe ? iframe.src + '\n' : '' ) + message );
+      aqua.testFail( ( iframe ? `${iframe.src}\n` : '' ) + message );
       aqua.simpleFinish();
     },
 
@@ -119,7 +119,7 @@
         message: message,
         testInfo: JSON.parse( aquaOptions.testInfo )
       } );
-      console.log( '[PASS] ' + message );
+      console.log( `[PASS] ${message}` );
     },
 
     /**
@@ -137,7 +137,7 @@
           testInfo: JSON.parse( aquaOptions.testInfo )
         } );
       }
-      console.log( '[FAIL] ' + message );
+      console.log( `[FAIL] ${message}` );
     },
 
     /**
