@@ -16,7 +16,7 @@
     },
     duration: {
       type: 'number',
-      defaultValue: 200000
+      defaultValue: 300000
     }
   } );
 
