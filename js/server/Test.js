@@ -20,7 +20,8 @@ const TEST_TYPES = [
   'sim-test',
   'qunit-test',
   'pageload-test',
-  'wrapper-test'
+  'wrapper-test',
+  'internal' // Used for tests that aqua itself generates
 ];
 
 class Test {

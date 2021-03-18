@@ -125,11 +125,29 @@ class Snapshot {
       return new Test( this, description, lastRepoTimestamps[ potentialRepo ] || 0, lastRunnableTimestamps[ potentialRepo ] || 0 );
     } );
 
+    const listContinuousTestsTest = new Test( this, {
+      test: [ 'perennial', 'listContinuousTests' ],
+      type: 'internal'
+    }, lastRepoTimestamps.perennial || 0, lastRunnableTimestamps.perennial || 0 );
+    this.tests.push( listContinuousTestsTest );
+
+    let continuousTestErrorString = '';
+
     // @public {Object.<nameString:string,Test>} - ephemeral, we use this.tests for saving things
     this.testMap = {};
     this.tests.forEach( test => {
+      if ( this.testMap[ test.nameString ] ) {
+        continuousTestErrorString += `Duplicate test specified in listContinuousTests: ${test.nameString}\n`;
+      }
       this.testMap[ test.nameString ] = test;
     } );
+
+    if ( continuousTestErrorString.length ) {
+      listContinuousTestsTest.recordResult( false, 0, continuousTestErrorString );
+    }
+    else {
+      listContinuousTestsTest.recordResult( true, 0, null );
+    }
 
     this.constructed = true;
   }
