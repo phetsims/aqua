@@ -41,7 +41,7 @@
 
   let hasLoaded = false;
 
-  setTimeout( () => {
+  const timeoutID = setTimeout( () => {
     if ( hasLoaded ) {
       aqua.simplePass(); // Only pass the 'run' if it loads AND doesn't error for the entire duration
     }
@@ -70,13 +70,19 @@
 
       // Sent by Joist due to the postMessage* query parameters
       if ( data.type === 'continuous-test-error' ) {
+        clearTimeout( timeoutID );
         aqua.simpleFail( `${failPrefix + data.message}\n${data.stack}` );
       }
       else if ( data.type === 'continuous-test-unload' ) {
+        clearTimeout( timeoutID );
         aqua.simpleFail( `${failPrefix}Unloaded frame before complete, window.location probably changed` );
       }
       else if ( data.type === 'continuous-test-load' ) {
         hasLoaded = true;
+      }
+      else if ( data.type === 'continuous-test-pass' ) {
+        clearTimeout( timeoutID );
+        aqua.simplePass();
       }
     }
   } );
