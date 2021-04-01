@@ -28,12 +28,18 @@
   let failed = 0;
   let receivedDone = false;
   let message = '';
+  let error = '';
 
   const done = function() {
     if ( id !== null ) {
       message = `${iframe.src}\n${passed} out of ${passed + failed} tests passed. ${failed} failed.\n${message}`;
       if ( !receivedDone ) {
-        message += `\nDid not complete in ${options.duration}ms, may not have completed all tests`;
+        if ( error ) {
+          message += `\n${error}`;
+        }
+        else {
+          message += `\nDid not complete in ${options.duration}ms, may not have completed all tests`;
+        }
         aqua.testFail( message );
       }
       else if ( passed > 0 && failed === 0 ) {
@@ -79,6 +85,11 @@
         receivedDone = true;
         done();
       }
+    }
+    else if ( data.type === 'error' ) {
+      clearTimeout( id );
+      error = data.message + data.stack;
+      done();
     }
   } );
 } )();
