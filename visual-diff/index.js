@@ -58,7 +58,7 @@ function sendMouseMoveEvent( iframe, mouseX, mouseY, type ) {
       input.mouseMove( new iframe.contentWindow.phet.dot.Vector2( mouseX, mouseY ), domEvent );
     }
     else if ( type === 'mousedown' ) {
-      input.mouseDown( new iframe.contentWindow.phet.dot.Vector2( mouseX, mouseY ), domEvent );
+      input.mouseDown( null, new iframe.contentWindow.phet.dot.Vector2( mouseX, mouseY ), domEvent );
     }
     else if ( type === 'mouseup' ) {
       input.mouseUp( new iframe.contentWindow.phet.dot.Vector2( mouseX, mouseY ), domEvent );

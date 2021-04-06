@@ -75,7 +75,7 @@ function sendMouseToggleEvent() {
     isMouseDown = false;
   }
   else {
-    input.mouseDown( new iframe.contentWindow.phet.dot.Vector2( mouseX, mouseY ), domEvent );
+    input.mouseDown( null, new iframe.contentWindow.phet.dot.Vector2( mouseX, mouseY ), domEvent );
     isMouseDown = true;
   }
 
