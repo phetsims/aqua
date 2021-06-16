@@ -1,4 +1,4 @@
-// Copyright 2020-2021, University of Colorado Boulder
+[object Promise]
 
 /**
  * Coordinates continuous testing, and provides HTTP APIs for reports or clients that run browser tests.

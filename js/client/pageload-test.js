@@ -1,4 +1,4 @@
-// Copyright 2020-2021, University of Colorado Boulder
+[object Promise]
 
 /*
  * Runs arbitrary content in an iframe (that presumably loads pageload-connector.js) and reports if it successfully

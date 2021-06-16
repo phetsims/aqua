@@ -1,4 +1,4 @@
-// Copyright 2020-2021, University of Colorado Boulder
+[object Promise]
 
 /*
  * Does nothing for a certain amount of time, then goes to the next test

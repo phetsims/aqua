@@ -1,4 +1,4 @@
-// Copyright 2019-2021, University of Colorado Boulder
+[object Promise]
 
 /**
  * Launch puppeteer and point it to CT to help run tests faster

@@ -1,4 +1,4 @@
-// Copyright 2017-2021, University of Colorado Boulder
+[object Promise]
 
 /**
  * Runs a snapshot for a specific sim (url) with a given seed. It will send a number of events, and will record
