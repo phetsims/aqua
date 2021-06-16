@@ -1,4 +1,4 @@
-[object Promise]
+// Copyright 2020-2021, University of Colorado Boulder
 
 /**
  * Runs a phet-io wrapper test in an iframe, and passes results to our parent frame (continuous-loop.html).

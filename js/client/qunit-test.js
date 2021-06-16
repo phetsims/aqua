@@ -1,4 +1,4 @@
-[object Promise]
+// Copyright 2017-2021, University of Colorado Boulder
 
 /*
  * Runs QUnit tests in an iframe, and passes results to our parent frame (continuous-loop.html).

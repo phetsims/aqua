@@ -1,4 +1,4 @@
-[object Promise]
+// Copyright 2020-2021, University of Colorado Boulder
 
 /*
  * Common functions used to communicate from test wrappers to continuous-loop.html (assumed to be the parent frame).
