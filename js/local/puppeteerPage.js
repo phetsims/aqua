@@ -4,7 +4,7 @@
 
 module.exports = function( browser, targetURL, timeout ) {
 
-  return new Promise( async ( resolve, reject ) => {
+  return new Promise( async ( resolve, reject ) => { // eslint-disable-line no-async-promise-executor
     let id = null;
 
     const page = await browser.newPage();
