@@ -1,6 +1,5 @@
 // Copyright 2018-2021, University of Colorado Boulder
 
-'use strict';
 
 const puppeteer = require( 'puppeteer' );
 const puppeteerPage = require( './puppeteerPage' );

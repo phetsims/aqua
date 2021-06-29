@@ -5,7 +5,6 @@
  * @author Michael Kauzmann (PhET Interactive Simulations)
  */
 
-'use strict';
 
 const puppeteer = require( 'puppeteer' );
 const assert = require( 'assert' );

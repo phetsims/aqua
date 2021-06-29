@@ -6,7 +6,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-'use strict';
 
 const asyncFilter = require( '../../../perennial/js/common/asyncFilter' );
 const cloneMissingRepos = require( '../../../perennial/js/common/cloneMissingRepos' );

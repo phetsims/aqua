@@ -7,7 +7,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-'use strict';
 
 ( () => {
   const options = QueryStringMachine.getAll( {

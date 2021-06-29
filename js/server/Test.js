@@ -6,7 +6,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-'use strict';
 
 const TestResult = require( './TestResult' );
 const assert = require( 'assert' );

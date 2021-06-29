@@ -6,7 +6,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-'use strict';
 
 const Gruntfile = require( '../../chipper/js/grunt/Gruntfile' );
 const buildLocal = require( '../../perennial/js/common/buildLocal' );

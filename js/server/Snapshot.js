@@ -6,7 +6,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-'use strict';
 
 const copyDirectory = require( '../../../perennial/js/common/copyDirectory' );
 const createDirectory = require( '../../../perennial/js/common/createDirectory' );

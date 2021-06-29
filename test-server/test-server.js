@@ -1,6 +1,6 @@
 // Copyright 2016, University of Colorado Boulder
 
-'use strict';
+
 const http = require( 'http' );
 const child_process = require( 'child_process' );
 const spawn = child_process.spawn;
