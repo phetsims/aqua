@@ -495,7 +495,7 @@ class ContinuousServer {
 
         const staleRepos = await asyncFilter( reposToCheck, async repo => {
           this.setStatus( `${staleMessage}; checking ${repo}` );
-          return await isStale( repo );
+          return isStale( repo );
         } );
 
         if ( staleRepos.length ) {
