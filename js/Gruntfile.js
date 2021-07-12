@@ -8,7 +8,6 @@
 
 
 const Gruntfile = require( '../../chipper/js/grunt/Gruntfile' );
-const buildLocal = require( '../../perennial/js/common/buildLocal' );
 const ContinuousServer = require( './server/ContinuousServer' );
 const assert = require( 'assert' );
 const grunt = require( 'grunt' ); // eslint-disable-line
@@ -37,9 +36,9 @@ module.exports = grunt => {
       const useRootDir = !!grunt.option( 'useRootDir' );
 
       const serverQueryParameter = encodeURIComponent( `http://localhost:${port}` );
-      const unbuiltReportURL = `${buildLocal.localTestingURL}aqua/html/continuous-unbuilt-report.html?server=${serverQueryParameter}`;
-      const builtReportURL = `${buildLocal.localTestingURL}aqua/html/continuous-report.html?server=${serverQueryParameter}`;
-      const loopURL = `${buildLocal.localTestingURL}aqua/html/continuous-loop.html?server=${serverQueryParameter}&id=replaceme`;
+      const unbuiltReportURL = `http://localhost:${port}/aqua/html/continuous-unbuilt-report.html?server=${serverQueryParameter}`;
+      const builtReportURL = `http://localhost:${port}/aqua/html/continuous-report.html?server=${serverQueryParameter}`;
+      const loopURL = `http://localhost:${port}/aqua/html/continuous-loop.html?server=${serverQueryParameter}&id=replaceme`;
 
       console.log( unbuiltReportURL );
       console.log( builtReportURL );
