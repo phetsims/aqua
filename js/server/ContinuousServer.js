@@ -9,7 +9,7 @@
 
 const asyncFilter = require( '../../../perennial/js/common/asyncFilter' );
 const cloneMissingRepos = require( '../../../perennial/js/common/cloneMissingRepos' );
-const execute = require( '../../../perennial/js/common/execute' );
+const execute = require( '../../../perennial/js/dual/execute' );
 const getRepoList = require( '../../../perennial/js/common/getRepoList' );
 const gitPull = require( '../../../perennial/js/common/gitPull' );
 const gitRevParse = require( '../../../perennial/js/common/gitRevParse' );
