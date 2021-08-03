@@ -133,6 +133,29 @@ function setup( simNames ) {
     }
   }
 
+  function comparePDOM( oldHTML, newHTML, message ) {
+    const container = document.createElement( 'div' );
+    comparisonDiv.appendChild( container );
+
+    const diff = document.createElement( 'details' );
+    const summary = document.createElement( 'summary' );
+    summary.appendChild( document.createTextNode( `${message}: PDOMs different. Compare these two from webstorm diffing.` ) );
+    diff.appendChild( summary );
+    const diffContainer = document.createElement( 'div' );
+    const oldHTMLP = document.createElement( 'p' );
+    oldHTMLP.textContent = oldHTML;
+    const newHTMLP = document.createElement( 'p' );
+    newHTMLP.textContent = newHTML;
+    diffContainer.appendChild( oldHTMLP );
+    diffContainer.appendChild( newHTMLP );
+
+    diff.appendChild( diffContainer );
+    diffContainer.style.fontSize = '4px';
+
+    container.appendChild( diff );
+
+  }
+
   const iframe = document.createElement( 'iframe' );
   iframe.setAttribute( 'frameborder', '0' );
   iframe.setAttribute( 'seamless', '1' );
@@ -234,12 +257,17 @@ function setup( simNames ) {
                 newImage.addEventListener( 'load', () => {
                   const oldImage = document.createElement( 'img' );
                   oldImage.addEventListener( 'load', () => {
-                    compareImages( oldImage, newImage, `Snapshot ${index}` );
+                    compareImages( oldImage, newImage, `Data Frame ${index}` );
                     compareNextFrame();
                   } );
                   oldImage.src = oldFrames[ index ].screenshot.url;
                 } );
                 newImage.src = newFrames[ index ].screenshot.url;
+              }
+
+              // Compare description via PDOM html
+              if ( oldFrame.pdom.hash !== newFrame.pdom.hash ) {
+                comparePDOM( oldFrame.pdom.html, newFrame.pdom.html, `Data Frame ${index}` );
               }
             }
           }

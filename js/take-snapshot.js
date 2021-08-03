@@ -129,7 +129,7 @@ function hash( str ) {
 }
 
 let count = 0;
-let screenshotHashes = '';
+let frameHashes = '';
 let loaded = false;
 let received = true;
 
@@ -145,23 +145,41 @@ function handleFrame() {
       sendStep( random.nextDouble() * 0.5 + 0.016 );
     }
 
-    getScreenshot( url => {
-      const hashedURL = hash( url );
-      console.log( count, hashedURL );
+    getScreenshot( screenshotURL => {
+      const hashedScreenshotURL = hash( screenshotURL );
+      console.log( count, hashedScreenshotURL );
+
+      let concatHash = hashedScreenshotURL;
+
+      const pdomData = {
+        html: null,
+        hash: null
+      };
+      if ( iframe.contentWindow.phet.joist.display.isAccessible() ) {
+
+        const pdomRoot = iframe.contentWindow.phet.joist.display.pdomRootElement;
+        const pdomHTML = pdomRoot.outerHTML;
+        pdomData.html = pdomHTML;
+        const hashedPDOMHTML = hash( pdomHTML );
+        pdomData.hash = hashedPDOMHTML;
+        concatHash += hashedPDOMHTML;
+      }
+
 
       ( window.parent !== window ) && window.parent.postMessage( JSON.stringify( {
         type: 'frameEmitted',
         number: count - 1,
         screenshot: {
-          url: url,
-          hash: hashedURL
-        }
+          url: screenshotURL,
+          hash: hashedScreenshotURL
+        },
+        pdom: pdomData
       } ), '*' );
 
       received = true;
-      screenshotHashes += hashedURL;
+      frameHashes += concatHash;
       if ( count === options.numFrames ) {
-        const fullHash = hash( screenshotHashes );
+        const fullHash = hash( frameHashes );
 
         ( window.parent !== window ) && window.parent.postMessage( JSON.stringify( {
           type: 'snapshot',
