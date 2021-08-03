@@ -150,10 +150,12 @@ function handleFrame() {
       console.log( count, hashedURL );
 
       ( window.parent !== window ) && window.parent.postMessage( JSON.stringify( {
-        type: 'screenshot',
+        type: 'frameEmitted',
         number: count - 1,
-        url: url,
-        hash: hashedURL
+        screenshot: {
+          url: url,
+          hash: hashedURL
+        }
       } ), '*' );
 
       received = true;

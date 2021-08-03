@@ -82,7 +82,7 @@ function setup( simNames ) {
     return canvas;
   }
 
-  function compare( imageA, imageB, msg ) {
+  function compareImages( imageA, imageB, msg ) {
     const threshold = 0;
 
     const a = contextToData( imageToContext( imageA ) );
@@ -170,7 +170,7 @@ function setup( simNames ) {
   function loadSim( sim ) {
     currentSim = sim;
     currentSnapshot[ currentSim ] = {
-      screenshots: []
+      frames: []
     };
     iframe.src = `take-snapshot.html?${childQueryParams}&url=${encodeURIComponent( `../../${sim}/${sim}_en.html` )}`;
   }
@@ -187,7 +187,7 @@ function setup( simNames ) {
     globalStartTime = Date.now();
     currentSnapshot = {};
     snapshots.push( currentSnapshot );
-    queue = queue.concat( options.sims );
+    queue = queue.concat( options.sims ); // TODO: this should likely clear and reset, but since currentSnapshot is reset, everything left in the queue will be appended to the new snapshot. https://github.com/phetsims/aqua/issues/126
     nextSim();
   }
 
@@ -200,9 +200,9 @@ function setup( simNames ) {
 
     const data = JSON.parse( evt.data );
 
-    if ( data.type === 'screenshot' ) {
-      // number, url, hash
-      currentSnapshot[ currentSim ].screenshots.push( data );
+    if ( data.type === 'frameEmitted' ) {
+      // number, screenshot: { url, hash }
+      currentSnapshot[ currentSim ].frames.push( data );
     }
     else if ( data.type === 'snapshot' ) {
       // basically hash
@@ -214,29 +214,37 @@ function setup( simNames ) {
       td.textContent = data.hash.slice( 0, 6 ) + ( options.showTime ? ` ${Date.now() - globalStartTime}` : '' );
       if ( snapshots.length > 1 && data.hash !== snapshots[ snapshots.length - 2 ][ sim ].hash ) {
         td.style.fontWeight = 'bold';
+        td.style.cursor = 'pointer';
         td.addEventListener( 'click', () => {
-          const newScreenshots = snapshot[ sim ].screenshots;
-          const oldScreenshots = snapshots[ snapshots.indexOf( snapshot ) - 1 ][ sim ].screenshots;
+          const newFrames = snapshot[ sim ].frames;
+          const oldFrames = snapshots[ snapshots.indexOf( snapshot ) - 1 ][ sim ].frames;
 
           let nextIndex = 0;
 
-          function run() {
+          function compareNextFrame() {
             const index = nextIndex++;
-            if ( index < newScreenshots.length && index < oldScreenshots.length ) {
-              const newImage = document.createElement( 'img' );
-              newImage.addEventListener( 'load', () => {
-                const oldImage = document.createElement( 'img' );
-                oldImage.addEventListener( 'load', () => {
-                  compare( oldImage, newImage, `Snapshot ${index}` );
-                  run();
+            if ( index < newFrames.length && index < oldFrames.length ) {
+              const oldFrame = oldFrames[ index ];
+              const newFrame = newFrames[ index ];
+
+              // If this screenshot hash is different, then compare and display the difference in screenshots.
+              if ( oldFrame.screenshot.hash !== newFrame.screenshot.hash ) {
+
+                const newImage = document.createElement( 'img' );
+                newImage.addEventListener( 'load', () => {
+                  const oldImage = document.createElement( 'img' );
+                  oldImage.addEventListener( 'load', () => {
+                    compareImages( oldImage, newImage, `Snapshot ${index}` );
+                    compareNextFrame();
+                  } );
+                  oldImage.src = oldFrames[ index ].screenshot.url;
                 } );
-                oldImage.src = oldScreenshots[ index ].url;
-              } );
-              newImage.src = newScreenshots[ index ].url;
+                newImage.src = newFrames[ index ].screenshot.url;
+              }
             }
           }
 
-          run();
+          compareNextFrame();
         } );
       }
       rowMap[ sim ].appendChild( td );
