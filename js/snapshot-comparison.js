@@ -57,6 +57,10 @@ function setup( simNames ) {
     showTime: {
       type: 'boolean',
       defaultValue: true
+    },
+    compareDescription: {
+      type: 'boolean',
+      defaultValue: true
     }
   } );
 
@@ -266,7 +270,7 @@ function setup( simNames ) {
               }
 
               // Compare description via PDOM html
-              if ( oldFrame.pdom.hash !== newFrame.pdom.hash ) {
+              if ( options.compareDescription && oldFrame.pdom.hash !== newFrame.pdom.hash ) {
                 comparePDOM( oldFrame.pdom.html, newFrame.pdom.html, `Data Frame ${index}` );
               }
             }
