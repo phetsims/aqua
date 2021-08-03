@@ -21,6 +21,14 @@
 
 <body>
 <script src="../../query-string-machine/js/QueryStringMachine.js"></script>
+<script src="../../assert/js/assert.js"></script>
+<script type="module">
+  // preload dependencies as modules and set them to window
+
+  import arrayDifference from '../../phet-core/js/arrayDifference.js';
+
+  window.arrayDifference = arrayDifference;
+</script>
 <script src="../js/snapshot-comparison.js"></script>
 </body>
 </html>

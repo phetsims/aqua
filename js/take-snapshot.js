@@ -33,6 +33,10 @@ const options = QueryStringMachine.getAll( {
   numFrames: {
     type: 'number',
     defaultValue: 100
+  },
+  compareDescription: {
+    type: 'boolean',
+    defaultValue: true
   }
 } );
 
@@ -155,7 +159,11 @@ function handleFrame() {
         html: null,
         hash: null
       };
-      if ( iframe.contentWindow.phet.joist.display.isAccessible() ) {
+      const descriptionAlertData = {
+        utterances: null,
+        hash: null
+      };
+      if ( options.compareDescription && iframe.contentWindow.phet.joist.display.isAccessible() ) {
 
         const pdomRoot = iframe.contentWindow.phet.joist.display.pdomRootElement;
         const pdomHTML = pdomRoot.outerHTML;
@@ -163,6 +171,13 @@ function handleFrame() {
         const hashedPDOMHTML = hash( pdomHTML );
         pdomData.hash = hashedPDOMHTML;
         concatHash += hashedPDOMHTML;
+
+        const descriptionUtteranceQueue = iframe.contentWindow.phet.joist.display.utteranceQueue.queue;
+        const utteranceTexts = descriptionUtteranceQueue.map( utterance => utterance.toString() );
+        descriptionAlertData.utterances = utteranceTexts;
+        const utterancesHash = hash( utteranceTexts + '' );
+        descriptionAlertData.hash = utterancesHash;
+        concatHash += utterancesHash;
       }
 
 
@@ -173,7 +188,8 @@ function handleFrame() {
           url: screenshotURL,
           hash: hashedScreenshotURL
         },
-        pdom: pdomData
+        pdom: pdomData,
+        descriptionAlert: descriptionAlertData
       } ), '*' );
 
       received = true;

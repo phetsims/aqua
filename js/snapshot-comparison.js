@@ -64,6 +64,8 @@ function setup( simNames ) {
     }
   } );
 
+  const addBR = string => string + '<br/>';
+
   function imageToContext( image ) {
     const canvas = document.createElement( 'canvas' );
     const context = canvas.getContext( '2d' );
@@ -145,18 +147,43 @@ function setup( simNames ) {
     const summary = document.createElement( 'summary' );
     summary.appendChild( document.createTextNode( `${message}: PDOMs different. Compare these two from webstorm diffing.` ) );
     diff.appendChild( summary );
-    const diffContainer = document.createElement( 'div' );
+    const diffGuts = document.createElement( 'div' );
     const oldHTMLP = document.createElement( 'p' );
     oldHTMLP.textContent = oldHTML;
     const newHTMLP = document.createElement( 'p' );
     newHTMLP.textContent = newHTML;
-    diffContainer.appendChild( oldHTMLP );
-    diffContainer.appendChild( newHTMLP );
+    diffGuts.appendChild( oldHTMLP );
+    diffGuts.appendChild( newHTMLP );
 
-    diff.appendChild( diffContainer );
-    diffContainer.style.fontSize = '4px';
+    diff.appendChild( diffGuts );
+    diffGuts.style.fontSize = '4px';
 
     container.appendChild( diff );
+
+  }
+
+  function compareDescriptionAlerts( oldUtterances, newUtterances, message ) {
+
+    const onlyInOld = []; // Will hold all nodes that will be removed.
+    const onlyInNew = []; // Will hold all nodes that will be "new" children (added)
+
+    // Compute what things were added, removed, or stay.
+    window.arrayDifference( oldUtterances, newUtterances, onlyInOld, onlyInNew, [] );
+
+    const diff = document.createElement( 'details' );
+    const summary = document.createElement( 'summary' );
+    summary.appendChild( document.createTextNode( `${message}: Description Utterances different. ${oldUtterances.length} vs ${newUtterances.length} utterances` ) );
+    diff.appendChild( summary );
+    const diffGuts = document.createElement( 'div' );
+    diff.appendChild( diffGuts );
+    const oldHTMLP = document.createElement( 'p' );
+    oldHTMLP.innerHTML = `Only in old:<br/> ${onlyInOld.map( addBR )}`;
+    const newHTMLP = document.createElement( 'p' );
+    newHTMLP.innerHTML = `Only in new:<br/> ${onlyInNew.map( addBR )}`;
+    diffGuts.appendChild( oldHTMLP );
+    diffGuts.appendChild( newHTMLP );
+
+    comparisonDiv.appendChild( diff );
 
   }
 
@@ -192,7 +219,8 @@ function setup( simNames ) {
     }&simWidth=${encodeURIComponent( options.simWidth )
     }&simHeight=${encodeURIComponent( options.simHeight )
     }&simQueryParameters=${encodeURIComponent( options.simQueryParameters )
-    }&numFrames=${encodeURIComponent( options.numFrames )}`;
+    }&numFrames=${encodeURIComponent( options.numFrames )
+    }&compareDescription=${encodeURIComponent( options.compareDescription )}`;
 
   function loadSim( sim ) {
     currentSim = sim;
@@ -254,6 +282,8 @@ function setup( simNames ) {
               const oldFrame = oldFrames[ index ];
               const newFrame = newFrames[ index ];
 
+              const dataFrameIndex = `Data Frame ${index}`;
+
               // If this screenshot hash is different, then compare and display the difference in screenshots.
               if ( oldFrame.screenshot.hash !== newFrame.screenshot.hash ) {
 
@@ -261,7 +291,7 @@ function setup( simNames ) {
                 newImage.addEventListener( 'load', () => {
                   const oldImage = document.createElement( 'img' );
                   oldImage.addEventListener( 'load', () => {
-                    compareImages( oldImage, newImage, `Data Frame ${index}` );
+                    compareImages( oldImage, newImage, dataFrameIndex );
                     compareNextFrame();
                   } );
                   oldImage.src = oldFrames[ index ].screenshot.url;
@@ -271,7 +301,12 @@ function setup( simNames ) {
 
               // Compare description via PDOM html
               if ( options.compareDescription && oldFrame.pdom.hash !== newFrame.pdom.hash ) {
-                comparePDOM( oldFrame.pdom.html, newFrame.pdom.html, `Data Frame ${index}` );
+                comparePDOM( oldFrame.pdom.html, newFrame.pdom.html, dataFrameIndex );
+
+              }
+              // Compare description via PDOM html
+              if ( options.compareDescription && oldFrame.descriptionAlert.hash !== newFrame.descriptionAlert.hash ) {
+                compareDescriptionAlerts( oldFrame.descriptionAlert.utterances, newFrame.descriptionAlert.utterances, dataFrameIndex );
               }
             }
           }
