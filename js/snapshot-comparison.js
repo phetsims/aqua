@@ -23,6 +23,7 @@
 
 function setup( simNames ) {
   const snapshots = [];
+  window.snapshots = snapshots; // For debugging etc.
   let queue = [];
   let currentSnapshot;
   let currentSim;
