@@ -285,9 +285,12 @@ function setup( simNames ) {
 
               const dataFrameIndex = `Data Frame ${index}`;
 
+              // support comparing the next data frame after this frame's screenshots have loaded (only when different)
+              let compareNextFrameCalledFromScreenshot = false;
+
               // If this screenshot hash is different, then compare and display the difference in screenshots.
               if ( oldFrame.screenshot.hash !== newFrame.screenshot.hash ) {
-
+                compareNextFrameCalledFromScreenshot = true;
                 const newImage = document.createElement( 'img' );
                 newImage.addEventListener( 'load', () => {
                   const oldImage = document.createElement( 'img' );
@@ -309,6 +312,9 @@ function setup( simNames ) {
               if ( options.compareDescription && oldFrame.descriptionAlert.hash !== newFrame.descriptionAlert.hash ) {
                 compareDescriptionAlerts( oldFrame.descriptionAlert.utterances, newFrame.descriptionAlert.utterances, dataFrameIndex );
               }
+
+              // Kick off the next iteration if we aren't waiting for images to load
+              !compareNextFrameCalledFromScreenshot && compareNextFrame();
             }
           }
 
