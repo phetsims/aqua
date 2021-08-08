@@ -163,6 +163,10 @@ function handleFrame() {
         utterances: null,
         hash: null
       };
+      const voicingResponseData = {
+        utterances: null,
+        hash: null
+      };
       if ( options.compareDescription && iframe.contentWindow.phet.joist.display.isAccessible() ) {
 
         const pdomRoot = iframe.contentWindow.phet.joist.display.pdomRootElement;
@@ -178,6 +182,15 @@ function handleFrame() {
         const utterancesHash = hash( utteranceTexts + '' );
         descriptionAlertData.hash = utterancesHash;
         concatHash += utterancesHash;
+
+        if ( iframe.contentWindow.phet.scenery.voicingUtteranceQueue ) {
+          const voicingUtteranceQueue = iframe.contentWindow.phet.scenery.voicingUtteranceQueue.queue;
+          const voicingUtteranceTexts = voicingUtteranceQueue.map( voicingUtteranceWrapper => voicingUtteranceWrapper.utterance.toString() );
+          voicingResponseData.utterances = voicingUtteranceTexts;
+          const voicingUtterancesHash = hash( voicingUtteranceTexts + '' );
+          voicingResponseData.hash = voicingUtterancesHash;
+          concatHash += voicingUtterancesHash;
+        }
       }
 
 
@@ -189,7 +202,8 @@ function handleFrame() {
           hash: hashedScreenshotURL
         },
         pdom: pdomData,
-        descriptionAlert: descriptionAlertData
+        descriptionAlert: descriptionAlertData,
+        voicing: voicingResponseData
       } ), '*' );
 
       received = true;

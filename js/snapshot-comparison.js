@@ -173,7 +173,7 @@ function setup( simNames ) {
 
     const diff = document.createElement( 'details' );
     const summary = document.createElement( 'summary' );
-    summary.appendChild( document.createTextNode( `${message}: Description Utterances different. ${oldUtterances.length} vs ${newUtterances.length} utterances` ) );
+    summary.appendChild( document.createTextNode( `${message}: Utterances different. ${oldUtterances.length} vs ${newUtterances.length} utterances` ) );
     diff.appendChild( summary );
     const diffGuts = document.createElement( 'div' );
     diff.appendChild( diffGuts );
@@ -308,9 +308,14 @@ function setup( simNames ) {
                 comparePDOM( oldFrame.pdom.html, newFrame.pdom.html, dataFrameIndex );
 
               }
-              // Compare description via PDOM html
+              // Compare description utterances
               if ( options.compareDescription && oldFrame.descriptionAlert.hash !== newFrame.descriptionAlert.hash ) {
-                compareDescriptionAlerts( oldFrame.descriptionAlert.utterances, newFrame.descriptionAlert.utterances, dataFrameIndex );
+                compareDescriptionAlerts( oldFrame.descriptionAlert.utterances, newFrame.descriptionAlert.utterances, `${dataFrameIndex}, Description` );
+              }
+
+              // Compare voicing utterances
+              if ( options.compareDescription && oldFrame.voicing.hash !== newFrame.voicing.hash ) {
+                compareDescriptionAlerts( oldFrame.voicing.utterances, newFrame.voicing.utterances, `${dataFrameIndex}, Voicing` );
               }
 
               // Kick off the next iteration if we aren't waiting for images to load
