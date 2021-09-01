@@ -176,7 +176,7 @@ function handleFrame() {
         pdomData.hash = hashedPDOMHTML;
         concatHash += hashedPDOMHTML;
 
-        const descriptionUtteranceQueue = iframe.contentWindow.phet.joist.display.utteranceQueue.queue;
+        const descriptionUtteranceQueue = iframe.contentWindow.phet.joist.display.descriptionUtteranceQueue.queue;
         const utteranceTexts = descriptionUtteranceQueue.map( utteranceWrapper => utteranceWrapper.utterance.toString() );
         descriptionAlertData.utterances = utteranceTexts;
         const utterancesHash = hash( utteranceTexts + '' );
