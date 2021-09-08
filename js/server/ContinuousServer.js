@@ -16,6 +16,7 @@ const gitRevParse = require( '../../../perennial/js/common/gitRevParse' );
 const gruntCommand = require( '../../../perennial/js/common/gruntCommand' );
 const isStale = require( '../../../perennial/js/common/isStale' );
 const npmUpdate = require( '../../../perennial/js/common/npmUpdate' );
+const outputJS = require( '../../../perennial/js/common/outputJS' );
 const sleep = require( '../../../perennial/js/common/sleep' );
 const Snapshot = require( './Snapshot' );
 const assert = require( 'assert' );
@@ -507,10 +508,19 @@ class ContinuousServer {
           }
           const clonedRepos = await cloneMissingRepos();
 
-          // npm prune/update on any changed repos, so we can keep our npm status good in our checked out version
+          // Run the following updates on any changed repos, so we can keep our npm status good in our checked out version
+          // npm prune/update first
           for ( const repo of [ ...staleRepos, ...clonedRepos ] ) {
             if ( fs.existsSync( `../${repo}/package.json` ) ) {
               await npmUpdate( repo );
+            }
+          }
+
+          // Output JS for any updated repos. May use the updated node_modules from the prior loop
+          for ( const repo of [ ...staleRepos, ...clonedRepos ] ) {
+            if ( fs.existsSync( `../${repo}/tsconfig.json` ) ) {
+              this.setStatus( `Compiling TS: ${repo}` );
+              await outputJS( `../${repo}` );
             }
           }
         }

@@ -10,7 +10,6 @@
 const copyDirectory = require( '../../../perennial/js/common/copyDirectory' );
 const createDirectory = require( '../../../perennial/js/common/createDirectory' );
 const deleteDirectory = require( '../../../perennial/js/common/deleteDirectory' );
-const outputJS = require( '../../../perennial/js/common/outputJS' );
 const execute = require( '../../../perennial/js/dual/execute' );
 const getRepoList = require( '../../../perennial/js/common/getRepoList' );
 const gitLastCommitTimestamp = require( '../../../perennial/js/common/gitLastCommitTimestamp' );
@@ -78,13 +77,6 @@ class Snapshot {
     this.shas = {};
     for ( const repo of this.repos ) {
       this.shas[ repo ] = await gitRevParse( repo, 'master' );
-    }
-
-    for ( const repo of this.repos ) {
-      this.setStatus( `Compiling TS: ${repo}` );
-      const outputJSResults = await outputJS( `${this.rootDir}/${repo}` );
-      winston.info( `${repo} outputJS complete: ${JSON.stringify( outputJSResults )}` );
-      this.setStatus( `${repo} outputJS complete: ${JSON.stringify( outputJSResults )}` );
     }
 
     if ( !useRootDir ) {
