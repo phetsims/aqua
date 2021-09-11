@@ -520,7 +520,7 @@ class ContinuousServer {
           for ( const repo of [ ...staleRepos, ...clonedRepos ] ) {
             if ( fs.existsSync( `../${repo}/tsconfig.json` ) ) {
               this.setStatus( `Compiling TS: ${repo}` );
-              await outputJS( `../${repo}` );
+              await outputJS( repo );
             }
           }
         }
