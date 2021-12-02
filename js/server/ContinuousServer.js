@@ -16,7 +16,7 @@ const gitRevParse = require( '../../../perennial/js/common/gitRevParse' );
 const gruntCommand = require( '../../../perennial/js/common/gruntCommand' );
 const isStale = require( '../../../perennial/js/common/isStale' );
 const npmUpdate = require( '../../../perennial/js/common/npmUpdate' );
-const outputJS = require( '../../../perennial/js/common/outputJS' );
+const outputJSAll = require( '../../../perennial/js/common/outputJSAll' );
 const sleep = require( '../../../perennial/js/common/sleep' );
 const Snapshot = require( './Snapshot' );
 const assert = require( 'assert' );
@@ -517,12 +517,8 @@ class ContinuousServer {
           }
 
           // Output JS for any updated repos. May use the updated node_modules from the prior loop
-          for ( const repo of [ ...staleRepos, ...clonedRepos ] ) {
-            if ( fs.existsSync( `../${repo}/tsconfig.json` ) ) {
-              this.setStatus( `Compiling TS: ${repo}` );
-              await outputJS( repo );
-            }
-          }
+          this.setStatus( 'Running outputJSAll' );
+          await outputJSAll();
         }
         else {
           winston.info( 'No stale repos' );
