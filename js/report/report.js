@@ -10,7 +10,7 @@ import BooleanProperty from '../../../axon/js/BooleanProperty.js';
 import EnumerationProperty from '../../../axon/js/EnumerationProperty.js';
 import NumberProperty from '../../../axon/js/NumberProperty.js';
 import Property from '../../../axon/js/Property.js';
-import Enumeration from '../../../phet-core/js/Enumeration.js';
+import EnumerationDeprecated from '../../../phet-core/js/EnumerationDeprecated.js';
 import escapeHTML from '../../../phet-core/js/escapeHTML.js';
 import PhetFont from '../../../scenery-phet/js/PhetFont.js';
 import { Display } from '../../../scenery/js/imports.js';
@@ -117,7 +117,7 @@ const expandedReposProperty = new Property( [] );
 // {Property.<string>}
 const filterStringProperty = new Property( '' );
 
-const Sort = Enumeration.byKeys( [ 'ALPHABETICAL', 'IMPORTANCE', 'AVERAGE_TIME', 'WEIGHT' ] );
+const Sort = EnumerationDeprecated.byKeys( [ 'ALPHABETICAL', 'IMPORTANCE', 'AVERAGE_TIME', 'WEIGHT' ] );
 
 // {Property.<Sort>}
 const sortProperty = new EnumerationProperty( Sort, Sort.ALPHABETICAL );
