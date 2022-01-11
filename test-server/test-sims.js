@@ -66,6 +66,9 @@
 
   const failedSims = []; // {Array.<string>} - sim names that failed the tests
 
+  // The name of the sim currently being tested
+  let currentSim = '';
+
   // Track whether 'shift' key is pressed, so that we can change how windows are opened.  If shift is pressed, the
   // page is launched in a separate tab.
   let shiftPressed = false;
@@ -81,9 +84,10 @@
   rerunFailedTestsButton.innerHTML = 'Rerun Failed Sims';
   rerunFailedTestsButton.addEventListener( 'click', () => {
     if ( failedSims.length > 0 ) {
+      const nextSims = failedSims.concat( currentSim ? [ currentSim ] : [] ).concat( testQueue.map( x => x.simName ) );
       const omitTestSimsSearch = QueryStringMachine.removeKeyValuePair( window.location.search, 'testSims' );
       let url = window.location.origin + window.location.pathname;
-      url += QueryStringMachine.appendQueryString( omitTestSimsSearch, `testSims=${_.uniq( failedSims ).join( ',' )}` );
+      url += QueryStringMachine.appendQueryString( omitTestSimsSearch, `testSims=${_.uniq( nextSims ).join( ',' )}` );
       if ( shiftPressed ) {
         window.open( url, '_blank' );
       }
@@ -216,6 +220,7 @@
 
     if ( testQueue.length ) {
       const test = testQueue.shift();
+      currentSim = test.simName;
       currentTest = test;
       loadSim( test.simName, test.isBuild );
       timeoutId = setTimeout( nextSim, options.testDuration );
