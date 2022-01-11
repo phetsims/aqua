@@ -7,7 +7,7 @@
  */
 
 import BooleanProperty from '../../../axon/js/BooleanProperty.js';
-import EnumerationProperty from '../../../axon/js/EnumerationProperty.js';
+import EnumerationDeprecatedProperty from '../../../axon/js/EnumerationDeprecatedProperty.js';
 import NumberProperty from '../../../axon/js/NumberProperty.js';
 import Property from '../../../axon/js/Property.js';
 import EnumerationDeprecated from '../../../phet-core/js/EnumerationDeprecated.js';
@@ -120,7 +120,7 @@ const filterStringProperty = new Property( '' );
 const Sort = EnumerationDeprecated.byKeys( [ 'ALPHABETICAL', 'IMPORTANCE', 'AVERAGE_TIME', 'WEIGHT' ] );
 
 // {Property.<Sort>}
-const sortProperty = new EnumerationProperty( Sort, Sort.ALPHABETICAL );
+const sortProperty = new EnumerationDeprecatedProperty( Sort, Sort.ALPHABETICAL );
 
 // Property.<boolean>}
 const showAverageTimeProperty = new BooleanProperty( false );
