@@ -210,6 +210,7 @@
 // switches to the next sim (if there are any)
   function nextSim() {
     clearTimeout( timeoutId );
+    currentSim = '';
 
     if ( currentTest ) {
       simStatusElements[ currentTest.simName ].classList.add( `complete-${currentTest.isBuild ? 'build' : 'dev'}` );
