@@ -67,79 +67,6 @@ function setup( simNames ) {
 
   const addBR = string => string + '<br/>';
 
-  function imageToContext( image ) {
-    const canvas = document.createElement( 'canvas' );
-    const context = canvas.getContext( '2d' );
-    canvas.width = options.simWidth;
-    canvas.height = options.simHeight;
-    context.drawImage( image, 0, 0 );
-    return context;
-  }
-
-  function contextToData( context ) {
-    return context.getImageData( 0, 0, options.simWidth, options.simHeight );
-  }
-
-  function dataToCanvas( data ) {
-    const canvas = document.createElement( 'canvas' );
-    const context = canvas.getContext( '2d' );
-    canvas.width = options.simWidth;
-    canvas.height = options.simHeight;
-    context.putImageData( data, 0, 0 );
-    return canvas;
-  }
-
-  function compareImages( imageA, imageB, msg ) {
-    const threshold = 0;
-
-    const a = contextToData( imageToContext( imageA ) );
-    const b = contextToData( imageToContext( imageB ) );
-
-    let largestDifference = 0;
-    let totalDifference = 0;
-    const colorDiffData = document.createElement( 'canvas' ).getContext( '2d' ).createImageData( a.width, a.height );
-    const alphaDiffData = document.createElement( 'canvas' ).getContext( '2d' ).createImageData( a.width, a.height );
-    for ( let i = 0; i < a.data.length; i++ ) {
-      const diff = Math.abs( a.data[ i ] - b.data[ i ] );
-      if ( i % 4 === 3 ) {
-        colorDiffData.data[ i ] = 255;
-        alphaDiffData.data[ i ] = 255;
-        alphaDiffData.data[ i - 3 ] = diff; // red
-        alphaDiffData.data[ i - 2 ] = diff; // green
-        alphaDiffData.data[ i - 1 ] = diff; // blue
-      }
-      else {
-        colorDiffData.data[ i ] = diff;
-      }
-      const alphaIndex = ( i - ( i % 4 ) + 3 );
-      // grab the associated alpha channel and multiply it times the diff
-      const alphaMultipliedDiff = ( i % 4 === 3 ) ? diff : diff * ( a.data[ alphaIndex ] / 255 ) * ( b.data[ alphaIndex ] / 255 );
-
-      totalDifference += alphaMultipliedDiff;
-      // if ( alphaMultipliedDiff > threshold ) {
-      // console.log( message + ': ' + Math.abs( a.data[i] - b.data[i] ) );
-      largestDifference = Math.max( largestDifference, alphaMultipliedDiff );
-      // isEqual = false;
-      // break;
-      // }
-    }
-
-    const averageDifference = totalDifference / ( 4 * a.width * a.height );
-
-    if ( averageDifference > threshold ) {
-      const container = document.createElement( 'div' );
-      comparisonDiv.appendChild( container );
-
-      container.appendChild( document.createTextNode( `${msg}, largest: ${largestDifference}, average: ${averageDifference}` ) );
-      container.appendChild( document.createElement( 'br' ) );
-
-      container.appendChild( dataToCanvas( a ) );
-      container.appendChild( dataToCanvas( b ) );
-      container.appendChild( dataToCanvas( colorDiffData ) );
-      // container.appendChild( dataToCanvas( alphaDiffData ) );
-    }
-  }
-
   function comparePDOM( oldHTML, newHTML, message ) {
     const container = document.createElement( 'div' );
     comparisonDiv.appendChild( container );
@@ -291,16 +218,11 @@ function setup( simNames ) {
               // If this screenshot hash is different, then compare and display the difference in screenshots.
               if ( oldFrame.screenshot.hash !== newFrame.screenshot.hash ) {
                 compareNextFrameCalledFromScreenshot = true;
-                const newImage = document.createElement( 'img' );
-                newImage.addEventListener( 'load', () => {
-                  const oldImage = document.createElement( 'img' );
-                  oldImage.addEventListener( 'load', () => {
-                    compareImages( oldImage, newImage, dataFrameIndex );
+                window.compareImages( oldFrames[ index ].screenshot.url, newFrames[ index ].screenshot.url,
+                  dataFrameIndex, options.simWidth, options.simHeight, comparisonDataDiv => {
+                    comparisonDataDiv && comparisonDiv.appendChild( comparisonDataDiv );
                     compareNextFrame();
                   } );
-                  oldImage.src = oldFrames[ index ].screenshot.url;
-                } );
-                newImage.src = newFrames[ index ].screenshot.url;
               }
 
               // Compare description via PDOM html
