@@ -13,6 +13,7 @@ const assert = require( 'assert' );
 const grunt = require( 'grunt' ); // eslint-disable-line
 const _ = require( 'lodash' ); // eslint-disable-line
 const winston = require( 'winston' );
+const QuickServer = require( './server/QuickServer' );
 
 module.exports = grunt => {
   Gruntfile( grunt );
@@ -48,6 +49,9 @@ module.exports = grunt => {
       server.startServer( port );
       server.generateReportLoop();
       server.computeWeightsLoop();
+      if ( !useRootDir ) {
+        server.quickServerLoop();
+      }
 
       if ( snapshot ) {
         server.createSnapshotLoop();
@@ -57,6 +61,23 @@ module.exports = grunt => {
       _.range( 0, localCount ).forEach( () => {
         server.localTaskLoop();
       } );
+    }
+  );
+
+  grunt.registerTask(
+    'quick-server',
+    'Launches a quick server with the following options:\n' +
+    '--localCount=COUNT : [REQUIRED] specifies how many local build/grunt/etc. tasks should run in the background\n' +
+    '--port=PORT : specify a custom port for the server interface\n',
+    () => {
+      // We don't finish! Don't tell grunt this...
+      grunt.task.current.async();
+
+      const port = grunt.option( 'port' ) ? Number.parseInt( grunt.option( 'port' ), 10 ) : 45367;
+
+      const server = new QuickServer();
+      server.startServer( port );
+      server.startMainLoop();
     }
   );
 };

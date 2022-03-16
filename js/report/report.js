@@ -56,6 +56,9 @@ const categoryFont = new PhetFont( { size: 12, weight: 'bold' } );
 const statusProperty = new Property( 'loading...' );
 const lastErrorProperty = new Property( '' );
 
+// {Property.<*>}
+const quickStatusProperty = new Property( {} );
+
 // {Property.<number>}
 const startupTimestampProperty = new NumberProperty( 0 );
 
@@ -80,6 +83,27 @@ statusProperty.lazyLink( status => console.log( `Status: ${status}` ) );
     statusProperty.value = 'Could not contact server';
   };
   req.open( 'get', `${options.server}/aquaserver/status`, true );
+  req.send();
+} )();
+
+( function snapshotQuickLoop() {
+  const req = new XMLHttpRequest();
+  req.onload = function() {
+    setTimeout( snapshotQuickLoop, 10000 );
+    if ( req.responseText.includes( '<title>503 Service Unavailable</title>' ) ) {
+      statusProperty.value = '503 error on server';
+    }
+    else {
+      const result = JSON.parse( req.responseText );
+
+      quickStatusProperty.value = result;
+    }
+  };
+  req.onerror = function() {
+    setTimeout( snapshotQuickLoop, 10000 );
+    statusProperty.value = 'Could not contact server';
+  };
+  req.open( 'get', `${options.server}/aquaserver/quick-status`, true );
   req.send();
 } )();
 
@@ -157,6 +181,59 @@ statusNode.addInputListener( new FireListener( {
     }
   }
 } ) );
+
+const createQuickResult = ( labelString, name ) => {
+  const label = new Text( labelString, { font: interfaceFont } );
+  const node = new Rectangle( {
+    rectBounds: label.bounds.dilatedXY( 10, 5 ),
+    children: [ label ],
+    cursor: 'pointer'
+  } );
+  node.addInputListener( new FireListener( {
+    fire: () => {
+      const quickStatus = quickStatusProperty.value;
+      if ( quickStatus && quickStatus[ name ] ) {
+        popup( node, quickStatus[ name ].message );
+      }
+    }
+  } ) );
+  quickStatusProperty.link( quickStatus => {
+    if ( quickStatus && quickStatus[ name ] ) {
+      node.fill = quickStatus[ name ].passed ? passColor : failColor;
+    }
+    else {
+      node.fill = untestedColor;
+    }
+  } );
+  return node;
+};
+
+const quickTimestampText = new Text( 'loading...', { font: interfaceFont, cursor: 'pointer' } );
+quickTimestampText.addInputListener( new FireListener( {
+  fire: () => {
+    const quickStatus = quickStatusProperty.value;
+    if ( quickStatus && quickStatus.shas ) {
+      popup( quickTimestampText, JSON.stringify( quickStatus.shas, null, 2 ) );
+    }
+  }
+} ) );
+quickStatusProperty.lazyLink( quickStatus => {
+  if ( quickStatus && quickStatus.timestamp ) {
+    quickTimestampText.text = new Date( quickStatus.timestamp ).toLocaleString();
+  }
+} );
+
+const quickNode = new HBox( {
+  spacing: 3,
+  children: [
+    quickTimestampText,
+    createQuickResult( 'lint', 'lint' ),
+    createQuickResult( 'tsc', 'tsc' ),
+    createQuickResult( 'transpile', 'transpile' ),
+    createQuickResult( 'simFuzz', 'simFuzz' ),
+    createQuickResult( 'studioFuzz', 'studioFuzz' )
+  ]
+} );
 
 const reportNode = new Node();
 
@@ -257,6 +334,7 @@ const contentNode = new VBox( {
   children: [
     new Text( 'Continuous Testing', { font: new PhetFont( { size: 24 } ) } ),
     statusNode,
+    quickNode,
     new HBox( {
       align: 'top',
       spacing: 25,

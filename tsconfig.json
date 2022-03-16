@@ -1,0 +1,20 @@
+{
+  "extends": "../chipper/tsconfig-core.json",
+  "references": [
+    {
+      "path": "../scenery-phet/tsconfig-module.json"
+    }
+  ],
+  "include": [
+    "js/report/**/*",
+    "../chipper/phet-types.d.ts",
+    "../chipper/node_modules/@types/lodash/index.d.ts",
+    "../chipper/node_modules/@types/qunit/index.d.ts",
+    "../chipper/node_modules/@types/jquery/index.d.ts"
+  ],
+  "exclude": [
+    "js/server/**/*",
+    "js/local/**/*",
+    "js/client/**/*"
+  ]
+}
