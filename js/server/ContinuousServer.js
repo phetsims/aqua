@@ -523,40 +523,46 @@ class ContinuousServer {
         else {
           winston.info( 'No stale repos' );
 
+          const completedAllTests = this.snapshots.length === 0 || this.snapshots[ 0 ].getAvailableBrowserTests( false ).filter( test => test.count === 0 ).length === 0;
           if ( wasStale ) {
-            wasStale = false;
-
-            winston.info( 'Stable point reached' );
-
-            const snapshot = new Snapshot( this.rootDir, this.setStatus.bind( this ) );
-            this.pendingSnapshot = snapshot;
-
-            await snapshot.create();
-
-            this.snapshots.unshift( snapshot );
-            this.pendingSnapshot = null;
-
-            const cutoffTimestamp = Date.now() - 1000 * 60 * 60 * 24 * NUMBER_OF_DAYS_TO_KEEP_SNAPSHOTS;
-            while ( this.snapshots.length > 70 || this.snapshots[ this.snapshots.length - 1 ].timestamp < cutoffTimestamp && !this.snapshots[ this.snapshots.length - 1 ].exists ) {
-              this.snapshots.pop();
+            if ( new Date().getHours() < 5 && !completedAllTests ) {
+              winston.info( 'Waiting until 5am (or completed tests) to create a snapshot' );
             }
+            else {
+              wasStale = false;
 
-            this.computeRecentTestWeights();
+              winston.info( 'Stable point reached' );
 
-            this.saveToFile();
+              const snapshot = new Snapshot( this.rootDir, this.setStatus.bind( this ) );
+              this.pendingSnapshot = snapshot;
 
-            this.setStatus( 'Removing old snapshot files' );
-            const numActiveSnapshots = 3;
-            for ( const snapshot of this.snapshots.slice( numActiveSnapshots ) ) {
-              if ( snapshot.exists && !this.trashSnapshots.includes( snapshot ) ) {
-                this.trashSnapshots.push( snapshot );
+              await snapshot.create();
 
-                // NOTE: NO await here, we're going to do that asynchronously so we don't block
-                this.deleteTrashSnapshot( snapshot );
+              this.snapshots.unshift( snapshot );
+              this.pendingSnapshot = null;
+
+              const cutoffTimestamp = Date.now() - 1000 * 60 * 60 * 24 * NUMBER_OF_DAYS_TO_KEEP_SNAPSHOTS;
+              while ( this.snapshots.length > 70 || this.snapshots[ this.snapshots.length - 1 ].timestamp < cutoffTimestamp && !this.snapshots[ this.snapshots.length - 1 ].exists ) {
+                this.snapshots.pop();
               }
-            }
 
-            this.saveToFile();
+              this.computeRecentTestWeights();
+
+              this.saveToFile();
+
+              this.setStatus( 'Removing old snapshot files' );
+              const numActiveSnapshots = 3;
+              for ( const snapshot of this.snapshots.slice( numActiveSnapshots ) ) {
+                if ( snapshot.exists && !this.trashSnapshots.includes( snapshot ) ) {
+                  this.trashSnapshots.push( snapshot );
+
+                  // NOTE: NO await here, we're going to do that asynchronously so we don't block
+                  this.deleteTrashSnapshot( snapshot );
+                }
+              }
+
+              this.saveToFile();
+            }
           }
         }
       }
