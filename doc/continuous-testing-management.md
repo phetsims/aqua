@@ -194,6 +194,28 @@ To move interface changes to bayes, you'll want to go to the aqua directory for
 CT (`/data/share/phet/continuous-testing/aqua`), pull (since it will not pull aqua during its testing loop), and
 run `grunt`. This will build the interface under `aqua/build` which is used by `continuous-report.html`.
 
+# Local testing
+
+## Running the server locally
+
+The serve is set up to run locally via a grunt task. It can be a bit heavy-weight, but is available for testing. It is
+HIGHLY recommended that you run with `--useRootDir` so that CT doesn't make another entire copy of your github checkout
+before testing on it. See all options and details in `js/Gruntfile`.
+
+## Running the report locally
+
+Both [continuous-report.html](../html/continuous-report.html) (built version)
+and [continuous-unbuilt-report.html](../html/continuous-unbuilt-report.html) are available for running locally. the unbuilt
+report can be run with just a transpile step, which is helpful when making changes to `js/report/report.js`. Run with a 
+URL like this for fast iteration: `
+
+http://localhost:8080/aqua/html/continuous-unbuilt-report.html?server=https://bayes.colorado.edu/&maxColumns=5`.
+
+Note how the URL supports retreiving the same data from bayes, so you don't HAVE to have a local server running to iterate
+on the front end.
+
+The report is built as a "standalone" repo with `grunt`;
+
 # Server Debugging
 
 Usually, inspect `pm2 logs` to see if something is going on. If it's scrolled past an error, you can tail the actual
