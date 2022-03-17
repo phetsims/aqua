@@ -8,6 +8,7 @@
 
 
 const cloneMissingRepos = require( '../../../perennial/js/common/cloneMissingRepos' );
+const deleteDirectory = require( '../../../perennial/js/common/deleteDirectory' );
 const execute = require( '../../../perennial/js/common/execute' );
 const getRepoList = require( '../../../perennial/js/common/getRepoList' );
 const gitPull = require( '../../../perennial/js/common/gitPull' );
@@ -47,6 +48,7 @@ class QuickServer {
   async startMainLoop() {
     // Let it execute tests on startup once
     let forceTests = true;
+    let count = 0;
 
     while ( true ) { // eslint-disable-line
 
@@ -97,8 +99,13 @@ class QuickServer {
           winston.info( 'QuickServer: linting' );
           const lintResult = await execute( gruntCommand, [ 'lint-everything' ], `${this.rootDir}/perennial`, { errors: 'resolve' } );
 
+          // Periodically clean chipper/dist
+          if ( count++ % 10 === 0 ) {
+            await deleteDirectory( `${this.rootDir}/chipper/dist` );
+          }
+
           winston.info( 'QuickServer: tsc' );
-          const tscResult = await execute( 'tsc', [ '-b' ], `${this.rootDir}/chipper/tsconfig/all`, { errors: 'resolve' } );
+          const tscResult = await execute( '../../node_modules/typescript/bin/tsc', [ '-b' ], `${this.rootDir}/chipper/tsconfig/all`, { errors: 'resolve' } );
 
           winston.info( 'QuickServer: transpiling' );
           const transpileResult = await execute( 'node', [ 'js/scripts/transpile.js' ], `${this.rootDir}/chipper`, { errors: 'resolve' } );
@@ -172,6 +179,7 @@ class QuickServer {
       }
       catch( e ) {
         winston.info( `QuickServer error: ${e}` );
+        forceTests = true;
       }
     }
   }
