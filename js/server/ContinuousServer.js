@@ -6,7 +6,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-
 const asyncFilter = require( '../../../perennial/js/common/asyncFilter' );
 const cloneMissingRepos = require( '../../../perennial/js/common/cloneMissingRepos' );
 const execute = require( '../../../perennial/js/common/execute' );
@@ -19,7 +18,6 @@ const npmUpdate = require( '../../../perennial/js/common/npmUpdate' );
 const outputJSAll = require( '../../../perennial/js/common/outputJSAll' );
 const sleep = require( '../../../perennial/js/common/sleep' );
 const Snapshot = require( './Snapshot' );
-const QuickServer = require( './QuickServer' );
 const assert = require( 'assert' );
 const fs = require( 'fs' );
 const http = require( 'http' );
@@ -60,9 +58,6 @@ class ContinuousServer {
     // @public {string} - root of your GitHub working copy, relative to the name of the directory that the
     // currently-executing script resides in
     this.rootDir = path.normalize( `${__dirname}/../../../` );
-
-    // @public {QuickServer | null}
-    this.quickServer = useRootDir ? null : new QuickServer( path.normalize( `${__dirname}/../../../../continuous-quick-server` ) );
 
     // @public {string} - Where we'll load/save our state
     this.saveFile = `${this.rootDir}/aqua/.continuous-testing-state.json`;
@@ -163,10 +158,6 @@ class ContinuousServer {
         if ( requestInfo.pathname === '/aquaserver/report' ) {
           res.writeHead( 200, jsonHeaders );
           res.end( this.reportJSON );
-        }
-        if ( requestInfo.pathname === '/aquaserver/quick-status' ) {
-          res.writeHead( 200, jsonHeaders );
-          res.end( JSON.stringify( this.quickServer ? this.quickServer.reportState : null, null, 2 ) );
         }
       }
       catch( e ) {
@@ -578,14 +569,6 @@ class ContinuousServer {
         this.setError( `snapshot error: ${e}` );
       }
     }
-  }
-
-  /**
-   * Kicks off the quick-server loop (will never complete)
-   * @public
-   */
-  async quickServerLoop() {
-    await this.quickServer.startMainLoop();
   }
 
   /**

@@ -198,7 +198,7 @@ class QuickServer {
       try {
         const requestInfo = url.parse( req.url, true );
 
-        if ( requestInfo.pathname === '/aquaserver/quick-status' ) {
+        if ( requestInfo.pathname === '/quickserver/status' ) {
           res.writeHead( 200, jsonHeaders );
           res.end( JSON.stringify( this.reportState, null, 2 ) );
         }

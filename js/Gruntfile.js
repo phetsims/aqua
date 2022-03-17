@@ -49,9 +49,6 @@ module.exports = grunt => {
       server.startServer( port );
       server.generateReportLoop();
       server.computeWeightsLoop();
-      if ( !useRootDir ) {
-        server.quickServerLoop();
-      }
 
       if ( snapshot ) {
         server.createSnapshotLoop();
@@ -67,7 +64,6 @@ module.exports = grunt => {
   grunt.registerTask(
     'quick-server',
     'Launches a quick server with the following options:\n' +
-    '--localCount=COUNT : [REQUIRED] specifies how many local build/grunt/etc. tasks should run in the background\n' +
     '--port=PORT : specify a custom port for the server interface\n',
     () => {
       // We don't finish! Don't tell grunt this...

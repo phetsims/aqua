@@ -95,7 +95,7 @@ statusProperty.lazyLink( status => console.log( `Status: ${status}` ) );
     setTimeout( snapshotQuickLoop, 10000 );
     statusProperty.value = 'Could not contact server';
   };
-  req.open( 'get', `${options.server}/aquaserver/quick-status`, true );
+  req.open( 'get', `${options.server}/quickserver/status`, true );
   req.send();
 } )();
 
