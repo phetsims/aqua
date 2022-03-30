@@ -24,7 +24,10 @@ const transpileStacktrace = async str => {
   }
 
   const header = str.split( '\n' ).find( line => line.trim().length > 0 );
-  newStackLines.push( header ); // TODO for REVIEWER: Should we keep or omit this?
+
+  // TODO for REVIEWER: Should we keep or omit this?
+  // MK: I'd keep it, it seems not too helpful in a lot of cases (like assertions), but could provide some context.
+  newStackLines.push( header );
 
   // Iterate over each element in the stack. Use for loop because it works well with await
   for ( let i = 0; i < stack.length; i++ ) {
@@ -39,6 +42,9 @@ const transpileStacktrace = async str => {
 
       // Load the text of the source file over the network
       // TODO for REVIEWER: Should we cache these?
+      // MK: I think that we can potentially rely on browser caching, is there some way to quantify how much worse this
+      // MK: is for the network? I'm just not too worried about 10 or less downloads per stracktrace. Unbuilt sims download
+      // MK: hundreds of files every time you load them. I would likely just leave it as is until we see an issue.
       const response = await window.fetch( file );
       const text = await response.text();
 
@@ -62,6 +68,9 @@ const transpileStacktrace = async str => {
           // TODO for REVIEWER: Should we put this file or contents in sherpa?
           // TODO for REVIEWER: I don't know enough about how the iframes are set up to know if this
           // work can be shared across different instances
+          // MK: I told you to move it into this file yesterday before I totally understood the purpose. What if we added
+          // MK: It directly under the import in its own script in the HTML? That way it is more closely tied to the import.
+          // MK: Yes I think we should download that file, and point to it locally (relative path) and see how it goes.
           window.sourceMap.SourceMapConsumer.initialize( {
             'lib/mappings.wasm': 'https://unpkg.com/source-map@0.7.3/lib/mappings.wasm'
           } );
@@ -147,6 +156,8 @@ const transpileStacktrace = async str => {
         clearTimeout( timeoutID );
 
         // TODO for REVIEWER: How does this behave for built sim stacks?  Should it be skipped for those?
+        // MK: perhaps it is a moot point, but maybe the sourcemap can help us in that case too, have you looked at
+        // MK: what it does when testing a built stack? Do we have a sourcemap included in the built version? Perhaps we should?
         const transpiledStack = await transpileStacktrace( data.stack );
         aqua.simpleFail( `${failPrefix + data.message}\n${transpiledStack}` );
       }
