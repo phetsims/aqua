@@ -29,7 +29,7 @@
   }, options.duration );
 
   // handling messages from the page
-  window.addEventListener( 'message', evt => {
+  window.addEventListener( 'message', async evt => {
     if ( typeof evt.data !== 'string' ) {
       return;
     }
@@ -41,7 +41,8 @@
       aqua.simplePass();
     }
     else if ( data.type === 'pageload-error' ) {
-      aqua.simpleFail( `${data.message}\n${data.stack}` );
+      const transpiledStacktrace = await window.transpileStacktrace( data.stack );
+      aqua.simpleFail( `${data.message}\n${transpiledStacktrace}` );
     }
   } );
 } )();

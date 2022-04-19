@@ -49,7 +49,7 @@
   const testInfo = JSON.parse( aqua.options.testInfo );
 
   // handling messages from sims
-  window.addEventListener( 'message', evt => {
+  window.addEventListener( 'message', async evt => {
     if ( typeof evt.data !== 'string' ) {
       return;
     }
@@ -61,7 +61,9 @@
 
       // Sent by Joist due to the postMessage* query parameters
       if ( data.type === 'continuous-test-wrapper-error' ) {
-        aqua.simpleFail( `${data.message}\n${data.stack}` );
+
+        const transpiledStacktrace = await window.transpileStacktrace( data.stack );
+        aqua.simpleFail( `${data.message}\n${transpiledStacktrace}` );
       }
       else if ( data.type === 'continuous-test-wrapper-unload' ) {
         aqua.simpleFail( 'Unloaded frame before complete, window.location probably changed' );

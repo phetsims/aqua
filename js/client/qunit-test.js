@@ -55,7 +55,7 @@
   // Supports old tests (which do not know when they are done)
   let id = setTimeout( done, options.duration );
 
-  window.addEventListener( 'message', evt => {
+  window.addEventListener( 'message', async evt => {
     if ( typeof evt.data !== 'string' ) {
       return;
     }
@@ -87,7 +87,9 @@
     }
     else if ( data.type === 'error' ) {
       clearTimeout( id );
-      error = data.message + data.stack;
+
+      const transpiledStacktrace = await window.transpileStacktrace( data.stack );
+      error = data.message + transpiledStacktrace;
       done();
     }
   } );
