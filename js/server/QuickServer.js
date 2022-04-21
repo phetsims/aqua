@@ -24,12 +24,16 @@ const _ = require( 'lodash' ); // eslint-disable-line
 const path = require( 'path' );
 const url = require( 'url' );
 const winston = require( 'winston' );
+const sendSlackMessage = require( './sendSlackMessage' );
 
 // Headers that we'll include in all server replies
 const jsonHeaders = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*'
 };
+
+// For now, provide an initial message every time, so treat it as broken when it starts
+let lastBroken = false;
 
 class QuickServer {
   constructor( rootDir = path.normalize( `${__dirname}/../../../` ) ) {
@@ -175,6 +179,43 @@ class QuickServer {
             shas: shas,
             timestamp: timestamp
           };
+
+          try {
+            const broken = !this.reportState.lint.passed ||
+                           !this.reportState.tsc.passed ||
+                           !this.reportState.transpile.passed ||
+                           !this.reportState.simFuzz.passed ||
+                           !this.reportState.studioFuzz.passed;
+
+            if ( lastBroken !== broken ) {
+
+              if ( broken ) {
+                let message = 'Quick CT failing';
+
+                const check = ( result, name ) => {
+                  if ( !result.passed ) {
+                    message += `\n${name}:\n\`\`\`\n${result.message}\n\`\`\`\n`;
+                  }
+                };
+
+                check( this.reportState.lint, 'lint' );
+                check( this.reportState.tsc, 'tsc' );
+                check( this.reportState.transpile, 'transpile' );
+                check( this.reportState.simFuzz, 'simFuzz' );
+                check( this.reportState.studioFuzz, 'studioFuzz' );
+
+                await sendSlackMessage( message );
+              }
+              else {
+                await sendSlackMessage( 'Quick CT passing' );
+              }
+
+              lastBroken = broken;
+            }
+          }
+          catch( e ) {
+            winston.info( `Slack error: ${e}` );
+          }
         }
       }
       catch( e ) {
