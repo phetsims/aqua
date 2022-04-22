@@ -190,6 +190,7 @@ class QuickServer {
             if ( lastBroken !== broken ) {
 
               if ( broken ) {
+                winston.info( 'sending broken CT message' );
                 let message = 'Quick CT failing';
 
                 const check = ( result, name ) => {
@@ -207,6 +208,7 @@ class QuickServer {
                 await sendSlackMessage( message );
               }
               else {
+                winston.info( 'sending passing CT message' );
                 await sendSlackMessage( 'Quick CT passing' );
               }
 
