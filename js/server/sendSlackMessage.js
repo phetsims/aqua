@@ -13,16 +13,17 @@ const { App } = require( '@slack/bolt' ); // eslint-disable-line
 let app;
 
 module.exports = async messageText => {
+  // Lazily initialized so we don't force the App creation when this file is required
   if ( !app ) {
     app = new App( {
       token: buildLocal.slackBotToken,
       signingSecret: buildLocal.slackSigningSecret
     } );
-
-    await app.client.chat.postMessage( {
-      // dev-public chat ID
-      channel: 'C6HPE0J91',
-      text: messageText
-    } );
   }
+
+  await app.client.chat.postMessage( {
+    // dev-public chat ID
+    channel: 'C6HPE0J91',
+    text: messageText
+  } );
 };
