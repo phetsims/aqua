@@ -22,8 +22,8 @@ module.exports = async messageText => {
   }
 
   await app.client.chat.postMessage( {
-    // dev-public chat ID
-    channel: 'C6HPE0J91',
+    // #continuous-testing chat ID
+    channel: 'C03D6JMPAHF',
     text: messageText
   } );
 };
