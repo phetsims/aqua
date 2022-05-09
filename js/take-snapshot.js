@@ -9,6 +9,10 @@
 
 
 const options = QueryStringMachine.getAll( {
+  id: {
+    type: 'number',
+    defaultValue: 0
+  },
   url: {
     type: 'string',
     defaultValue: '../../molecule-shapes/molecule-shapes_en.html'
@@ -195,6 +199,7 @@ function handleFrame() {
 
 
       ( window.parent !== window ) && window.parent.postMessage( JSON.stringify( {
+        id: options.id,
         type: 'frameEmitted',
         number: count - 1,
         screenshot: {
@@ -212,6 +217,7 @@ function handleFrame() {
         const fullHash = hash( frameHashes );
 
         ( window.parent !== window ) && window.parent.postMessage( JSON.stringify( {
+          id: options.id,
           type: 'snapshot',
           hash: fullHash,
           url: window.location.href
@@ -236,6 +242,7 @@ window.addEventListener( 'error', a => {
     stack = a.error.stack;
   }
   ( window.parent !== window ) && window.parent.postMessage( JSON.stringify( {
+    id: options.id,
     type: 'error',
     message: message,
     stack: stack
@@ -283,6 +290,7 @@ window.addEventListener( 'message', evt => {
     loaded = true;
   }
   else if ( data.type === 'error' ) {
+    evt.data.id = options.id;
     window.parent && window.parent.postMessage( evt.data );
   }
 } );

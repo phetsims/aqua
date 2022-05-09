@@ -22,7 +22,6 @@
     return context.getImageData( 0, 0, width, height );
   }
 
-
   function dataToCanvas( data, width, height ) {
     const canvas = document.createElement( 'canvas' );
     const context = canvas.getContext( '2d' );
