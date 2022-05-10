@@ -328,10 +328,10 @@ type Frame = {
         else {
           const hash = snapshots[ 0 ].hashProperty.value;
           if ( _.every( snapshots, snapshot => snapshot.hashProperty.value === hash ) ) {
-            runnableText.fill = '#6f6';
+            runnableText.fill = '#0b0';
           }
           else {
-            runnableText.fill = '#f66';
+            runnableText.fill = '#b00';
 
             runnableText.cursor = 'pointer';
             runnableText.addInputListener( new FireListener( {
