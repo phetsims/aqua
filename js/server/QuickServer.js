@@ -109,7 +109,7 @@ class QuickServer {
           }
 
           winston.info( 'QuickServer: tsc' );
-          const tscResult = await execute( '../../node_modules/typescript/bin/tsc', [ '-b' ], `${this.rootDir}/chipper/tsconfig/all`, { errors: 'resolve' } );
+          const tscResult = await execute( '../../node_modules/typescript/bin/tsc', [], `${this.rootDir}/chipper/tsconfig/all`, { errors: 'resolve' } );
 
           winston.info( 'QuickServer: transpiling' );
           const transpileResult = await execute( 'node', [ 'js/scripts/transpile.js' ], `${this.rootDir}/chipper`, { errors: 'resolve' } );
