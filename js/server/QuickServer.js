@@ -137,7 +137,7 @@ class QuickServer {
           let studioFuzz = null;
           try {
             await withServer( async port => {
-              const url = `http://localhost:${port}/studio/index.html?sim=states-of-matter&phetioDebug&phetioElementsDisplay=all&fuzz`;
+              const url = `http://localhost:${port}/studio/index.html?sim=states-of-matter&phetioElementsDisplay=all&fuzz`;
               const error = await puppeteerLoad( url, {
                 waitAfterLoad: 10000,
                 allowedTimeToLoad: 120000,
