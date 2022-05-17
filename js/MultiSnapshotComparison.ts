@@ -279,6 +279,7 @@ type Frame = {
     xAlign: 'left',
     margin: 2
   } );
+  const gridChildren = [];
   scene.addChild( new GridBackgroundNode( gridBox.constraint, {
     createCellBackground: ( cell: GridCell ) => {
       return Rectangle.bounds( cell.lastAvailableBounds, {
@@ -291,7 +292,7 @@ type Frame = {
   let y = 0;
 
   columns.forEach( column => {
-    gridBox.addChild( new Text( `Port ${column.port}`, {
+    gridChildren.push( new Text( `Port ${column.port}`, {
       font: new Font( { size: 12, weight: 'bold' } ),
       layoutOptions: { x: column.index + 1, y: y, xAlign: 'center' }
     } ) );
@@ -299,7 +300,7 @@ type Frame = {
   y++;
 
   columns.forEach( column => {
-    gridBox.addChild( new DOM( column.iframe, {
+    gridChildren.push( new DOM( column.iframe, {
       layoutOptions: { x: column.index + 1, y: y }
     } ) );
   } );
@@ -314,7 +315,7 @@ type Frame = {
       layoutOptions: { x: 0, y: y },
       opacity: unreliableSims.includes( runnable ) ? 0.2 : 1
     } );
-    gridBox.addChild( runnableText );
+    gridChildren.push( runnableText );
 
     Property.multilink( _.flatten( columns.map( column => {
       const snapshot = column.getSnapshot( runnable );
@@ -365,7 +366,7 @@ type Frame = {
                     }
                   }
 
-                  gridBox.addChild( new FlowBox( {
+                  gridChildren.push( new FlowBox( {
                     orientation: 'horizontal',
                     children: diffImages,
                     spacing: 5,
@@ -402,7 +403,7 @@ type Frame = {
         frameText.fill = hasErrored ? '#f00' : '#bbb';
       } );
 
-      gridBox.addChild( new FlowBox( {
+      gridChildren.push( new FlowBox( {
         orientation: 'horizontal',
         spacing: 20,
         children: [
@@ -413,6 +414,8 @@ type Frame = {
     } );
     y++;
   } );
+
+  gridBox.children = gridChildren;
 
   window.addEventListener( 'message', evt => {
     if ( typeof evt.data !== 'string' ) {
