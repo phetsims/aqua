@@ -279,7 +279,7 @@ type Frame = {
     xAlign: 'left',
     margin: 2
   } );
-  const gridChildren = [];
+  const gridChildren: Node[] = [];
   scene.addChild( new GridBackgroundNode( gridBox.constraint, {
     createCellBackground: ( cell: GridCell ) => {
       return Rectangle.bounds( cell.lastAvailableBounds, {
@@ -348,6 +348,7 @@ type Frame = {
                   return image;
                 };
 
+                let index = 0;
                 for ( let i = 0; i < firstFrames.length; i++ ) {
                   const frame = snapshots[ 0 ].frames[ i ];
                   const diffImages = [];
@@ -357,6 +358,7 @@ type Frame = {
 
                     const data = await compareImages( frame.screenshot.url, otherFrame.screenshot.url, options.simWidth, options.simHeight );
 
+                    console.log( data );
                     if ( data ) {
                       if ( diffImages.length === 0 ) {
                         diffImages.push( createImageNode( data.a ) );
@@ -370,9 +372,10 @@ type Frame = {
                     orientation: 'horizontal',
                     children: diffImages,
                     spacing: 5,
-                    layoutOptions: { x: snapshots.length + 1, y: runnableYMap[ runnable ] }
+                    layoutOptions: { x: snapshots.length + 1 + index++, y: runnableYMap[ runnable ] }
                   } ) );
                 }
+                gridBox.children = gridChildren;
               }
             } ) );
           }
