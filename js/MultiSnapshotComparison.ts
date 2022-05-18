@@ -26,6 +26,9 @@ type Frame = {
   const activeRunnablesResponse = await fetch( '../../perennial/data/active-runnables' );
   const activeRunnables = ( await activeRunnablesResponse.text() ).trim().replace( /\r/g, '' ).split( '\n' );
 
+  const activePhetIOResponse = await fetch( '../../perennial/data/phet-io' );
+  const activePhetIO = ( await activePhetIOResponse.text() ).trim().replace( /\r/g, '' ).split( '\n' );
+
   const unreliableSims = [
     // NOTE: add sims here that are constantly failing
   ];
@@ -58,10 +61,9 @@ type Frame = {
       type: 'number',
       defaultValue: 768 / 4
     },
-    // Note: always assumed to be something?
-    simQueryParameters: {
+    additionalSimQueryParameters: {
       type: 'string',
-      defaultValue: 'brand=phet&ea'
+      defaultValue: ''
     },
     numFrames: {
       type: 'number',
@@ -81,9 +83,15 @@ type Frame = {
     `simSeed=${encodeURIComponent( options.simSeed )
     }&simWidth=${encodeURIComponent( options.simWidth )
     }&simHeight=${encodeURIComponent( options.simHeight )
-    }&simQueryParameters=${encodeURIComponent( options.simQueryParameters )
     }&numFrames=${encodeURIComponent( options.numFrames )
     }&compareDescription=${encodeURIComponent( options.compareDescription )}`;
+
+  const rows: { runnable: string, brand: string }[] = _.flatten( options.runnables.map( ( runnable: string ) => {
+    return [
+      { runnable: runnable, brand: 'phet' },
+      ...( activePhetIO.includes( runnable ) ? [ { runnable: runnable, brand: 'phet-io' } ] : [] )
+    ];
+  } ) );
 
   const loadImage = ( url: string ): Promise<HTMLImageElement> => {
     return new Promise<HTMLImageElement>( ( resolve, reject ) => {
@@ -174,6 +182,7 @@ type Frame = {
   class Snapshot {
 
     readonly runnable: string;
+    readonly brand: string;
     readonly frames: Frame[] = [];
     readonly frameCountProperty: Property<number>;
     readonly hashProperty: Property<string | null>;
@@ -181,11 +190,12 @@ type Frame = {
     readonly isCompleteProperty: Property<boolean>;
     readonly column: Column;
 
-    constructor( runnable: string, column: Column ) {
+    constructor( runnable: string, brand: string, column: Column ) {
       this.runnable = runnable;
+      this.brand = brand;
       this.column = column;
       this.frameCountProperty = new NumberProperty( 0 );
-      this.hashProperty = new Property( null );
+      this.hashProperty = new Property<string | null >( null );
       this.hasErroredProperty = new BooleanProperty( false );
       this.isCompleteProperty = new BooleanProperty( false );
     }
@@ -218,7 +228,8 @@ type Frame = {
     constructor( url: string, index: number ) {
       this.url = url;
       this.index = index;
-      this.snapshots = options.runnables.map( runnable => new Snapshot( runnable, this ) );
+      this.currentSnapshot = null;
+      this.snapshots = rows.map( row => new Snapshot( row.runnable, row.brand, this ) );
       this.queue = this.snapshots.slice();
 
       this.iframe = document.createElement( 'iframe' );
@@ -229,9 +240,12 @@ type Frame = {
       this.iframe.style.position = 'absolute';
     }
 
-    load( runnable ): void {
-      this.currentSnapshot = this.getSnapshot( runnable );
-      this.iframe.src = `${this.url}/aqua/html/take-snapshot.html?id=${this.index}&${childQueryParams}&url=${encodeURIComponent( `../../${runnable}/${runnable}_en.html` )}`;
+    load( snapshot: Snapshot ): void {
+      this.currentSnapshot = snapshot;
+
+      const simQueryParameters = encodeURIComponent( ( snapshot.brand === 'phet-io' ? 'brand=phet-io&ea&phetioStandalone' : 'brand=phet&ea' ) + options.additionalSimQueryParameters );
+      const url = encodeURIComponent( `../../${snapshot.runnable}/${snapshot.runnable}_en.html` );
+      this.iframe.src = `${this.url}/aqua/html/take-snapshot.html?id=${this.index}&${childQueryParams}&url=${url}&simQueryParameters=${simQueryParameters}`;
     }
 
     getSnapshot( runnable: string ): Snapshot {
@@ -239,25 +253,25 @@ type Frame = {
     }
 
     addFrame( frame: Frame ): void {
-      this.currentSnapshot.addFrame( frame );
+      this.currentSnapshot!.addFrame( frame );
     }
 
     addHash( hash: string ): void {
-      this.currentSnapshot.addHash( hash );
+      this.currentSnapshot!.addHash( hash );
       this.nextRunnable();
     }
 
     addError(): void {
-      this.currentSnapshot.addError();
+      this.currentSnapshot!.addError();
       this.nextRunnable();
     }
 
     nextRunnable(): void {
       if ( this.queue.length ) {
-        const snapshot = this.queue.shift();
+        const snapshot = this.queue.shift()!;
         this.currentSnapshot = snapshot;
 
-        this.load( snapshot.runnable );
+        this.load( snapshot );
       }
     }
   }
@@ -306,10 +320,12 @@ type Frame = {
   y++;
 
   const runnableYMap = {};
-  options.runnables.forEach( ( runnable, i ) => {
+  rows.forEach( ( row, i ) => {
+    const runnable = row.runnable;
+    const brand = row.brand;
     runnableYMap[ runnable ] = y;
 
-    const runnableText = new Text( runnable, {
+    const runnableText = new Text( runnable + ( brand !== 'phet' ? ` (${brand})` : '' ), {
       font: new Font( { size: 12 } ),
       layoutOptions: { x: 0, y: y },
       opacity: unreliableSims.includes( runnable ) ? 0.2 : 1
