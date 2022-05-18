@@ -69,6 +69,10 @@ type Frame = {
       type: 'number',
       defaultValue: 10
     },
+    copies: {
+      type: 'number',
+      defaultValue: 1
+    },
     showTime: {
       type: 'boolean',
       defaultValue: true
@@ -216,21 +220,20 @@ type Frame = {
     }
   }
 
-  class Column {
+  const snapshotterMap = new Map<number, Snapshotter>();
 
+  class Snapshotter {
     readonly url: string;
     readonly index: number;
-    readonly snapshots: Snapshot[];
     readonly iframe: HTMLIFrameElement;
     currentSnapshot: Snapshot | null;
-    queue: Snapshot[];
+    readonly nextRunnable: ( snapshotter: Snapshotter ) => void;
 
-    constructor( url: string, index: number ) {
+    constructor( url: string, index: number, nextRunnable: ( snapshotter: Snapshotter ) => void ) {
       this.url = url;
       this.index = index;
       this.currentSnapshot = null;
-      this.snapshots = rows.map( row => new Snapshot( row.runnable, row.brand, this ) );
-      this.queue = this.snapshots.slice();
+      this.nextRunnable = nextRunnable;
 
       this.iframe = document.createElement( 'iframe' );
       this.iframe.setAttribute( 'frameborder', '0' );
@@ -238,6 +241,22 @@ type Frame = {
       this.iframe.setAttribute( 'width', options.simWidth );
       this.iframe.setAttribute( 'height', options.simHeight );
       this.iframe.style.position = 'absolute';
+
+      snapshotterMap.set( index, this );
+    }
+
+    addFrame( frame: Frame ): void {
+      this.currentSnapshot!.addFrame( frame );
+    }
+
+    addHash( hash: string ): void {
+      this.currentSnapshot!.addHash( hash );
+      this.nextRunnable( this );
+    }
+
+    addError(): void {
+      this.currentSnapshot!.addError();
+      this.nextRunnable( this );
     }
 
     load( snapshot: Snapshot ): void {
@@ -247,36 +266,41 @@ type Frame = {
       const url = encodeURIComponent( `../../${snapshot.runnable}/${snapshot.runnable}_en.html` );
       this.iframe.src = `${this.url}/aqua/html/take-snapshot.html?id=${this.index}&${childQueryParams}&url=${url}&simQueryParameters=${simQueryParameters}`;
     }
+  }
+
+  class Column {
+    readonly url: string;
+    readonly index: number;
+    readonly snapshots: Snapshot[];
+    queue: Snapshot[];
+    readonly snapshotters: Snapshotter[];
+
+    constructor( url: string, index: number ) {
+      this.url = url;
+      this.index = index;
+      this.snapshots = rows.map( row => new Snapshot( row.runnable, row.brand, this ) );
+      this.queue = this.snapshots.slice();
+      this.snapshotters = _.range( 0, options.copies ).map( i => new Snapshotter( url, index + i * 100, this.nextRunnable.bind( this ) ) );
+    }
 
     getSnapshot( runnable: string ): Snapshot {
       return _.find( this.snapshots, snapshot => snapshot.runnable === runnable )!;
     }
 
-    addFrame( frame: Frame ): void {
-      this.currentSnapshot!.addFrame( frame );
-    }
-
-    addHash( hash: string ): void {
-      this.currentSnapshot!.addHash( hash );
-      this.nextRunnable();
-    }
-
-    addError(): void {
-      this.currentSnapshot!.addError();
-      this.nextRunnable();
-    }
-
-    nextRunnable(): void {
+    nextRunnable( snapshotter: Snapshotter ): void {
       if ( this.queue.length ) {
         const snapshot = this.queue.shift()!;
-        this.currentSnapshot = snapshot;
 
-        this.load( snapshot );
+        snapshotter.load( snapshot );
       }
+    }
+
+    start(): void {
+      this.snapshotters.forEach( snapshotter => this.nextRunnable( snapshotter ) );
     }
   }
 
-  const columns = options.urls.map( ( url, i ) => new Column( url, i ) );
+  const columns: Column[] = options.urls.map( ( url, i ) => new Column( url, i ) );
 
   const scene = new Node();
   const display = new Display( scene, {
@@ -304,20 +328,22 @@ type Frame = {
 
   let y = 0;
 
-  columns.forEach( column => {
+  columns.forEach( ( column, i ) => {
     gridChildren.push( new Text( `${column.url}`, {
       font: new Font( { size: 12, weight: 'bold' } ),
-      layoutOptions: { x: column.index + 1, y: y, xAlign: 'center' }
+      layoutOptions: { x: i + 1, y: y, xAlign: 'center' }
     } ) );
   } );
   y++;
 
-  columns.forEach( column => {
-    gridChildren.push( new DOM( column.iframe, {
-      layoutOptions: { x: column.index + 1, y: y }
-    } ) );
+  columns.forEach( ( column, i ) => {
+    column.snapshotters.forEach( ( snapshotter, j ) => {
+      gridChildren.push( new DOM( snapshotter.iframe, {
+        layoutOptions: { x: i + 1, y: y + j }
+      } ) );
+    } );
   } );
-  y++;
+  y += options.copies;
 
   const runnableYMap = {};
   rows.forEach( ( row, i ) => {
@@ -401,7 +427,7 @@ type Frame = {
       }
     } );
 
-    columns.forEach( column => {
+    columns.forEach( ( column, j ) => {
       const snapshot = column.snapshots[ i ];
 
       const hashText = new Text( '-', {
@@ -427,7 +453,7 @@ type Frame = {
         children: [
           frameText, hashText
         ],
-        layoutOptions: { x: column.index + 1, y: y, xAlign: 'center' }
+        layoutOptions: { x: j + 1, y: y, xAlign: 'center' }
       } ) );
     } );
     y++;
@@ -444,181 +470,23 @@ type Frame = {
 
     if ( data.type === 'frameEmitted' ) {
       // number, screenshot: { url, hash }
-      const column = columns[ data.id ];
-      column.addFrame( data );
+      snapshotterMap.get( data.id )!.addFrame( data );
     }
     else if ( data.type === 'snapshot' ) {
       // basically hash
-      const column = columns[ data.id ];
-      column.addHash( data.hash );
-      // const sim = currentSim;
-      // const snapshot = currentSnapshot;
-      //
-      // snapshot[ sim ].hash = data.hash;
-      // const td = document.createElement( 'td' );
-      // td.textContent = data.hash.slice( 0, 6 ) + ( options.showTime ? ` ${Date.now() - globalStartTime}` : '' );
-      // if ( snapshots.length > 1 && data.hash !== snapshots[ snapshots.length - 2 ][ sim ].hash ) {
-      //   td.style.fontWeight = 'bold';
-      //   td.style.cursor = 'pointer';
-      //   td.addEventListener( 'click', () => {
-      //     const newFrames = snapshot[ sim ].frames;
-      //     const oldFrames = snapshots[ snapshots.indexOf( snapshot ) - 1 ][ sim ].frames;
-      //
-      //     let nextIndex = 0;
-      //
-      //     function compareNextFrame() {
-      //       const index = nextIndex++;
-      //       if ( index < newFrames.length && index < oldFrames.length ) {
-      //         const oldFrame = oldFrames[ index ];
-      //         const newFrame = newFrames[ index ];
-      //
-      //         const dataFrameIndex = `Data Frame ${index}`;
-      //
-      //         // support comparing the next data frame after this frame's screenshots have loaded (only when different)
-      //         let compareNextFrameCalledFromScreenshot = false;
-      //
-      //         // If this screenshot hash is different, then compare and display the difference in screenshots.
-      //         if ( oldFrame.screenshot.hash !== newFrame.screenshot.hash ) {
-      //           compareNextFrameCalledFromScreenshot = true;
-      //           window.compareImages( oldFrames[ index ].screenshot.url, newFrames[ index ].screenshot.url,
-      //             dataFrameIndex, options.simWidth, options.simHeight, comparisonDataDiv => {
-      //               comparisonDataDiv && comparisonDiv.appendChild( comparisonDataDiv );
-      //               compareNextFrame();
-      //             } );
-      //         }
-      //
-      //         // Compare description via PDOM html
-      //         if ( options.compareDescription && oldFrame.pdom.hash !== newFrame.pdom.hash ) {
-      //           comparePDOM( oldFrame.pdom.html, newFrame.pdom.html, dataFrameIndex );
-      //
-      //         }
-      //         // Compare description utterances
-      //         if ( options.compareDescription && oldFrame.descriptionAlert.hash !== newFrame.descriptionAlert.hash ) {
-      //           compareDescriptionAlerts( oldFrame.descriptionAlert.utterances, newFrame.descriptionAlert.utterances, `${dataFrameIndex}, Description` );
-      //         }
-      //
-      //         // Compare voicing utterances
-      //         if ( options.compareDescription && oldFrame.voicing.hash !== newFrame.voicing.hash ) {
-      //           compareDescriptionAlerts( oldFrame.voicing.utterances, newFrame.voicing.utterances, `${dataFrameIndex}, Voicing` );
-      //         }
-      //
-      //         // Kick off the next iteration if we aren't waiting for images to load
-      //         !compareNextFrameCalledFromScreenshot && compareNextFrame();
-      //       }
-      //     }
-      //
-      //     compareNextFrame();
-      //   } );
-      // }
+      snapshotterMap.get( data.id )!.addHash( data.hash );
     }
     else if ( data.type === 'error' ) {
       console.log( 'data' );
-      const column = columns[ data.id ];
-      column.addError();
+      snapshotterMap.get( data.id )!.addError();
     }
   } );
 
   // Kick off initial
-  columns.forEach( column => column.nextRunnable() );
+  columns.forEach( column => column.start() );
 
   display.updateOnRequestAnimationFrame( dt => {
     display.width = Math.ceil( Math.max( window.innerWidth, scene.right ) );
     display.height = Math.ceil( Math.max( window.innerHeight, scene.bottom ) );
   } );
 } )();
-
-// function setup( simNames ) {
-//   const snapshots = [];
-//   window.snapshots = snapshots; // For debugging etc.
-//   let queue = [];
-//   let currentSnapshot;
-//   let currentSim;
-//
-//   const addBR = string => string + '<br/>';
-//
-//   function comparePDOM( oldHTML, newHTML, message ) {
-//     const container = document.createElement( 'div' );
-//     comparisonDiv.appendChild( container );
-//
-//     const diff = document.createElement( 'details' );
-//     const summary = document.createElement( 'summary' );
-//     summary.appendChild( document.createTextNode( `${message}: PDOMs different. Compare these two from webstorm diffing.` ) );
-//     diff.appendChild( summary );
-//     const diffGuts = document.createElement( 'div' );
-//     const oldHTMLP = document.createElement( 'p' );
-//     oldHTMLP.textContent = oldHTML;
-//     const newHTMLP = document.createElement( 'p' );
-//     newHTMLP.textContent = newHTML;
-//     diffGuts.appendChild( oldHTMLP );
-//     diffGuts.appendChild( newHTMLP );
-//
-//     diff.appendChild( diffGuts );
-//     diffGuts.style.fontSize = '4px';
-//
-//     container.appendChild( diff );
-//
-//   }
-//
-//   function compareDescriptionAlerts( oldUtterances, newUtterances, message ) {
-//
-//     const onlyInOld = []; // Will hold all nodes that will be removed.
-//     const onlyInNew = []; // Will hold all nodes that will be "new" children (added)
-//
-//     // Compute what things were added, removed, or stay.
-//     window.arrayDifference( oldUtterances, newUtterances, onlyInOld, onlyInNew, [] );
-//
-//     const diff = document.createElement( 'details' );
-//     const summary = document.createElement( 'summary' );
-//     summary.appendChild( document.createTextNode( `${message}: Utterances different. ${oldUtterances.length} vs ${newUtterances.length} utterances` ) );
-//     diff.appendChild( summary );
-//     const diffGuts = document.createElement( 'div' );
-//     diff.appendChild( diffGuts );
-//     const oldHTMLP = document.createElement( 'p' );
-//     oldHTMLP.innerHTML = `Only in old:<br/> ${onlyInOld.map( addBR )}`;
-//     const newHTMLP = document.createElement( 'p' );
-//     newHTMLP.innerHTML = `Only in new:<br/> ${onlyInNew.map( addBR )}`;
-//     diffGuts.appendChild( oldHTMLP );
-//     diffGuts.appendChild( newHTMLP );
-//
-//     comparisonDiv.appendChild( diff );
-//
-//   }
-//
-//   const snapshotButton = document.createElement( 'button' );
-//   snapshotButton.textContent = 'Start Snapshot';
-//   snapshotButton.style.display = 'block';
-//   document.body.appendChild( snapshotButton );
-//
-//   const comparisonDiv = document.createElement( 'div' );
-//   document.body.appendChild( comparisonDiv );
-//
-//   const rowMap = {};
-//   const table = document.createElement( 'table' );
-//   options.runnables.forEach( sim => {
-//     const row = document.createElement( 'tr' );
-//     rowMap[ sim ] = row;
-//     table.appendChild( row );
-//     const td = document.createElement( 'td' );
-//     td.textContent = sim;
-//     row.appendChild( td );
-//   } );
-//   document.body.appendChild( table );
-//
-//   function nextSim() {
-//     if ( queue.length ) {
-//       loadSim( queue.shift() );
-//     }
-//   }
-//
-//   let globalStartTime;
-//
-//   function snapshot() {
-//     globalStartTime = Date.now();
-//     currentSnapshot = {};
-//     snapshots.push( currentSnapshot );
-//     queue = queue.concat( options.runnables ); // TODO: this should likely clear and reset, but since currentSnapshot is reset, everything left in the queue will be appended to the new snapshot. https://github.com/phetrunnables/aqua/issues/126
-//     nextSim();
-//   }
-//
-//   snapshotButton.addEventListener( 'click', snapshot );
-//
