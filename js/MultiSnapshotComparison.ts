@@ -1,7 +1,7 @@
 // Copyright 2022, University of Colorado Boulder
 
 /**
- * Snapshot comparison across multiple running ports
+ * Snapshot comparison across multiple running urls
  *
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
@@ -32,13 +32,12 @@ type Frame = {
 
   const options = QueryStringMachine.getAll( {
 
-    ports: {
+    urls: {
       type: 'array',
       elementSchema: {
-        type: 'number',
-        isValidValue: Number.isInteger
+        type: 'string'
       },
-      defaultValue: [ 80, 8080 ],
+      defaultValue: [ 'http://localhost', 'http://localhost:8080' ],
       public: true
     },
 
@@ -209,15 +208,15 @@ type Frame = {
 
   class Column {
 
-    readonly port: number;
+    readonly url: string;
     readonly index: number;
     readonly snapshots: Snapshot[];
     readonly iframe: HTMLIFrameElement;
     currentSnapshot: Snapshot | null;
     queue: Snapshot[];
 
-    constructor( port: number, index: number ) {
-      this.port = port;
+    constructor( url: string, index: number ) {
+      this.url = url;
       this.index = index;
       this.snapshots = options.runnables.map( runnable => new Snapshot( runnable, this ) );
       this.queue = this.snapshots.slice();
@@ -232,7 +231,7 @@ type Frame = {
 
     load( runnable ): void {
       this.currentSnapshot = this.getSnapshot( runnable );
-      this.iframe.src = `http://localhost:${this.port}/aqua/html/take-snapshot.html?id=${this.index}&${childQueryParams}&url=${encodeURIComponent( `../../${runnable}/${runnable}_en.html` )}`;
+      this.iframe.src = `${this.url}/aqua/html/take-snapshot.html?id=${this.index}&${childQueryParams}&url=${encodeURIComponent( `../../${runnable}/${runnable}_en.html` )}`;
     }
 
     getSnapshot( runnable: string ): Snapshot {
@@ -263,7 +262,7 @@ type Frame = {
     }
   }
 
-  const columns = options.ports.map( ( port, i ) => new Column( port, i ) );
+  const columns = options.urls.map( ( url, i ) => new Column( url, i ) );
 
   const scene = new Node();
   const display = new Display( scene, {
@@ -292,7 +291,7 @@ type Frame = {
   let y = 0;
 
   columns.forEach( column => {
-    gridChildren.push( new Text( `Port ${column.port}`, {
+    gridChildren.push( new Text( `${column.url}`, {
       font: new Font( { size: 12, weight: 'bold' } ),
       layoutOptions: { x: column.index + 1, y: y, xAlign: 'center' }
     } ) );
