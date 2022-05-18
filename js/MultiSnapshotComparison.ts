@@ -372,7 +372,7 @@ type Frame = {
                     orientation: 'horizontal',
                     children: diffImages,
                     spacing: 5,
-                    layoutOptions: { x: snapshots.length + 1 + index++, y: runnableYMap[ runnable ] }
+                    layoutOptions: { x: snapshots.length + 1 + index++, y: runnableYMap[ runnable ], xAlign: 'left' }
                   } ) );
                 }
                 gridBox.children = gridChildren;
