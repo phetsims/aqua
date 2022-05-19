@@ -1,4 +1,4 @@
-// Copyright 2017-2022, University of Colorado Boulder
+// Copyright 2022, University of Colorado Boulder
 
 /**
  * Runs a snapshot for a specific sim (url) with a given seed. It will send a number of events, and will record
@@ -7,6 +7,7 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
+import Random from '../../dot/js/Random.js';
 
 const options = QueryStringMachine.getAll( {
   id: {
@@ -33,14 +34,6 @@ const options = QueryStringMachine.getAll( {
   simQueryParameters: {
     type: 'string',
     defaultValue: 'brand=phet&ea'
-  },
-  numFrames: {
-    type: 'number',
-    defaultValue: 100
-  },
-  compareDescription: {
-    type: 'boolean',
-    defaultValue: true
   }
 } );
 
@@ -58,7 +51,7 @@ let isMouseDown = false;
 let mouseLastMoved = false;
 let mouseX = 0;
 let mouseY = 0;
-let random = null;
+let random: Random = null as unknown as Random; // ugly ugly ugly
 
 function sendStep( dt ) {
   iframe.contentWindow.phet.joist.sim.stepSimulation( dt );
@@ -78,10 +71,12 @@ function sendMouseToggleEvent() {
   input.validatePointers();
 
   if ( isMouseDown ) {
+    console.log( 'mouseUp' );
     input.mouseUp( new iframe.contentWindow.phet.dot.Vector2( mouseX, mouseY ), domEvent );
     isMouseDown = false;
   }
   else {
+    console.log( 'mouseDown' );
     input.mouseDown( null, new iframe.contentWindow.phet.dot.Vector2( mouseX, mouseY ), domEvent );
     isMouseDown = true;
   }
@@ -105,25 +100,10 @@ function sendMouseMoveEvent() {
     null );
 
   input.validatePointers();
+  console.log( 'mouseMove' );
   input.mouseMove( new iframe.contentWindow.phet.dot.Vector2( mouseX, mouseY ), domEvent );
 
   mouseLastMoved = true;
-}
-
-function sendFuzz( averageEventQuantity ) {
-  let chance;
-
-  // run a variable number of events, with a certain chance of bailing out (so no events are possible)
-  // models a geometric distribution of events
-  // See https://github.com/phetsims/joist/issues/343 for notes on the distribution.
-  while ( ( chance = random.nextDouble() ) < 1 - 1 / ( averageEventQuantity + 1 ) ) {
-    if ( chance < ( mouseLastMoved ? 0.7 : 0.4 ) ) {
-      sendMouseToggleEvent();
-    }
-    else {
-      sendMouseMoveEvent();
-    }
-  }
 }
 
 function getScreenshot( callback ) {
@@ -137,27 +117,25 @@ function hash( str ) {
 }
 
 let count = 0;
-let frameHashes = '';
 let loaded = false;
 let received = true;
 
 function handleFrame() {
-  setTimeout( handleFrame, 0 );
-
-  if ( loaded && received && count < options.numFrames ) {
+  if ( loaded && received ) {
     count++;
     received = false;
 
-    for ( let i = 0; i < 10; i++ ) {
-      sendFuzz( 100 );
-      sendStep( random.nextDouble() * 0.5 + 0.016 );
+    if ( random.nextDouble() < ( mouseLastMoved ? 0.7 : 0.4 ) ) {
+      sendMouseToggleEvent();
     }
+    else {
+      sendMouseMoveEvent();
+    }
+    sendStep( random.nextDouble() * 0.5 + 0.016 );
 
     getScreenshot( screenshotURL => {
       const hashedScreenshotURL = hash( screenshotURL );
       console.log( count, hashedScreenshotURL );
-
-      let concatHash = hashedScreenshotURL;
 
       const pdomData = {
         html: null,
@@ -178,14 +156,12 @@ function handleFrame() {
         pdomData.html = pdomHTML;
         const hashedPDOMHTML = hash( pdomHTML );
         pdomData.hash = hashedPDOMHTML;
-        concatHash += hashedPDOMHTML;
 
         const descriptionUtteranceQueue = iframe.contentWindow.phet.joist.display.descriptionUtteranceQueue.queue;
         const utteranceTexts = descriptionUtteranceQueue.map( utteranceWrapper => utteranceWrapper.utterance.toString() );
         descriptionAlertData.utterances = utteranceTexts;
         const utterancesHash = hash( utteranceTexts + '' );
         descriptionAlertData.hash = utterancesHash;
-        concatHash += utterancesHash;
 
         if ( iframe.contentWindow.phet.scenery.voicingUtteranceQueue ) {
           const voicingUtteranceQueue = iframe.contentWindow.phet.scenery.voicingUtteranceQueue.queue;
@@ -193,7 +169,6 @@ function handleFrame() {
           voicingResponseData.utterances = voicingUtteranceTexts;
           const voicingUtterancesHash = hash( voicingUtteranceTexts + '' );
           voicingResponseData.hash = voicingUtterancesHash;
-          concatHash += voicingUtterancesHash;
         }
       }
 
@@ -212,27 +187,13 @@ function handleFrame() {
       } ), '*' );
 
       received = true;
-      frameHashes += concatHash;
-      if ( count === options.numFrames ) {
-        const fullHash = hash( frameHashes );
-
-        ( window.parent !== window ) && window.parent.postMessage( JSON.stringify( {
-          id: options.id,
-          type: 'snapshot',
-          hash: fullHash,
-          url: window.location.href
-        } ), '*' );
-
-        console.log( fullHash );
-      }
     } );
   }
 }
 
-handleFrame();
-
 // Because of course direct calls to this go through this window object instead.
 window.addEventListener( 'error', a => {
+  console.log( 'local error' );
   let message = '';
   let stack = '';
   if ( a && a.message ) {
@@ -272,25 +233,35 @@ window.addEventListener( 'message', evt => {
     iframe.contentWindow.saveAs = function() {};
 
     // We need to create an object with the iframe's Object.prototype as its prototype to pass our assertion checks
-    const options = iframe.contentWindow.Object.create( iframe.contentWindow.Object.prototype, {
+    const contentOptions = iframe.contentWindow.Object.create( iframe.contentWindow.Object.prototype, {
       seed: {
         value: 2.3,
         enumerable: true
       }
     } );
-    console.log( options );
-    random = new iframe.contentWindow.phet.dot.Random( options );
+    console.log( contentOptions );
+    random = new iframe.contentWindow.phet.dot.Random( contentOptions );
 
     iframe.contentWindow.phet.joist.launchSimulation();
     iframe.contentWindow.phet.joist.display.interactive = false;
+
+    data.id = options.id;
+    window.parent && window.parent !== window && window.parent.postMessage( JSON.stringify( data ), '*' );
   }
   else if ( data.type === 'load' ) {
     console.log( 'loaded' );
     sendStep( 0.016 );
     loaded = true;
+    data.id = options.id;
+    window.parent && window.parent !== window && window.parent.postMessage( JSON.stringify( data ), '*' );
   }
   else if ( data.type === 'error' ) {
-    evt.data.id = options.id;
-    window.parent && window.parent.postMessage( evt.data );
+    console.log( 'error' );
+    data.id = options.id;
+    window.parent && window.parent !== window && window.parent.postMessage( JSON.stringify( data ), '*' );
+  }
+  else if ( data.type === 'frame' ) {
+    console.log( 'next frame' );
+    handleFrame();
   }
 } );
