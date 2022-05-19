@@ -35,6 +35,8 @@ type Frame = {
 
   const options = QueryStringMachine.getAll( {
 
+    // The URLs that point to the base git roots that can be browsed. A slash will be added after. Each one will be
+    // represented by a column in the interface
     urls: {
       type: 'array',
       elementSchema: {
@@ -44,15 +46,21 @@ type Frame = {
       public: true
     },
 
+    // If provided, a comma-separated list of runnables to test (useful if you know some that are failing), e.g.
+    // `?runnables=acid-base-solutions,density`
     runnables: {
       type: 'array',
       elementSchema: { type: 'string' },
       defaultValue: activeRunnables
     },
+
+    // Controls the random seed for comparison
     simSeed: {
       type: 'number',
       defaultValue: 4 // Ideal constant taken from https://xkcd.com/221/, DO NOT CHANGE, it's random!
     },
+
+    // Controls the size of the sims (can be used for higher resolution)
     simWidth: {
       type: 'number',
       defaultValue: 1024 / 4
@@ -61,10 +69,14 @@ type Frame = {
       type: 'number',
       defaultValue: 768 / 4
     },
+
+    // Passed to the simulation in addition to brand/ea
     additionalSimQueryParameters: {
       type: 'string',
       defaultValue: ''
     },
+
+    // How many frames should be snapshot per runnable
     numFrames: {
       type: 'number',
       defaultValue: 10
@@ -86,15 +98,6 @@ type Frame = {
     offset: {
       type: 'number',
       defaultValue: 0
-    },
-
-    showTime: {
-      type: 'boolean',
-      defaultValue: true
-    },
-    compareDescription: {
-      type: 'boolean',
-      defaultValue: true
     }
   } );
 
@@ -103,7 +106,7 @@ type Frame = {
     }&simWidth=${encodeURIComponent( options.simWidth )
     }&simHeight=${encodeURIComponent( options.simHeight )
     }&numFrames=${encodeURIComponent( options.numFrames )
-    }&compareDescription=${encodeURIComponent( options.compareDescription )}`;
+    }`;
 
   const rows: { runnable: string, brand: string }[] = _.flatten( options.runnables.map( ( runnable: string ) => {
     return [
