@@ -69,10 +69,25 @@ type Frame = {
       type: 'number',
       defaultValue: 10
     },
+
+    // How many iframes to devote per each column
     copies: {
       type: 'number',
       defaultValue: 1
     },
+
+    // This running instance will only test every `stride` number of rows. Useful to test across multiple browser
+    // windows for performance (e.g. 1: ?stride=3&offset=0 2: ?stride=3&offset=1 2: ?stride=3&offset=2).
+    stride: {
+      type: 'number',
+      defaultValue: 1
+    },
+    // The offset to apply when stride is active, see above.
+    offset: {
+      type: 'number',
+      defaultValue: 0
+    },
+
     showTime: {
       type: 'boolean',
       defaultValue: true
@@ -95,7 +110,7 @@ type Frame = {
       { runnable: runnable, brand: 'phet' },
       ...( activePhetIO.includes( runnable ) ? [ { runnable: runnable, brand: 'phet-io' } ] : [] )
     ];
-  } ) );
+  } ) ).filter( ( item, i ) => i % options.stride === options.offset );
 
   const loadImage = ( url: string ): Promise<HTMLImageElement> => {
     return new Promise<HTMLImageElement>( ( resolve, reject ) => {
