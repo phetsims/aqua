@@ -71,7 +71,10 @@ module.exports = grunt => {
 
       const port = grunt.option( 'port' ) ? Number.parseInt( grunt.option( 'port' ), 10 ) : 45367;
 
-      const server = new QuickServer();
+      const testing = grunt.option( 'testing' );
+      const server = new QuickServer( {
+        isTestMode: testing
+      } );
       server.startServer( port );
       server.startMainLoop();
     }
