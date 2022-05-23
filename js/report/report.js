@@ -9,6 +9,7 @@
 import BooleanProperty from '../../../axon/js/BooleanProperty.js';
 import EnumerationDeprecatedProperty from '../../../axon/js/EnumerationDeprecatedProperty.js';
 import Property from '../../../axon/js/Property.js';
+import Multilink from '../../../axon/js/Multilink.js';
 import EnumerationDeprecated from '../../../phet-core/js/EnumerationDeprecated.js';
 import PhetFont from '../../../scenery-phet/js/PhetFont.js';
 import { Display, DOM, FireListener, HBox, Node, Rectangle, Text, VBox } from '../../../scenery/js/imports.js';
@@ -94,7 +95,7 @@ if ( options.full ) {
     font: constants.interfaceFont,
     cursor: 'pointer'
   } );
-  Property.multilink( [ statusProperty, startupTimestampProperty, lastErrorProperty ], ( status, startupTimestamp, lastError ) => {
+  Multilink.multilink( [ statusProperty, startupTimestampProperty, lastErrorProperty ], ( status, startupTimestamp, lastError ) => {
     if ( startupTimestamp ) {
       statusNode.text = `${lastError.length ? '[ERR] ' : ''}Running since [${new Date( startupTimestamp ).toLocaleString()}], status: ${status}`;
     }
@@ -201,7 +202,7 @@ if ( options.full ) {
     ]
   } );
 
-  Property.multilink( [ reportProperty, expandedReposProperty, sortProperty, filterStringProperty, showAverageTimeProperty, showWeightsProperty ],
+  Multilink.multilink( [ reportProperty, expandedReposProperty, sortProperty, filterStringProperty, showAverageTimeProperty, showWeightsProperty ],
     ( report, expandedRepos, sort, filterString, showAverageTime, showWeights ) => {
       let tests = [];
 

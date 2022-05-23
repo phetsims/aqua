@@ -217,7 +217,7 @@ type Frame = {
   const sendNextFrame0 = () => iframe0.contentWindow!.postMessage( JSON.stringify( { type: 'frame' } ), '*' );
   const sendNextFrame1 = () => iframe1.contentWindow!.postMessage( JSON.stringify( { type: 'frame' } ), '*' );
 
-  Property.multilink( [ frame0Property, frame1Property ], async ( frame0, frame1 ) => {
+  Multilink.multilink( [ frame0Property, frame1Property ], async ( frame0, frame1 ) => {
     if ( frame0 !== null && frame1 !== null ) {
       if ( frame0.screenshot.hash === frame1.screenshot.hash ) {
         frame0LastProperty.value = frame0Property.value;

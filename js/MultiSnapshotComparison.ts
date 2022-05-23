@@ -377,7 +377,7 @@ type Frame = {
     } );
     gridChildren.push( runnableText );
 
-    Property.multilink( _.flatten( columns.map( column => {
+    Multilink.multilink( _.flatten( columns.map( column => {
       const snapshot = column.getSnapshot( runnable );
       return [ snapshot.hasErroredProperty, snapshot.hashProperty, snapshot.isCompleteProperty ];
     } ) ), () => {
