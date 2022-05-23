@@ -1,5 +1,6 @@
 // Copyright 2017-2022, University of Colorado Boulder
-
+// eslint-disable-next-line bad-typescript-text
+// @ts-nocheck
 /**
  * Runs a snapshot for a specific sim (url) with a given seed. It will send a number of events, and will record
  * visual frames the desired number of times (with SHAs) and can send post-messages to communicate the events.

@@ -1,5 +1,6 @@
 // Copyright 2022, University of Colorado Boulder
-
+// eslint-disable-next-line bad-typescript-text
+// @ts-nocheck
 /**
  * Snapshot comparison across multiple running urls
  *
