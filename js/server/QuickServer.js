@@ -36,14 +36,23 @@ const jsonHeaders = {
 let lastBroken = false;
 
 class QuickServer {
-  constructor( rootDir = path.normalize( `${__dirname}/../../../` ) ) {
+  constructor( options ) {
+
+    options = {
+      rootDir: path.normalize( `${__dirname}/../../../` ),
+      isTestMode: false,
+      ...options
+    };
 
     // @public {*}
     this.reportState = {};
 
     // @public {string} - root of your GitHub working copy, relative to the name of the directory that the
     // currently-executing script resides in
-    this.rootDir = rootDir;
+    this.rootDir = options.rootDir;
+
+    // @public {boolean} - whether we are in testing mode. if true, tests are continuously forced to run
+    this.isTestMode = options.isTestMode;
   }
 
   /**
@@ -75,7 +84,7 @@ class QuickServer {
         } ) );
 
         if ( staleRepos.length || forceTests ) {
-          forceTests = false;
+          forceTests = this.isTestMode;
 
           winston.info( `QuickServer: stale repos: ${staleRepos}` );
 
