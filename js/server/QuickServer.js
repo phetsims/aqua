@@ -204,6 +204,7 @@ class QuickServer {
                 check( this.reportState.transpile, 'transpile' );
                 check( this.reportState.simFuzz, 'simFuzz' );
                 check( this.reportState.studioFuzz, 'studioFuzz' );
+                winston.info( message );
 
                 await sendSlackMessage( message );
               }
