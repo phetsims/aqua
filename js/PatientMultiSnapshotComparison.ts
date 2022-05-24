@@ -10,12 +10,11 @@
 // TODO: allow linting (it's not finding common definitions)
 /* eslint-disable */
 
-import BooleanProperty from '../../axon/js/BooleanProperty.js';
-import NumberProperty from '../../axon/js/NumberProperty.js';
+import Multilink from '../../axon/js/Multilink.js';
 import Property from '../../axon/js/Property.js';
 import { combineOptions } from '../../phet-core/js/optionize.js';
 import PhetFont from '../../scenery-phet/js/PhetFont.js';
-import { Color, Display, Image, DOM, FireListener, FlowBox, Font, GridBackgroundNode, GridBox, GridCell, Node, Rectangle, Text, NodeOptions, FlowBoxOptions } from '../../scenery/js/imports.js';
+import { Color, Display, DOM, FireListener, FlowBox, FlowBoxOptions, GridBox, Image, Node, NodeOptions, Text } from '../../scenery/js/imports.js';
 
 type Frame = {
   number: number;
