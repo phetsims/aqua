@@ -69,7 +69,7 @@ alternative). In that case:
 ```sh
 pm2 list # see if it is started, and also starts the pm2 daemon if it wasn't running
 cd /data/share/phet/continuous-testing/aqua
-pm2 start grunt --name=continuous-server -- continuous-server --localCount=8 # starts the process, and adds it to the list seen in pm2 list
+pm2 start grunt --name=continuous-server --time -- continuous-server --localCount=8 # starts the process, and adds it to the list seen in pm2 list
 ```
 
 It may not remember GitHub credentials across reboots also, so if the following error message happens (or similar):
@@ -83,6 +83,14 @@ It may not remember GitHub credentials across reboots also, so if the following 
 then `cd` into a private repo directory, `git pull`, and put in the phet-dev credentials (username: phet-dev, password
 is in the PhET credentials document for "GitHub Machine User"). The credential helper should then remember the password
 for future pulls.
+
+**Do the same thing for the quick server!**
+
+```sh
+pm2 list # see if it is started, and also starts the pm2 daemon if it wasn't running
+cd /data/share/phet/continuous-quick-server/aqua
+pm2 start "grunt quick-server" --name "continuous-quick-server" --time
+```
 
 ## Updating the bayes server code
 
