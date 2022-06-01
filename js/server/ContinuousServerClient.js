@@ -36,20 +36,26 @@ class ContinuousServerClient {
    * Kick off a worker, add it to a list, and when complete, remove it from that list
    * @private
    * @param {Worker[]} workerList
+   * @param {number} workerNumber
    * @returns {Promise<unknown>}
    */
-  newClientWorker( workerList ) {
-    //first argument is filename of the worker
+  newClientWorker( workerList, workerNumber ) {
+
+    console.log( 'New worker instance:', workerNumber );
+
     const worker = new Worker( `${this.rootDir}/aqua/js/server/puppeteerCTClient.js`, { argv: [ 'Bayes%20Puppeteer' ] } );
+
     workerList.push( worker );
+
     worker.on( 'message', message => { console.log( 'Message from puppeteerClient:', message ); } );
     worker.on( 'error', e => { console.error( 'Error from puppeteerClient:', e ); } );
     worker.on( 'exit', code => {
+      console.log( 'Worker instance complete:', workerNumber );
       const index = _.indexOf( workerList, worker );
       assert( index !== -1, 'worker must be in list' );
       workerList.splice( index, 1 );
       if ( code !== 0 ) {
-        console.error( `Worker stopped with exit code ${code}` );
+        console.error( `Worker${workerNumber} stopped with exit code ${code}` );
       }
     } );
   }
@@ -59,11 +65,14 @@ class ContinuousServerClient {
    */
   async startMainLoop() {
 
+    let count = 0;
     const workers = [];
 
     while ( true ) { // eslint-disable-line
+
+      // Always keep this many workers chugging away
       while ( workers.length < this.numberOfPuppeteers ) {
-        this.newClientWorker( workers );
+        this.newClientWorker( workers, count++ );
       }
 
       // Check back in every 30 seconds to see if we need to restart any workers.
