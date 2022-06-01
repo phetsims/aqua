@@ -9,8 +9,8 @@
 
 const Gruntfile = require( '../../chipper/js/grunt/Gruntfile' );
 const ContinuousServer = require( './server/ContinuousServer' );
+const ContinuousServerClient = require( './server/ContinuousServerClient' );
 const assert = require( 'assert' );
-const grunt = require( 'grunt' ); // eslint-disable-line
 const _ = require( 'lodash' ); // eslint-disable-line
 const winston = require( 'winston' );
 const QuickServer = require( './server/QuickServer' );
@@ -76,6 +76,22 @@ module.exports = grunt => {
         isTestMode: testing
       } );
       server.startServer( port );
+      server.startMainLoop();
+    }
+  );
+
+  grunt.registerTask(
+    'client-server',
+    'Launches puppeteer clients to run tests for CT with the following options:\n' +
+    '--clients=NUMBER : specify how many puppeteer clients to run with, defaults to 16\n',
+    () => {
+
+      // We don't finish! Don't tell grunt this...
+      grunt.task.current.async();
+
+      const server = new ContinuousServerClient( {
+        numberOfPuppeteers: grunt.option( 'clients' ) ? grunt.option( 'clients' ) : 16
+      } );
       server.startMainLoop();
     }
   );
