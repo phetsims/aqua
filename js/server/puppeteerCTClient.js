@@ -26,7 +26,12 @@ process.on( 'SIGINT', () => process.exit() );
     launchOptions: {
 
       // Command line arguments passed to the chrome instance,
-      args: [ '--enable-precise-memory-info' ]
+      args: [
+        '--enable-precise-memory-info',
+
+        // To prevent filling up `/tmp`, see https://github.com/phetsims/aqua/issues/145
+        `--user-data-dir=${process.cwd()}/../tmp/puppeteerUserData/`
+      ]
     }
   } );
   if ( error ) {
