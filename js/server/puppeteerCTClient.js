@@ -25,6 +25,10 @@ process.on( 'SIGINT', () => process.exit() );
 
     launchOptions: {
 
+      // With this flag, temp files are written to /tmp/ on bayes, which caused https://github.com/phetsims/aqua/issues/145
+      // /dev/shm/ is much bigger
+      ignoreDefaultArgs: [ '--disable-dev-shm-usage' ],
+
       // Command line arguments passed to the chrome instance,
       args: [
         '--enable-precise-memory-info',
