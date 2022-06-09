@@ -39,6 +39,8 @@ process.on( 'SIGINT', () => process.exit() );
     }
   } );
   if ( error ) {
+
+    // Send the error to the parent Node process that spawned the worker.
     parentPort.postMessage( error );
   }
 
