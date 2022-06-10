@@ -286,7 +286,7 @@ type Frame = {
       // snapshotterMap.get( data.id )!.addError();
 
       gridBox.addChild( new Text( 'ERRORED', {
-        layoutOptions: { x: data.id, y: 100 }
+        layoutOptions: { column: data.id, row: 100 }
       } ) );
     }
     else if ( data.type === 'load' && typeof data.id === 'number' ) {

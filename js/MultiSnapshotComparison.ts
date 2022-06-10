@@ -351,7 +351,7 @@ type Frame = {
   columns.forEach( ( column, i ) => {
     gridChildren.push( new Text( `${column.url}`, {
       font: new Font( { size: 12, weight: 'bold' } ),
-      layoutOptions: { x: i + 1, y: y, xAlign: 'center' }
+      layoutOptions: { column: i + 1, row: y, xAlign: 'center' }
     } ) );
   } );
   y++;
@@ -359,7 +359,7 @@ type Frame = {
   columns.forEach( ( column, i ) => {
     column.snapshotters.forEach( ( snapshotter, j ) => {
       gridChildren.push( new DOM( snapshotter.iframe, {
-        layoutOptions: { x: i + 1, y: y + j }
+        layoutOptions: { column: i + 1, row: y + j }
       } ) );
     } );
   } );
@@ -373,7 +373,7 @@ type Frame = {
 
     const runnableText = new Text( runnable + ( brand !== 'phet' ? ` (${brand})` : '' ), {
       font: new Font( { size: 12 } ),
-      layoutOptions: { x: 0, y: y },
+      layoutOptions: { column: 0, row: y },
       opacity: unreliableSims.includes( runnable ) ? 0.2 : 1
     } );
     gridChildren.push( runnableText );
@@ -433,7 +433,7 @@ type Frame = {
                     orientation: 'horizontal',
                     children: diffImages,
                     spacing: 5,
-                    layoutOptions: { x: snapshots.length + 1 + index++, y: runnableYMap[ runnable ], xAlign: 'left' }
+                    layoutOptions: { column: snapshots.length + 1 + index++, row: runnableYMap[ runnable ], xAlign: 'left' }
                   } ) );
                 }
                 gridBox.children = gridChildren;
@@ -473,7 +473,7 @@ type Frame = {
         children: [
           frameText, hashText
         ],
-        layoutOptions: { x: j + 1, y: y, xAlign: 'center' }
+        layoutOptions: { column: j + 1, row: y, xAlign: 'center' }
       } ) );
     } );
     y++;
