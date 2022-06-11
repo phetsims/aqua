@@ -12,7 +12,8 @@ const { App } = require( '@slack/bolt' ); // eslint-disable-line
 
 let app;
 
-module.exports = async messageText => {
+module.exports = async ( messageText, testing = false ) => {
+
   // Lazily initialized so we don't force the App creation when this file is required
   if ( !app ) {
     app = new App( {
@@ -21,9 +22,18 @@ module.exports = async messageText => {
     } );
   }
 
-  await app.client.chat.postMessage( {
-    // #continuous-testing chat ID
-    channel: 'C03D6JMPAHF',
-    text: messageText
-  } );
+  if ( testing ) {
+    await app.client.chat.postMessage( {
+      // #ctq-testing chat ID
+      channel: 'C03G9D6NY07',
+      text: messageText
+    } );
+  }
+  else {
+    await app.client.chat.postMessage( {
+      // #continuous-testing chat ID
+      channel: 'C03D6JMPAHF',
+      text: messageText
+    } );
+  }
 };

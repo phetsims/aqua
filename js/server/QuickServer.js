@@ -26,6 +26,14 @@ const url = require( 'url' );
 const winston = require( 'winston' );
 const sendSlackMessage = require( './sendSlackMessage' );
 
+const ctqType = {
+  LINT: 'lint',
+  TSC: 'tsc',
+  TRANSPILE: 'transpile',
+  SIM_FUZZ: 'simFuzz',
+  STUDIO_FUZZ: 'studioFuzz'
+};
+
 // Headers that we'll include in all server replies
 const jsonHeaders = {
   'Content-Type': 'application/json',
@@ -45,7 +53,7 @@ class QuickServer {
     };
 
     // @public {*}
-    this.reportState = {};
+    this.testingState = {};
 
     // @public {string} - root of your GitHub working copy, relative to the name of the directory that the
     // currently-executing script resides in
@@ -53,6 +61,9 @@ class QuickServer {
 
     // @public {boolean} - whether we are in testing mode. if true, tests are continuously forced to run
     this.isTestMode = options.isTestMode;
+
+    // @private {string[]} - errors found in any given loop
+    this.errorMessages = [];
   }
 
   /**
@@ -161,69 +172,46 @@ class QuickServer {
             studioFuzz = e;
           }
 
-          const executeResultToOutput = result => {
+          const executeResultToOutput = ( result, name ) => {
             return {
               passed: result.code === 0,
-              message: `code: ${result.code}\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`
+              // TODO: CK: I changed the message to only include stdout, is this okay? Wasn't seeing how the other two were
+              // helpful in the context of Slack messages
+              errorMessages: result.code === 0 ? [] : this.parseErrors( result.stdout, name )
             };
           };
-          const fuzzResultToOutput = result => {
+          const fuzzResultToOutput = ( result, name ) => {
             if ( result === null ) {
-              return { passed: true, message: '' };
+              return { passed: true, errorMessages: [] };
             }
             else {
-              return { passed: false, message: '' + result };
+              return { passed: false, errorMessages: this.parseErrors( result, name ) };
             }
           };
 
           // This would take up too much space
           transpileResult.stdout = '';
 
-          this.reportState = {
-            lint: executeResultToOutput( lintResult ),
-            tsc: executeResultToOutput( tscResult ),
-            transpile: executeResultToOutput( transpileResult ),
-            simFuzz: fuzzResultToOutput( simFuzz ),
-            studioFuzz: fuzzResultToOutput( studioFuzz ),
+          this.testingState = {
+            lint: executeResultToOutput( lintResult, ctqType.LINT ),
+            tsc: executeResultToOutput( tscResult, ctqType.TSC ),
+            transpile: executeResultToOutput( transpileResult, ctqType.TRANSPILE ),
+            simFuzz: fuzzResultToOutput( simFuzz, ctqType.SIM_FUZZ ),
+            studioFuzz: fuzzResultToOutput( studioFuzz, ctqType.STUDIO_FUZZ ),
             shas: shas,
             timestamp: timestamp
           };
 
           try {
-            const broken = !this.reportState.lint.passed ||
-                           !this.reportState.tsc.passed ||
-                           !this.reportState.transpile.passed ||
-                           !this.reportState.simFuzz.passed ||
-                           !this.reportState.studioFuzz.passed;
+            const broken = !this.testingState.lint.passed ||
+                           !this.testingState.tsc.passed ||
+                           !this.testingState.transpile.passed ||
+                           !this.testingState.simFuzz.passed ||
+                           !this.testingState.studioFuzz.passed;
 
-            if ( lastBroken !== broken ) {
+            await this.reportErrorStatus( broken, lastBroken );
 
-              if ( broken ) {
-                winston.info( 'sending broken CT message' );
-                let message = 'Quick CT failing';
-
-                const check = ( result, name ) => {
-                  if ( !result.passed ) {
-                    message += `\n${name}:\n\`\`\`\n${result.message}\n\`\`\`\n`;
-                  }
-                };
-
-                check( this.reportState.lint, 'lint' );
-                check( this.reportState.tsc, 'tsc' );
-                check( this.reportState.transpile, 'transpile' );
-                check( this.reportState.simFuzz, 'simFuzz' );
-                check( this.reportState.studioFuzz, 'studioFuzz' );
-                winston.info( message );
-
-                await sendSlackMessage( message );
-              }
-              else {
-                winston.info( 'sending passing CT message' );
-                await sendSlackMessage( 'Quick CT passing' );
-              }
-
-              lastBroken = broken;
-            }
+            lastBroken = broken;
           }
           catch( e ) {
             winston.info( `Slack error: ${e}` );
@@ -253,7 +241,7 @@ class QuickServer {
 
         if ( requestInfo.pathname === '/quickserver/status' ) {
           res.writeHead( 200, jsonHeaders );
-          res.end( JSON.stringify( this.reportState, null, 2 ) );
+          res.end( JSON.stringify( this.testingState, null, 2 ) );
         }
       }
       catch( e ) {
@@ -262,6 +250,153 @@ class QuickServer {
     } ).listen( port );
 
     winston.info( `QuickServer: running on port ${port}` );
+  }
+
+  /**
+   * Checks the error messages and reports the current status to the logs and Slack.
+   *
+   * @param {boolean} broken
+   * @param {boolean} lastBroken
+   * @private
+   * TODO for @chrisklus: add comments to this function
+   */
+  async reportErrorStatus( broken, lastBroken ) {
+    if ( lastBroken === true && !broken ) {
+      this.errorMessages.length = 0;
+      winston.info( 'broken -> passing, sending CTQ passing message to Slack' );
+      await sendSlackMessage( 'CTQ passing', this.isTestMode );
+    }
+    else if ( broken ) {
+      let message = '';
+      let newErrorCount = 0;
+      const previousErrorsFound = [];
+
+      const check = result => {
+        if ( !result.passed ) {
+          result.errorMessages.forEach( errorMessage => {
+            if ( _.every( this.errorMessages, preExistingErrorMessage => {
+              const preExistingErrorMessageWithNoSpaces = preExistingErrorMessage.replace( /\s/g, '' );
+              const newErrorMessageWithNoSpaces = errorMessage.replace( /\s/g, '' );
+              return preExistingErrorMessageWithNoSpaces !== newErrorMessageWithNoSpaces;
+            } ) ) {
+              this.errorMessages.push( errorMessage );
+              message += `\n${errorMessage}`;
+              newErrorCount++;
+            }
+            else {
+              previousErrorsFound.push( errorMessage );
+            }
+          } );
+        }
+      };
+
+      check( this.testingState.lint );
+      check( this.testingState.tsc );
+      check( this.testingState.transpile );
+      check( this.testingState.simFuzz );
+      check( this.testingState.studioFuzz );
+
+      if ( message.length > 0 ) {
+
+        if ( previousErrorsFound.length || lastBroken ) {
+          winston.info( 'broken -> more broken, sending additional CTQ failure message to Slack' );
+          const sForFailure = newErrorCount > 1 ? 's' : '';
+          message = `CTQ additional failure${sForFailure}:\n\`\`\`${message}\`\`\``;
+
+          if ( previousErrorsFound.length ) {
+            assert && assert( lastBroken, 'Last cycle must be broken if pre-existing errors were found' );
+            const sForError = previousErrorsFound.length > 1 ? 's' : '';
+            const sForRemain = previousErrorsFound.length === 1 ? 's' : '';
+            message += `\n${previousErrorsFound.length} other pre-existing error${sForError} remain${sForRemain}.`;
+          }
+          else {
+            assert && assert( lastBroken, 'Last cycle must be broken if no pre-existing errors were found and you made it here' );
+            message += '\nAll other pre-existing errors fixed.';
+          }
+        }
+        else {
+          winston.info( 'passing -> broken, sending CTQ failure message to Slack' );
+          message = 'CTQ failing:\n```' + message + '```';
+        }
+
+        winston.info( message );
+        await sendSlackMessage( message, this.isTestMode );
+      }
+      else {
+        winston.info( 'broken -> broken, no new failures to report to Slack' );
+        assert && assert( previousErrorsFound.length, 'Previous errors must exist if no new errors are found and CTQ is still broken' );
+      }
+    }
+    else {
+      winston.info( 'passing -> passing' );
+    }
+  }
+
+  /**
+   * Parses individual errors out of a collection of the same type of error, e.g. lint
+   *
+   * @param {string} message
+   * @param {string} name
+   * @returns {string[]}
+   * @private
+   */
+  parseErrors( message, name ) {
+    const errorMessages = [];
+
+    // most lint and tsc errors have a file associated with them. look for them in a line via slashes
+    const fileNameRegex = /.*\/.+\/.+\/.+\/.+/;
+
+    // split up the error message by line for parsing
+    const messageLines = message.split( /\r?\n/ );
+
+    if ( name === ctqType.LINT ) {
+      let currentFilename = null;
+
+      // look for a filename. once found, all subsequent lines are an individual errors to add until a blank line is reached
+      messageLines.forEach( line => {
+        if ( currentFilename ) {
+          if ( line.length > 0 ) {
+            errorMessages.push( `lint: ${currentFilename}${line}` );
+          }
+          else {
+            currentFilename = null;
+          }
+        }
+        else if ( fileNameRegex.test( line ) ) {
+          currentFilename = line.match( fileNameRegex )[ 0 ];
+        }
+      } );
+    }
+    else if ( name === ctqType.TSC ) {
+      let currentError = '';
+
+      const addCurrentError = () => {
+        if ( currentError.length ) {
+          errorMessages.push( currentError );
+        }
+      };
+
+      // look for a filename. if found, all subsequent lines that don't contain filenames are part of the same error to
+      // add until a new filename line is found
+      messageLines.forEach( line => {
+        if ( fileNameRegex.test( line ) ) {
+          addCurrentError();
+
+          currentError = `tsc: ${line}`;
+        }
+        else if ( currentError.length && line.length ) {
+          currentError += `\n${line}`;
+        }
+      } );
+      addCurrentError();
+    }
+
+
+    // if we are not a lint or tsc error, or if those errors were not able to be parsed above, send the whole message
+    if ( !errorMessages.length ) {
+      errorMessages.push( `${name}: ${message}` );
+    }
+    return errorMessages;
   }
 }
 
