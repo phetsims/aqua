@@ -316,7 +316,7 @@ class QuickServer {
         }
         else {
           winston.info( 'passing -> broken, sending CTQ failure message to Slack' );
-          message = 'CTQ failing:\n```' + message + '```'
+          message = 'CTQ failing:\n```' + message + '```';
         }
 
         winston.info( message );
