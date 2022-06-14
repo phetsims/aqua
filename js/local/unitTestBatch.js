@@ -9,8 +9,8 @@ const child_process = require( 'child_process' );
 
 ( async () => {
 
-  const groups = parseInt( process.argv[ 2 ], 10 );
-  const groupIndex = parseInt( process.argv[ 3 ], 10 );
+  const groups = Number( process.argv[ 2 ] );
+  const groupIndex = Number( process.argv[ 3 ] );
   const say = _.includes( process.argv, '--say' );
 
   const browser = await puppeteer.launch();
