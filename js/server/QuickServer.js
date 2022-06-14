@@ -175,17 +175,21 @@ class QuickServer {
           const executeResultToOutput = ( result, name ) => {
             return {
               passed: result.code === 0,
-              // TODO: CK: I changed the message to only include stdout, is this okay? Wasn't seeing how the other two were
-              // helpful in the context of Slack messages
+
+              // full length message, used when someone clicks on a quickNode in CT for error details
+              message: `code: ${result.code}\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`,
+
+              // trimmed down and separated error messages, used to track the state of individual errors and show
+              // abbreviated errors for the Slack CT Notifier
               errorMessages: result.code === 0 ? [] : this.parseErrors( result.stdout, name )
             };
           };
           const fuzzResultToOutput = ( result, name ) => {
             if ( result === null ) {
-              return { passed: true, errorMessages: [] };
+              return { passed: true, message: '', errorMessages: [] };
             }
             else {
-              return { passed: false, errorMessages: this.parseErrors( result, name ) };
+              return { passed: false, message: '' + result, errorMessages: this.parseErrors( result, name ) };
             }
           };
 
