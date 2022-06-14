@@ -135,15 +135,32 @@ class QuickServer {
           const transpileResult = await execute( 'node', [ 'js/scripts/transpile.js' ], `${this.rootDir}/chipper`, { errors: 'resolve' } );
 
           winston.info( 'QuickServer: sim fuzz' );
+
+          const puppeteerOptions = {
+            waitAfterLoad: 10000,
+            allowedTimeToLoad: 120000,
+            puppeteerTimeout: 120000,
+            launchOptions: {
+
+              // With this flag, temp files are written to /tmp/ on bayes, which caused https://github.com/phetsims/aqua/issues/145
+              // /dev/shm/ is much bigger
+              ignoreDefaultArgs: [ '--disable-dev-shm-usage' ],
+
+              // Command line arguments passed to the chrome instance,
+              args: [
+                '--enable-precise-memory-info',
+
+                // To prevent filling up `/tmp`, see https://github.com/phetsims/aqua/issues/145
+                `--user-data-dir=${process.cwd()}/../tmp/puppeteerUserData/`
+              ]
+            }
+          };
+
           let simFuzz = null;
           try {
             await withServer( async port => {
               const url = `http://localhost:${port}/natural-selection/natural-selection_en.html?brand=phet&ea&debugger&fuzz`;
-              const error = await puppeteerLoad( url, {
-                waitAfterLoad: 10000,
-                allowedTimeToLoad: 120000,
-                puppeteerTimeout: 120000
-              } );
+              const error = await puppeteerLoad( url, puppeteerOptions );
               if ( error ) {
                 simFuzz = error;
               }
@@ -158,11 +175,7 @@ class QuickServer {
           try {
             await withServer( async port => {
               const url = `http://localhost:${port}/studio/index.html?sim=states-of-matter&phetioElementsDisplay=all&fuzz`;
-              const error = await puppeteerLoad( url, {
-                waitAfterLoad: 10000,
-                allowedTimeToLoad: 120000,
-                puppeteerTimeout: 120000
-              } );
+              const error = await puppeteerLoad( url, puppeteerOptions );
               if ( error ) {
                 studioFuzz = error;
               }
