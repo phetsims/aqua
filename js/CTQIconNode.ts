@@ -8,6 +8,7 @@
 
 import { Circle, Color, Font, Node, NodeOptions, Rectangle, Text } from '../../scenery/js/imports.js';
 import ScreenView from '../../joist/js/ScreenView.js';
+import EmptyObjectType from '../../phet-core/js/types/EmptyObjectType.js';
 
 // colors
 const phetBlue = '#6acdf5';
@@ -17,7 +18,7 @@ const phetPink = '#e01e5a';
 // constants
 const HEIGHT = ScreenView.DEFAULT_LAYOUT_BOUNDS.height;
 
-type SelfOptions = {};
+type SelfOptions = EmptyObjectType;
 type CtqLogoScreenViewOptions = SelfOptions & NodeOptions;
 
 class CTQIconNode extends Node {
