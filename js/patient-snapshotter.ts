@@ -226,12 +226,12 @@ window.addEventListener( 'message', evt => {
     // Don't allow popups
     iframe.contentWindow.open = function() {
       return {
-        focus: function() {},
-        blur: function() {}
+        focus: _.noop,
+        blur: _.noop
       };
     };
     // FileSaver don't allow popup
-    iframe.contentWindow.saveAs = function() {};
+    iframe.contentWindow.saveAs = _.noop;
 
     // We need to create an object with the iframe's Object.prototype as its prototype to pass our assertion checks
     const contentOptions = iframe.contentWindow.Object.create( iframe.contentWindow.Object.prototype, {
