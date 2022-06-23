@@ -23,7 +23,7 @@ type CtqLogoScreenViewOptions = SelfOptions & NodeOptions;
 
 class CTQIconNode extends Node {
 
-  constructor( options?: CtqLogoScreenViewOptions ) {
+  public constructor( options?: CtqLogoScreenViewOptions ) {
     super( options );
 
     const backgroundSquare = new Rectangle( 0, 0, HEIGHT, HEIGHT, {
