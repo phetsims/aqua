@@ -182,10 +182,10 @@ if ( options.full ) {
         align: 'left',
         spacing: 5,
         children: [
-          new Checkbox( new Text( 'Show average time', { font: constants.interfaceFont } ), showAverageTimeProperty, {
+          new Checkbox( showAverageTimeProperty, new Text( 'Show average time', { font: constants.interfaceFont } ), {
             boxWidth: 14
           } ),
-          new Checkbox( new Text( 'Show weight', { font: constants.interfaceFont } ), showWeightsProperty, {
+          new Checkbox( showWeightsProperty, new Text( 'Show weight', { font: constants.interfaceFont } ), {
             boxWidth: 14
           } )
         ]
