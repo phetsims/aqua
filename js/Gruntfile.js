@@ -31,8 +31,8 @@ module.exports = grunt => {
 
       assert( grunt.option( 'localCount' ), 'Please specify --localCount=NUMBER, for specifying the number of local threads running things like grunt tasks' );
 
-      const port = grunt.option( 'port' ) ? Number.parseInt( grunt.option( 'port' ), 10 ) : 45366;
-      const localCount = Number.parseInt( grunt.option( 'localCount' ), 10 );
+      const port = grunt.option( 'port' ) ? Number( grunt.option( 'port' ) ) : 45366;
+      const localCount = Number( grunt.option( 'localCount' ) );
       const snapshot = grunt.option( 'snapshot' ) !== false;
       const useRootDir = !!grunt.option( 'useRootDir' );
 
@@ -69,7 +69,7 @@ module.exports = grunt => {
       // We don't finish! Don't tell grunt this...
       grunt.task.current.async();
 
-      const port = grunt.option( 'port' ) ? Number.parseInt( grunt.option( 'port' ), 10 ) : 45367;
+      const port = grunt.option( 'port' ) ? Number( grunt.option( 'port' ) ) : 45367;
 
       const testing = grunt.option( 'testing' );
       const server = new QuickServer( {
