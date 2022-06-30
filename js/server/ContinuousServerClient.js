@@ -75,8 +75,8 @@ class ContinuousServerClient {
         this.newClientWorker( workers, count++ );
       }
 
-      // Check back in every 30 seconds to see if we need to restart any workers.
-      await sleep( 30000 );
+      // Check back in every 5 seconds to see if we need to restart any workers.
+      await sleep( 5000 );
     }
   }
 }

@@ -13,10 +13,10 @@ process.on( 'SIGINT', () => process.exit() );
 
 ( async () => {
 
-  assert( process.argv[ 2 ], 'usage: node puppeteerHelpCT {{SOME_IDENTIFIER_HERE}}' );
+  assert( process.argv[ 2 ], 'usage: node puppeteerCTClient {{SOME_IDENTIFIER_HERE}}' );
   const url = `https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-loop.html?id=${process.argv[ 2 ]}`;
   const error = await puppeteerLoad( url, {
-    waitAfterLoad: 15 * 60 * 1000, // 15 minutes
+    waitAfterLoad: .5 * 60 * 1000, // 15 minutes
     allowedTimeToLoad: 120000,
     puppeteerTimeout: 1000000000,
 
@@ -34,7 +34,10 @@ process.on( 'SIGINT', () => process.exit() );
         '--enable-precise-memory-info',
 
         // To prevent filling up `/tmp`, see https://github.com/phetsims/aqua/issues/145
-        `--user-data-dir=${process.cwd()}/../tmp/puppeteerUserData/`
+        `--user-data-dir=${process.cwd()}/../tmp/puppeteerUserData/`,
+
+        // Fork child processes directly to prevent orphaned chrome instances from lingering on bayes, https://github.com/phetsims/aqua/issues/150#issuecomment-1170140994
+        '--no-zygote', '--no-sandbox'
       ]
     }
   } );
