@@ -255,7 +255,7 @@
     }
   }
 
-  function onSimError( simName, data ) {
+  async function onSimError( simName, data ) {
     console.log( `error on ${simName}` );
 
     const isBuild = simName === currentTest.simName && currentTest.isBuild;
@@ -270,8 +270,10 @@
       errorLog.innerHTML += `<pre>${data.message}</pre>`;
     }
     if ( data.stack ) {
-      console.log( data.stack );
-      errorLog.innerHTML += `<pre>${data.stack}</pre>`;
+
+      const transpiledStacktrace = await window.transpileStacktrace( data.stack );
+      console.log( transpiledStacktrace );
+      errorLog.innerHTML += `<pre>${transpiledStacktrace}</pre>`;
     }
 
     simStatusElements[ simName ].classList.add( `error-${isBuild ? 'build' : 'dev'}` );
