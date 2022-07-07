@@ -24,6 +24,7 @@ const _ = require( 'lodash' ); // eslint-disable-line
 const path = require( 'path' );
 const url = require( 'url' );
 const winston = require( 'winston' );
+const puppeteer = require( 'puppeteer' );
 const sendSlackMessage = require( './sendSlackMessage' );
 
 const ctqType = {
@@ -73,6 +74,29 @@ class QuickServer {
     // Let it execute tests on startup once
     let forceTests = true;
     let count = 0;
+
+    // Launch the browser once and reuse it to generate new pages in puppeteerLoad
+    const browser = await puppeteer.launch( {
+
+      // With this flag, temp files are written to /tmp/ on bayes, which caused https://github.com/phetsims/aqua/issues/145
+      // /dev/shm/ is much bigger
+      ignoreDefaultArgs: [ '--disable-dev-shm-usage' ],
+
+      // Command line arguments passed to the chrome instance,
+      args: [
+        '--enable-precise-memory-info',
+
+        // To prevent filling up `/tmp`, see https://github.com/phetsims/aqua/issues/145
+        `--user-data-dir=${process.cwd()}/../tmp/puppeteerUserData/`
+      ]
+    } );
+
+    const puppeteerOptions = {
+      waitAfterLoad: 10000,
+      allowedTimeToLoad: 120000,
+      puppeteerTimeout: 120000,
+      browser: browser
+    };
 
     while ( true ) { // eslint-disable-line
 
@@ -135,26 +159,6 @@ class QuickServer {
           const transpileResult = await execute( 'node', [ 'js/scripts/transpile.js' ], `${this.rootDir}/chipper`, { errors: 'resolve' } );
 
           winston.info( 'QuickServer: sim fuzz' );
-
-          const puppeteerOptions = {
-            waitAfterLoad: 10000,
-            allowedTimeToLoad: 120000,
-            puppeteerTimeout: 120000,
-            launchOptions: {
-
-              // With this flag, temp files are written to /tmp/ on bayes, which caused https://github.com/phetsims/aqua/issues/145
-              // /dev/shm/ is much bigger
-              ignoreDefaultArgs: [ '--disable-dev-shm-usage' ],
-
-              // Command line arguments passed to the chrome instance,
-              args: [
-                '--enable-precise-memory-info',
-
-                // To prevent filling up `/tmp`, see https://github.com/phetsims/aqua/issues/145
-                `--user-data-dir=${process.cwd()}/../tmp/puppeteerUserData/`
-              ]
-            }
-          };
 
           let simFuzz = null;
           try {
