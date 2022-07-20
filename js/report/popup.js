@@ -6,8 +6,8 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-import escapeHTML from '../../../phet-core/js/escapeHTML.js';
 import Property from '../../../axon/js/Property.js';
+import escapeHTML from '../../../phet-core/js/escapeHTML.js';
 
 const popupIframeProperty = new Property( null );
 

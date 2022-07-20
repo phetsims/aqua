@@ -8,8 +8,8 @@
 
 import BooleanProperty from '../../../axon/js/BooleanProperty.js';
 import EnumerationDeprecatedProperty from '../../../axon/js/EnumerationDeprecatedProperty.js';
-import Property from '../../../axon/js/Property.js';
 import Multilink from '../../../axon/js/Multilink.js';
+import Property from '../../../axon/js/Property.js';
 import EnumerationDeprecated from '../../../phet-core/js/EnumerationDeprecated.js';
 import PhetFont from '../../../scenery-phet/js/PhetFont.js';
 import { Display, DOM, FireListener, HBox, Node, Rectangle, Text, VBox } from '../../../scenery/js/imports.js';
