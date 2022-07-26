@@ -145,7 +145,7 @@ class QuickServer {
           }
 
           winston.info( 'QuickServer: linting' );
-          const lintResult = await execute( gruntCommand, [ 'lint-everything' ], `${this.rootDir}/perennial`, { errors: 'resolve' } );
+          const lintResult = await execute( gruntCommand, [ 'lint-everything', '--hide-progress-bar' ], `${this.rootDir}/perennial`, { errors: 'resolve' } );
 
           // Periodically clean chipper/dist, but not on the first time for easier local testing
           if ( count++ % 10 === 2 ) {

@@ -615,7 +615,7 @@ class ContinuousServer {
           test.complete = true;
           this.saveToFile();
           try {
-            const output = await execute( gruntCommand, [ 'lint-everything' ], `${snapshot.directory}/perennial` );
+            const output = await execute( gruntCommand, [ 'lint-everything', '--hide-progress-bar' ], `${snapshot.directory}/perennial` );
 
             ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
           }
