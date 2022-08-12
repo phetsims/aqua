@@ -54,11 +54,11 @@ let mouseX = 0;
 let mouseY = 0;
 let random: Random = null as unknown as Random; // ugly ugly ugly
 
-function sendStep( dt ) {
+function sendStep( dt ): void {
   iframe.contentWindow.phet.joist.sim.stepSimulation( dt );
 }
 
-function sendMouseToggleEvent() {
+function sendMouseToggleEvent(): void {
   const input = iframe.contentWindow.phet.joist.display._input;
   const domEvent = iframe.contentWindow.document.createEvent( 'MouseEvent' );
 
@@ -85,7 +85,7 @@ function sendMouseToggleEvent() {
   mouseLastMoved = false;
 }
 
-function sendMouseMoveEvent() {
+function sendMouseMoveEvent(): void {
   const input = iframe.contentWindow.phet.joist.display._input;
   mouseX = Math.floor( random.nextDouble() * iframe.contentWindow.phet.joist.display.width );
   mouseY = Math.floor( random.nextDouble() * iframe.contentWindow.phet.joist.display.height );
@@ -107,13 +107,13 @@ function sendMouseMoveEvent() {
   mouseLastMoved = true;
 }
 
-function getScreenshot( callback ) {
+function getScreenshot( callback ): void {
   iframe.contentWindow.phet.joist.display.foreignObjectRasterization( url => {
     callback( url );
   } );
 }
 
-function hash( str ) {
+function hash( str ): string {
   return new Hashes.MD5().hex( str );
 }
 
@@ -121,7 +121,7 @@ let count = 0;
 let loaded = false;
 let received = true;
 
-function handleFrame() {
+function handleFrame(): void {
   if ( loaded && received ) {
     count++;
     received = false;
