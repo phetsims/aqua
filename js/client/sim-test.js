@@ -69,10 +69,6 @@
       // Sent by Joist due to the postMessage* query parameters
       if ( data.type === 'continuous-test-error' ) {
         clearTimeout( timeoutID );
-
-        // TODO https://github.com/phetsims/chipper/issues/1220: How does this behave for built sim stacks?  Should it be skipped for those?
-        // MK: perhaps it is a moot point, but maybe the sourcemap can help us in that case too, have you looked at
-        // MK: what it does when testing a built stack? Do we have a sourcemap included in the built version? Perhaps we should?
         const transpiledStacktrace = await window.transpileStacktrace( data.stack );
         aqua.simpleFail( `${failPrefix + data.message}\n${transpiledStacktrace}` );
       }
