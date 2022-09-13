@@ -237,3 +237,8 @@ increased the size for that, but it may be an issue in the future.
 
 We'll add any future ways of fixing things as we run across them here.
 
+# Troubleshooting
+
+## Tests not finishing? 
+
+Cells are partially green instead of fully green?  Perhaps try `pm2 restart continuous-client` as described in https://github.com/phetsims/aqua/issues/158 
