@@ -20,7 +20,7 @@ const puppeteerLoad = require( '../../../perennial/js/common/puppeteerLoad' );
 const withServer = require( '../../../perennial/js/common/withServer' );
 const assert = require( 'assert' );
 const http = require( 'http' );
-const _ = require( 'lodash' ); // eslint-disable-line
+const _ = require( 'lodash' ); // eslint-disable-line require-statement-match
 const path = require( 'path' );
 const url = require( 'url' );
 const winston = require( 'winston' );
@@ -98,7 +98,7 @@ class QuickServer {
       browser: browser
     };
 
-    while ( true ) { // eslint-disable-line
+    while ( true ) { // eslint-disable-line no-constant-condition
 
       try {
 

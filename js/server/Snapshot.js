@@ -16,7 +16,6 @@ const gitLastCommitTimestamp = require( '../../../perennial/js/common/gitLastCom
 const gitRevParse = require( '../../../perennial/js/common/gitRevParse' );
 const Test = require( './Test' );
 const fs = require( 'fs' );
-const _ = require( 'lodash' ); // eslint-disable-line
 const winston = require( 'winston' );
 
 class Snapshot {

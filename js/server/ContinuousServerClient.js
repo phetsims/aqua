@@ -68,7 +68,7 @@ class ContinuousServerClient {
     let count = 0;
     const workers = [];
 
-    while ( true ) { // eslint-disable-line
+    while ( true ) { // eslint-disable-line no-constant-condition
 
       // Always keep this many workers chugging away
       while ( workers.length < this.numberOfPuppeteers ) {

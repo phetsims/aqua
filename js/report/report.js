@@ -67,7 +67,7 @@ if ( options.full ) {
 
   // Report loop
   ( async () => {
-    while ( true ) { // eslint-disable-line
+    while ( true ) { // eslint-disable-line no-constant-condition
       const result = await request( '/aquaserver/report' );
       if ( result ) {
         reportProperty.value = result;

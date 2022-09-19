@@ -21,7 +21,7 @@ const Snapshot = require( './Snapshot' );
 const assert = require( 'assert' );
 const fs = require( 'fs' );
 const http = require( 'http' );
-const _ = require( 'lodash' ); // eslint-disable-line
+const _ = require( 'lodash' ); // eslint-disable-line require-statement-match
 const path = require( 'path' );
 const url = require( 'url' );
 const winston = require( 'winston' );
@@ -576,7 +576,7 @@ class ContinuousServer {
    * @public
    */
   async localTaskLoop() {
-    while ( true ) { // eslint-disable-line
+    while ( true ) { // eslint-disable-line no-constant-condition
       try {
         if ( this.snapshots.length === 0 ) {
           await sleep( 1000 );
@@ -654,7 +654,7 @@ class ContinuousServer {
    * @public
    */
   async computeWeightsLoop() {
-    while ( true ) { // eslint-disable-line
+    while ( true ) { // eslint-disable-line no-constant-condition
       try {
         this.computeRecentTestWeights();
       }
@@ -671,7 +671,7 @@ class ContinuousServer {
    * @public
    */
   async generateReportLoop() {
-    while ( true ) { // eslint-disable-line
+    while ( true ) { // eslint-disable-line no-constant-condition
       try {
         const testNameMap = {};
         this.snapshots.forEach( snapshot => snapshot.tests.forEach( test => {

@@ -8,7 +8,7 @@
 
 const buildLocal = require( '../../../perennial/js/common/buildLocal' );
 
-const { App } = require( '@slack/bolt' ); // eslint-disable-line
+const { App } = require( '@slack/bolt' ); // eslint-disable-line require-statement-match
 
 let app;
 

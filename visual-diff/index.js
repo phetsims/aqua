@@ -109,7 +109,7 @@ const compare = ( aCanvas, aData, bCanvas, bData ) => {
   const diffData = diffContext.createImageData( aData );
 
   try {
-    pixelmatch( aData.data, bData.data, diffData.data, 512, 309, { threshold: 0.1 } ); // eslint-disable-line
+    pixelmatch( aData.data, bData.data, diffData.data, 512, 309, { threshold: 0.1 } ); // eslint-disable-line no-undef
 
     diffContext.putImageData( diffData, 0, 0 );
   }

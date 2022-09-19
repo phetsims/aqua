@@ -16,7 +16,7 @@ const quickStatusProperty = new Property( {} );
 
 // Snapshot quick status loop
 ( async () => {
-  while ( true ) { // eslint-disable-line
+  while ( true ) { // eslint-disable-line no-constant-condition
     const result = await request( '/quickserver/status' );
     if ( result ) {
       quickStatusProperty.value = result;
