@@ -19,7 +19,7 @@ const jsonHeaders = {
 };
 
 // root of your GitHub working copy, relative to the name of the directory that the currently-executing script resides in
-const rootDir = path.normalize( `${__dirname}/../../` ); // eslint-disable-line no-undef
+const rootDir = path.normalize( `${__dirname}/../../` );
 
 const server = http.createServer( ( req, res ) => {
   const simName = req.url.slice( 1 );
