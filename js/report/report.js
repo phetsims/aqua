@@ -135,19 +135,19 @@ if ( options.full ) {
       new VerticalAquaRadioButtonGroup( sortProperty, [
         {
           value: Sort.ALPHABETICAL,
-          node: new Text( 'Alphabetical', { font: constants.interfaceFont } )
+          createNode: tandem => new Text( 'Alphabetical', { font: constants.interfaceFont } )
         },
         {
           value: Sort.IMPORTANCE,
-          node: new Text( 'Importance', { font: constants.interfaceFont } )
+          createNode: tandem => new Text( 'Importance', { font: constants.interfaceFont } )
         },
         {
           value: Sort.AVERAGE_TIME,
-          node: new Text( 'Average Time', { font: constants.interfaceFont } )
+          createNode: tandem => new Text( 'Average Time', { font: constants.interfaceFont } )
         },
         {
           value: Sort.WEIGHT,
-          node: new Text( 'Weight', { font: constants.interfaceFont } )
+          createNode: tandem => new Text( 'Weight', { font: constants.interfaceFont } )
         }
       ], {
         spacing: 5
