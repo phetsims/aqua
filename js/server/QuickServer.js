@@ -108,7 +108,7 @@ class QuickServer {
         const staleRepos = [];
 
         // wait 20 seconds before checking for stale repos to give multi-repo pushes a chance to make it in this round
-        setTimeout( () => {
+        setTimeout( async () => {
           winston.info( 'QuickServer: checking stale' );
           await Promise.all( reposToCheck.map( async repo => {
             if ( await isStale( repo ) ) {
