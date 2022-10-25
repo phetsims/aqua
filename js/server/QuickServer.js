@@ -105,139 +105,141 @@ class QuickServer {
         winston.info( 'QuickServer: cycle start' );
 
         const reposToCheck = getRepoList( 'active-repos' ).filter( repo => repo !== 'aqua' );
-
-        const timestamp = Date.now();
-
-        // TODO: don't be synchronous here
         const staleRepos = [];
-        winston.info( 'QuickServer: checking stale' );
-        await Promise.all( reposToCheck.map( async repo => {
-          if ( await isStale( repo ) ) {
-            staleRepos.push( repo );
-            winston.info( `QuickServer: ${repo} stale` );
-          }
-        } ) );
 
-        if ( staleRepos.length || forceTests ) {
-          forceTests = this.isTestMode;
-
-          winston.info( `QuickServer: stale repos: ${staleRepos}` );
-
-          for ( const repo of staleRepos ) {
-            winston.info( `QuickServer: pulling ${repo}` );
-            await gitPull( repo );
-          }
-
-          winston.info( 'QuickServer: cloning missing repos' );
-          const clonedRepos = await cloneMissingRepos();
-
-          for ( const repo of [ ...staleRepos, ...clonedRepos ] ) {
-            if ( [ 'chipper', 'perennial', 'perennial-alias' ].includes( repo ) ) {
-              winston.info( `QuickServer: npm update ${repo}` );
-              await npmUpdate( repo );
+        // wait 20 seconds before checking for stale repos to give multi-repo pushes a chance to make it in this round
+        setTimeout( () => {
+          winston.info( 'QuickServer: checking stale' );
+          await Promise.all( reposToCheck.map( async repo => {
+            if ( await isStale( repo ) ) {
+              staleRepos.push( repo );
+              winston.info( `QuickServer: ${repo} stale` );
             }
-          }
+          } ) );
 
-          winston.info( 'QuickServer: checking SHAs' );
-          const shas = {};
-          for ( const repo of reposToCheck ) {
-            shas[ repo ] = await gitRevParse( repo, 'master' );
-          }
+          const timestamp = Date.now();
 
-          winston.info( 'QuickServer: linting' );
-          const lintResult = await execute( gruntCommand, [ 'lint-everything', '--hide-progress-bar' ], `${this.rootDir}/perennial`, { errors: 'resolve' } );
+          if ( staleRepos.length || forceTests ) {
+            forceTests = this.isTestMode;
 
-          // Periodically clean chipper/dist, but not on the first time for easier local testing
-          if ( count++ % 10 === 2 ) {
-            await deleteDirectory( `${this.rootDir}/chipper/dist` );
-          }
+            winston.info( `QuickServer: stale repos: ${staleRepos}` );
 
-          winston.info( 'QuickServer: tsc' );
-          const tscResult = await execute( '../../node_modules/typescript/bin/tsc', [], `${this.rootDir}/chipper/tsconfig/all`, { errors: 'resolve' } );
+            for ( const repo of staleRepos ) {
+              winston.info( `QuickServer: pulling ${repo}` );
+              await gitPull( repo );
+            }
 
-          winston.info( 'QuickServer: transpiling' );
-          const transpileResult = await execute( 'node', [ 'js/scripts/transpile.js' ], `${this.rootDir}/chipper`, { errors: 'resolve' } );
+            winston.info( 'QuickServer: cloning missing repos' );
+            const clonedRepos = await cloneMissingRepos();
 
-          winston.info( 'QuickServer: sim fuzz' );
-
-          let simFuzz = null;
-          try {
-            await withServer( async port => {
-              const url = `http://localhost:${port}/natural-selection/natural-selection_en.html?brand=phet&ea&debugger&fuzz`;
-              const error = await puppeteerLoad( url, puppeteerOptions );
-              if ( error ) {
-                simFuzz = error;
+            for ( const repo of [ ...staleRepos, ...clonedRepos ] ) {
+              if ( [ 'chipper', 'perennial', 'perennial-alias' ].includes( repo ) ) {
+                winston.info( `QuickServer: npm update ${repo}` );
+                await npmUpdate( repo );
               }
-            } );
-          }
-          catch( e ) {
-            simFuzz = e;
-          }
+            }
 
-          winston.info( 'QuickServer: studio fuzz' );
-          let studioFuzz = null;
-          try {
-            await withServer( async port => {
-              const url = `http://localhost:${port}/studio/index.html?sim=states-of-matter&phetioElementsDisplay=all&fuzz`;
-              const error = await puppeteerLoad( url, puppeteerOptions );
-              if ( error ) {
-                studioFuzz = error;
-              }
-            } );
-          }
-          catch( e ) {
-            studioFuzz = e;
-          }
+            winston.info( 'QuickServer: checking SHAs' );
+            const shas = {};
+            for ( const repo of reposToCheck ) {
+              shas[ repo ] = await gitRevParse( repo, 'master' );
+            }
 
-          const executeResultToOutput = ( result, name ) => {
-            return {
-              passed: result.code === 0,
+            winston.info( 'QuickServer: linting' );
+            const lintResult = await execute( gruntCommand, [ 'lint-everything', '--hide-progress-bar' ], `${this.rootDir}/perennial`, { errors: 'resolve' } );
 
-              // full length message, used when someone clicks on a quickNode in CT for error details
-              message: `code: ${result.code}\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`,
+            // Periodically clean chipper/dist, but not on the first time for easier local testing
+            if ( count++ % 10 === 2 ) {
+              await deleteDirectory( `${this.rootDir}/chipper/dist` );
+            }
 
-              // trimmed down and separated error messages, used to track the state of individual errors and show
-              // abbreviated errors for the Slack CT Notifier
-              errorMessages: result.code === 0 ? [] : this.parseErrors( result.stdout, name )
+            winston.info( 'QuickServer: tsc' );
+            const tscResult = await execute( '../../node_modules/typescript/bin/tsc', [], `${this.rootDir}/chipper/tsconfig/all`, { errors: 'resolve' } );
+
+            winston.info( 'QuickServer: transpiling' );
+            const transpileResult = await execute( 'node', [ 'js/scripts/transpile.js' ], `${this.rootDir}/chipper`, { errors: 'resolve' } );
+
+            winston.info( 'QuickServer: sim fuzz' );
+
+            let simFuzz = null;
+            try {
+              await withServer( async port => {
+                const url = `http://localhost:${port}/natural-selection/natural-selection_en.html?brand=phet&ea&debugger&fuzz`;
+                const error = await puppeteerLoad( url, puppeteerOptions );
+                if ( error ) {
+                  simFuzz = error;
+                }
+              } );
+            }
+            catch( e ) {
+              simFuzz = e;
+            }
+
+            winston.info( 'QuickServer: studio fuzz' );
+            let studioFuzz = null;
+            try {
+              await withServer( async port => {
+                const url = `http://localhost:${port}/studio/index.html?sim=states-of-matter&phetioElementsDisplay=all&fuzz`;
+                const error = await puppeteerLoad( url, puppeteerOptions );
+                if ( error ) {
+                  studioFuzz = error;
+                }
+              } );
+            }
+            catch( e ) {
+              studioFuzz = e;
+            }
+
+            const executeResultToOutput = ( result, name ) => {
+              return {
+                passed: result.code === 0,
+
+                // full length message, used when someone clicks on a quickNode in CT for error details
+                message: `code: ${result.code}\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`,
+
+                // trimmed down and separated error messages, used to track the state of individual errors and show
+                // abbreviated errors for the Slack CT Notifier
+                errorMessages: result.code === 0 ? [] : this.parseErrors( result.stdout, name )
+              };
             };
-          };
-          const fuzzResultToOutput = ( result, name ) => {
-            if ( result === null ) {
-              return { passed: true, message: '', errorMessages: [] };
+            const fuzzResultToOutput = ( result, name ) => {
+              if ( result === null ) {
+                return { passed: true, message: '', errorMessages: [] };
+              }
+              else {
+                return { passed: false, message: '' + result, errorMessages: this.parseErrors( result, name ) };
+              }
+            };
+
+            // This would take up too much space
+            transpileResult.stdout = '';
+
+            this.testingState = {
+              lint: executeResultToOutput( lintResult, ctqType.LINT ),
+              tsc: executeResultToOutput( tscResult, ctqType.TSC ),
+              transpile: executeResultToOutput( transpileResult, ctqType.TRANSPILE ),
+              simFuzz: fuzzResultToOutput( simFuzz, ctqType.SIM_FUZZ ),
+              studioFuzz: fuzzResultToOutput( studioFuzz, ctqType.STUDIO_FUZZ ),
+              shas: shas,
+              timestamp: timestamp
+            };
+
+            try {
+              const broken = !this.testingState.lint.passed ||
+                             !this.testingState.tsc.passed ||
+                             !this.testingState.transpile.passed ||
+                             !this.testingState.simFuzz.passed ||
+                             !this.testingState.studioFuzz.passed;
+
+              await this.reportErrorStatus( broken, lastBroken );
+
+              lastBroken = broken;
             }
-            else {
-              return { passed: false, message: '' + result, errorMessages: this.parseErrors( result, name ) };
+            catch( e ) {
+              winston.info( `Slack error: ${e}` );
             }
-          };
-
-          // This would take up too much space
-          transpileResult.stdout = '';
-
-          this.testingState = {
-            lint: executeResultToOutput( lintResult, ctqType.LINT ),
-            tsc: executeResultToOutput( tscResult, ctqType.TSC ),
-            transpile: executeResultToOutput( transpileResult, ctqType.TRANSPILE ),
-            simFuzz: fuzzResultToOutput( simFuzz, ctqType.SIM_FUZZ ),
-            studioFuzz: fuzzResultToOutput( studioFuzz, ctqType.STUDIO_FUZZ ),
-            shas: shas,
-            timestamp: timestamp
-          };
-
-          try {
-            const broken = !this.testingState.lint.passed ||
-                           !this.testingState.tsc.passed ||
-                           !this.testingState.transpile.passed ||
-                           !this.testingState.simFuzz.passed ||
-                           !this.testingState.studioFuzz.passed;
-
-            await this.reportErrorStatus( broken, lastBroken );
-
-            lastBroken = broken;
           }
-          catch( e ) {
-            winston.info( `Slack error: ${e}` );
-          }
-        }
+        }, 20000 );
       }
       catch( e ) {
         winston.info( `QuickServer error: ${e}` );
