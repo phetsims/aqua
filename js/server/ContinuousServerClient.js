@@ -41,16 +41,16 @@ class ContinuousServerClient {
    */
   newClientWorker( workerList, workerNumber ) {
 
-    console.log( 'New worker instance:', workerNumber );
+    console.log( `Worker${workerNumber} new instance` );
 
     const worker = new Worker( `${this.rootDir}/aqua/js/server/puppeteerCTClient.js`, { argv: [ 'Bayes%20Puppeteer' ] } );
 
     workerList.push( worker );
 
-    worker.on( 'message', message => { console.log( 'Message from puppeteerClient:', message ); } );
-    worker.on( 'error', e => { console.error( 'Error from puppeteerClient:', e ); } );
+    worker.on( 'message', message => { console.log( `Worker${workerNumber} Message from puppeteerClient:`, message ); } );
+    worker.on( 'error', e => { console.error( `Worker${workerNumber} Message from puppeteerClient:`, e ); } );
     worker.on( 'exit', code => {
-      console.log( 'Worker instance complete:', workerNumber );
+      console.log( `Worker${workerNumber} instance complete` );
       const index = _.indexOf( workerList, worker );
       assert( index !== -1, 'worker must be in list' );
       workerList.splice( index, 1 );
