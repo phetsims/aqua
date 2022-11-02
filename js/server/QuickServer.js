@@ -101,9 +101,6 @@ class QuickServer {
     while ( true ) { // eslint-disable-line no-constant-condition
 
       try {
-
-        winston.info( 'QuickServer: cycle start' );
-
         const reposToCheck = getRepoList( 'active-repos' ).filter( repo => repo !== 'aqua' );
         const staleRepos = [];
 
