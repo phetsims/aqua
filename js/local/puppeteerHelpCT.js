@@ -6,7 +6,7 @@
  */
 
 
-const puppeteer = require( 'puppeteer' );
+const puppeteerLoad = require( '../../../perennial-alias/js/common/puppeteerLoad' );
 const assert = require( 'assert' );
 
 process.on( 'SIGINT', () => process.exit() );
@@ -14,14 +14,11 @@ process.on( 'SIGINT', () => process.exit() );
 ( async () => {
 
   assert( process.argv[ 2 ], 'usage: node puppeteerHelpCT {{SOME_IDENTIFIER_HERE}}' );
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
+  while ( true ) { // eslint-disable-line no-constant-condition
 
-  page.on( 'console', msg => console.log( msg.text() ) );
-  page.on( 'error', msg => console.error( 'error from puppeteer', msg ) );
-  page.on( 'pageerror', msg => console.error( 'pageerror from puppeteer', msg ) );
-
-  // may throw an Error
-  await page.goto( `https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-loop.html?id=localPuppeteer${process.argv[ 2 ]}` );
+    await puppeteerLoad( `https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-loop.html?id=localPuppeteer${process.argv[ 2 ]}`, {
+      waitAfterLoad: 100000
+    } );
+  }
 } )();
 
