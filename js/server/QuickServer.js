@@ -173,10 +173,7 @@ class QuickServer {
           try {
             await withServer( async port => {
               const url = `http://localhost:${port}/natural-selection/natural-selection_en.html?brand=phet&ea&debugger&fuzz`;
-              const error = await puppeteerLoad( url, puppeteerOptions );
-              if ( error ) {
-                simFuzz = error;
-              }
+              await puppeteerLoad( url, puppeteerOptions );
             } );
           }
           catch( e ) {
@@ -188,10 +185,7 @@ class QuickServer {
           try {
             await withServer( async port => {
               const url = `http://localhost:${port}/studio/index.html?sim=states-of-matter&phetioElementsDisplay=all&fuzz`;
-              const error = await puppeteerLoad( url, puppeteerOptions );
-              if ( error ) {
-                studioFuzz = error;
-              }
+              await puppeteerLoad( url, puppeteerOptions );
             } );
           }
           catch( e ) {

@@ -21,7 +21,7 @@ process.on( 'SIGINT', () => process.exit() );
     puppeteerTimeout: 1000000000,
 
     // A page error is what we are testing for. Don't fail the browser instance out when an assertion occurs
-    resolvePageErrors: false,
+    rejectPageErrors: false,
 
     launchOptions: {
 
