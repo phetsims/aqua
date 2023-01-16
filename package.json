@@ -17,6 +17,9 @@
   },
   "eslintConfig": {
     "extends": "../chipper/eslint/node_eslintrc.js",
+    "rules": {
+      "todo-should-have-issue": "off"
+    },
     "globals": {
       "aqua": "readonly",
       "XMLHttpRequest": "readonly",
