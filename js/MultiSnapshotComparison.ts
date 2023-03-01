@@ -454,14 +454,14 @@ type Frame = {
         font: new Font( { size: 10, family: 'Menlo, Consolas, Courier, monospace' } )
       } );
       snapshot.hashProperty.link( hash => {
-        hashText.text = hash || '-';
+        hashText.string = hash || '-';
       } );
 
       const frameText = new Text( '0', {
         font: new Font( { size: 12 } )
       } );
       snapshot.frameCountProperty.link( frameCount => {
-        frameText.text = frameCount;
+        frameText.string = frameCount;
       } );
       snapshot.hasErroredProperty.link( hasErrored => {
         frameText.fill = hasErrored ? '#f00' : '#bbb';

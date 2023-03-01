@@ -97,10 +97,10 @@ if ( options.full ) {
   } );
   Multilink.multilink( [ statusProperty, startupTimestampProperty, lastErrorProperty ], ( status, startupTimestamp, lastError ) => {
     if ( startupTimestamp ) {
-      statusNode.text = `${lastError.length ? '[ERR] ' : ''}Running since [${new Date( startupTimestamp ).toLocaleString()}], status: ${status}`;
+      statusNode.string = `${lastError.length ? '[ERR] ' : ''}Running since [${new Date( startupTimestamp ).toLocaleString()}], status: ${status}`;
     }
     else {
-      statusNode.text = `${lastError.length ? '[ERR] ' : ''}status: ${status}`;
+      statusNode.string = `${lastError.length ? '[ERR] ' : ''}status: ${status}`;
     }
   } );
   statusNode.addInputListener( new FireListener( {

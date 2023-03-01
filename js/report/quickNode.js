@@ -48,7 +48,7 @@ quickTimestampText.addInputListener( new FireListener( {
 } ) );
 quickStatusProperty.lazyLink( quickStatus => {
   if ( quickStatus && quickStatus.timestamp ) {
-    quickTimestampText.text = new Date( quickStatus.timestamp ).toLocaleString();
+    quickTimestampText.string = new Date( quickStatus.timestamp ).toLocaleString();
   }
 } );
 
