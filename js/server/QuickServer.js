@@ -113,7 +113,7 @@ class QuickServer {
     while ( true ) { // eslint-disable-line no-constant-condition
 
       try {
-        const reposToCheck = getRepoList( 'active-repos' ).filter( repo => repo !== 'aqua' );
+        const reposToCheck = getRepoList( 'active-repos' );
 
         let staleRepos = await this.getStaleReposFrom( reposToCheck );
 

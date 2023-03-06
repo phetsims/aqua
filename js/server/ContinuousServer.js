@@ -470,7 +470,7 @@ class ContinuousServer {
     // initial NPM checks, so that all repos will have node_modules that need them
     for ( const repo of getRepoList( 'active-repos' ) ) {
       this.setStatus( `Running initial node_modules checks: ${repo}` );
-      if ( repo !== 'aqua' && fs.existsSync( `../${repo}/package.json` ) && !fs.existsSync( `../${repo}/node_modules` ) ) {
+      if ( fs.existsSync( `../${repo}/package.json` ) && !fs.existsSync( `../${repo}/node_modules` ) ) {
         await npmUpdate( repo );
       }
     }
@@ -490,7 +490,7 @@ class ContinuousServer {
       try {
         const staleMessage = wasStale ? 'Changes detected, waiting for stable SHAs' : 'No changes';
 
-        const reposToCheck = getRepoList( 'active-repos' ).filter( repo => repo !== 'aqua' );
+        const reposToCheck = getRepoList( 'active-repos' );
 
         const staleRepos = await asyncFilter( reposToCheck, async repo => {
           this.setStatus( `${staleMessage}; checking ${repo}` );
