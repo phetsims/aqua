@@ -64,6 +64,7 @@ module.exports = grunt => {
   grunt.registerTask(
     'quick-server',
     'Launches a quick server with the following options:\n' +
+    '--testing : for running locally (will immediately kick into testing instead of waiting for changes)\n' +
     '--port=PORT : specify a custom port for the server interface\n',
     () => {
       // We don't finish! Don't tell grunt this...

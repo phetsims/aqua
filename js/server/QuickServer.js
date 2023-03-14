@@ -63,7 +63,7 @@ class QuickServer {
     // @public {boolean} - whether we are in testing mode. if true, tests are continuously forced to run
     this.isTestMode = options.isTestMode;
 
-    // @private {string[]} - errors found in any given loop
+    // @private {string[]} - errors found in any given loop from any portion of the testing state
     this.errorMessages = [];
   }
 
@@ -104,7 +104,7 @@ class QuickServer {
     } );
 
     const puppeteerOptions = {
-      waitAfterLoad: 10000,
+      waitAfterLoad: this.isTestMode ? 3000 : 10000,
       allowedTimeToLoad: 120000,
       puppeteerTimeout: 120000,
       browser: browser
@@ -113,7 +113,7 @@ class QuickServer {
     while ( true ) { // eslint-disable-line no-constant-condition
 
       try {
-        const reposToCheck = getRepoList( 'active-repos' );
+        const reposToCheck = this.isTestMode ? [ 'natural-selection' ] : getRepoList( 'active-repos' );
 
         let staleRepos = await this.getStaleReposFrom( reposToCheck );
 
@@ -157,12 +157,12 @@ class QuickServer {
           const lintResult = await execute( gruntCommand, [ 'lint-everything', '--hide-progress-bar' ], `${this.rootDir}/perennial`, { errors: 'resolve' } );
 
           // Periodically clean chipper/dist, but not on the first time for easier local testing
-          if ( count++ % 10 === 2 ) {
+          if ( count++ % 10 === 2 && !this.isTestMode ) {
             await deleteDirectory( `${this.rootDir}/chipper/dist` );
           }
 
           winston.info( 'QuickServer: tsc' );
-          const tscResult = await execute( '../../node_modules/typescript/bin/tsc', [], `${this.rootDir}/chipper/tsconfig/all`, { errors: 'resolve' } );
+          const tscResult = await execute( '../../../chipper/node_modules/typescript/bin/tsc', [], `${this.rootDir}/chipper/tsconfig/all`, { errors: 'resolve' } );
 
           winston.info( 'QuickServer: transpiling' );
           const transpileResult = await execute( 'node', [ 'js/scripts/transpile.js' ], `${this.rootDir}/chipper`, { errors: 'resolve' } );
@@ -201,7 +201,7 @@ class QuickServer {
 
               // trimmed down and separated error messages, used to track the state of individual errors and show
               // abbreviated errors for the Slack CT Notifier
-              errorMessages: result.code === 0 ? [] : this.parseErrors( result.stdout, name )
+              errorMessages: result.code === 0 ? [] : this.parseCompositeError( result.stdout, name )
             };
           };
           const fuzzResultToOutput = ( result, name ) => {
@@ -209,7 +209,7 @@ class QuickServer {
               return { passed: true, message: '', errorMessages: [] };
             }
             else {
-              return { passed: false, message: '' + result, errorMessages: this.parseErrors( result, name ) };
+              return { passed: false, message: '' + result, errorMessages: this.parseCompositeError( result, name ) };
             }
           };
 
@@ -282,7 +282,7 @@ class QuickServer {
    * @param {boolean} broken
    * @param {boolean} lastBroken
    * @private
-   * TODO for @chrisklus: add comments to this function
+   * TODO for @chrisklus: add comments to this function https://github.com/phetsims/aqua/issues/166
    */
   async reportErrorStatus( broken, lastBroken ) {
     if ( lastBroken === true && !broken ) {
@@ -295,10 +295,12 @@ class QuickServer {
       let newErrorCount = 0;
       const previousErrorsFound = [];
 
-      const check = result => {
-        if ( !result.passed ) {
-          result.errorMessages.forEach( errorMessage => {
+      const checkForNewErrors = testResult => {
+        if ( !testResult.passed ) {
+          testResult.errorMessages.forEach( errorMessage => {
             if ( _.every( this.errorMessages, preExistingErrorMessage => {
+
+              // TODO: can't this replace be done earlier in the error parsing? https://github.com/phetsims/aqua/issues/166
               const preExistingErrorMessageWithNoSpaces = preExistingErrorMessage.replace( /\s/g, '' );
               const newErrorMessageWithNoSpaces = errorMessage.replace( /\s/g, '' );
               return preExistingErrorMessageWithNoSpaces !== newErrorMessageWithNoSpaces;
@@ -314,11 +316,11 @@ class QuickServer {
         }
       };
 
-      check( this.testingState.lint );
-      check( this.testingState.tsc );
-      check( this.testingState.transpile );
-      check( this.testingState.simFuzz );
-      check( this.testingState.studioFuzz );
+      checkForNewErrors( this.testingState.lint );
+      checkForNewErrors( this.testingState.tsc );
+      checkForNewErrors( this.testingState.transpile );
+      checkForNewErrors( this.testingState.simFuzz );
+      checkForNewErrors( this.testingState.studioFuzz );
 
       if ( message.length > 0 ) {
 
@@ -364,7 +366,7 @@ class QuickServer {
    * @returns {string[]}
    * @private
    */
-  parseErrors( message, name ) {
+  parseCompositeError( message, name ) {
     const errorMessages = [];
 
     // most lint and tsc errors have a file associated with them. look for them in a line via slashes
@@ -376,11 +378,12 @@ class QuickServer {
     if ( name === ctqType.LINT ) {
       let currentFilename = null;
 
+      // TODO: oh no, perhaps different formatting from testing on Windows? https://github.com/phetsims/aqua/issues/166
       // look for a filename. once found, all subsequent lines are an individual errors to add until a blank line is reached
       messageLines.forEach( line => {
         if ( currentFilename ) {
           if ( line.length > 0 ) {
-            errorMessages.push( `lint: ${currentFilename}${line}` );
+            errorMessages.push( `lint: ${currentFilename}${line}` ); // TODO: ?? line.replace( /\s+/, ' ' ) https://github.com/phetsims/aqua/issues/166
           }
           else {
             currentFilename = null;
