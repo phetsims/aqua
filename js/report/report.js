@@ -31,6 +31,12 @@ const options = QueryStringMachine.getAll( {
     defaultValue: -1 // when -1, will show all columns
   },
 
+  // Initial population of the filter text input.
+  filterString: {
+    type: 'string',
+    defaultValue: ''
+  },
+
   full: {
     type: 'boolean',
     defaultValue: true
@@ -80,7 +86,7 @@ if ( options.full ) {
   const expandedReposProperty = new Property( [] );
 
   // {Property.<string>}
-  const filterStringProperty = new Property( '' );
+  const filterStringProperty = new Property( options.filterString );
 
   const Sort = EnumerationDeprecated.byKeys( [ 'ALPHABETICAL', 'IMPORTANCE', 'AVERAGE_TIME', 'WEIGHT' ] );
 
@@ -115,6 +121,7 @@ if ( options.full ) {
 
   const filterElement = document.createElement( 'input' );
   filterElement.type = 'text';
+  filterElement.value = filterStringProperty.value; // initial value from options
 
   filterElement.addEventListener( 'change', () => {
     filterStringProperty.value = filterElement.value;
