@@ -122,13 +122,20 @@ function setup( simNames ) {
   iframe.setAttribute( 'height', options.simHeight );
   document.body.appendChild( iframe );
 
+  const buttonsDiv = document.createElement( 'div' );
+  document.body.appendChild( buttonsDiv );
+
   const snapshotButton = document.createElement( 'button' );
   snapshotButton.textContent = 'Start Snapshot';
-  snapshotButton.style.display = 'block';
-  document.body.appendChild( snapshotButton );
+  buttonsDiv.appendChild( snapshotButton );
+
+  const clearComparisonsButton = document.createElement( 'button' );
+  clearComparisonsButton.textContent = 'Clear Comparisons';
+  buttonsDiv.appendChild( clearComparisonsButton );
 
   const comparisonDiv = document.createElement( 'div' );
   document.body.appendChild( comparisonDiv );
+  clearComparisonsButton.addEventListener( 'click', () => { comparisonDiv.innerHTML = ''; } );
 
   const rowMap = {};
   const table = document.createElement( 'table' );
