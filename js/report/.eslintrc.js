@@ -3,7 +3,7 @@
 
 
 module.exports = {
-  extends: '../../../chipper/eslint/sim_eslintrc.js',
+  extends: '../../../chipper/eslint/phet-library_eslintrc.js',
 
   rules: {
     'bad-sim-text': 'off'
