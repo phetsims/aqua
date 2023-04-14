@@ -465,13 +465,18 @@ class QuickServer {
     const errorMessages = [];
 
     // most lint and tsc errors have a file associated with them. look for them in a line via slashes
+    // TODO: not quite sure this is strong enough of a regex
     const fileNameRegex = /.*\/.+\/.+\/.+\/.+/;
-
-    // split up the error message by line for parsing
-    const messageLines = message.split( /\r?\n/ );
 
     if ( name === ctqType.LINT ) {
       let currentFilename = null;
+
+      const IMPORTANT_MESSAGE = 'All results (repeated from above)';
+      assert( message.includes( IMPORTANT_MESSAGE ), 'expected formatting from lint' );
+      message = message.split( IMPORTANT_MESSAGE )[ 1 ];
+
+      // split up the error message by line for parsing
+      const messageLines = message.split( /\r?\n/ ).filter( x => x.length > 0 );
 
       // TODO: oh no, perhaps different formatting from testing on Windows? https://github.com/phetsims/aqua/issues/166
       // look for a filename. once found, all subsequent lines are an individual errors to add until a blank line is reached
@@ -491,6 +496,11 @@ class QuickServer {
     }
     else if ( name === ctqType.TSC ) {
       let currentError = '';
+
+      // split up the error message by line for parsing
+      // TODO: factor out carriage return?
+      // TODO: also filter on empty lines like lint does?
+      const messageLines = message.split( /\r?\n/ );
 
       const addCurrentError = () => {
         if ( currentError.length ) {
