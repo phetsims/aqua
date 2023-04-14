@@ -41,8 +41,11 @@ const jsonHeaders = {
   'Access-Control-Allow-Origin': '*'
 };
 
-// For now, provide an initial message every time, so treat it as broken when it starts
-let lastBroken = false;
+const FUZZ_SIM = 'natural-selection';
+const STUDIO_FUZZ_SIM = 'states-of-matter';
+const WAIT_BETWEEN_RUNS = 20000; // in ms
+
+const EXECUTE_OPTIONS = { errors: 'resolve' };
 
 class QuickServer {
   constructor( options ) {
@@ -53,8 +56,8 @@ class QuickServer {
       ...options
     };
 
-    // @public {*}
-    this.testingState = {};
+    // @public {*} - the tests object stores the results of tests so that they can be iterated through for "all results"
+    this.testingState = { tests: {} };
 
     // @public {string} - root of your GitHub working copy, relative to the name of the directory that the
     // currently-executing script resides in
@@ -65,6 +68,18 @@ class QuickServer {
 
     // @private {string[]} - errors found in any given loop from any portion of the testing state
     this.errorMessages = [];
+
+    // Keep track of if we should wait for the next test or not kick it off immediately.
+    this.forceTests = this.isTestMode;
+
+    // How many times has the quick-test loop run
+    this.testCount = 0;
+
+    // For now, provide an initial message every time, so treat it as broken when it starts
+    this.lastBroken = false;
+
+    // Passed to puppeteerLoad()
+    this.puppeteerOptions = {};
   }
 
   // @private
@@ -83,9 +98,6 @@ class QuickServer {
    * @public
    */
   async startMainLoop() {
-    // Let it execute tests on startup once
-    let forceTests = true;
-    let count = 0;
 
     // Launch the browser once and reuse it to generate new pages in puppeteerLoad
     const browser = await puppeteer.launch( {
@@ -103,7 +115,7 @@ class QuickServer {
       ]
     } );
 
-    const puppeteerOptions = {
+    this.puppeteerOptions = {
       waitAfterLoad: this.isTestMode ? 3000 : 10000,
       allowedTimeToLoad: 120000,
       puppeteerTimeout: 120000,
@@ -112,141 +124,181 @@ class QuickServer {
 
     while ( true ) { // eslint-disable-line no-constant-condition
 
-      try {
-        const reposToCheck = this.isTestMode ? [ 'natural-selection' ] : getRepoList( 'active-repos' );
+      // Run the test, and let us know if we should wait for next test, or proceed immediately.
+      await this.runQuickTest();
 
-        let staleRepos = await this.getStaleReposFrom( reposToCheck );
+      !this.forceTests && await new Promise( resolve => setTimeout( resolve, WAIT_BETWEEN_RUNS ) );
+    }
+  }
 
-        const timestamp = Date.now();
+  /**
+   * @private
+   */
+  async runQuickTest() {
 
-        if ( staleRepos.length || forceTests ) {
-          forceTests = this.isTestMode;
+    try {
+      const reposToCheck = this.isTestMode ? [ 'natural-selection' ] : getRepoList( 'active-repos' );
 
-          // don't hold for 20 seconds when forcing.
-          if ( !forceTests ) {
+      const staleRepos = await this.getStaleReposFrom( reposToCheck );
 
-            // wait 20 seconds before checking for stale repos to give multi-repo pushes a chance to make it in this round
-            await new Promise( resolve => setTimeout( resolve, 20000 ) );
-            staleRepos = await this.getStaleReposFrom( reposToCheck );
-          }
+      const timestamp = Date.now();
 
-          winston.info( `QuickServer: stale repos: ${staleRepos}` );
+      if ( staleRepos.length || this.forceTests ) {
 
-          for ( const repo of staleRepos ) {
-            winston.info( `QuickServer: pulling ${repo}` );
-            await gitPull( repo );
-          }
+        winston.info( `QuickServer: stale repos: ${staleRepos}` );
 
-          winston.info( 'QuickServer: cloning missing repos' );
-          const clonedRepos = await cloneMissingRepos();
+        const shas = await this.synchronizeRepos( staleRepos, reposToCheck );
 
-          for ( const repo of [ ...staleRepos, ...clonedRepos ] ) {
-            if ( [ 'chipper', 'perennial', 'perennial-alias' ].includes( repo ) ) {
-              winston.info( `QuickServer: npm update ${repo}` );
-              await npmUpdate( repo );
-            }
-          }
+        // TODO: get rid of result and move to synchronizeRepos();
+        const transpileResult = await this.testTranspile();
 
-          winston.info( 'QuickServer: checking SHAs' );
-          const shas = {};
-          for ( const repo of reposToCheck ) {
-            shas[ repo ] = await gitRevParse( repo, 'master' );
-          }
+        // This would take up too much spa  ce
+        transpileResult.stdout = '';
 
-          winston.info( 'QuickServer: linting' );
-          const lintResult = await execute( gruntCommand, [ 'lint-everything', '--hide-progress-bar' ], `${this.rootDir}/perennial`, { errors: 'resolve' } );
+        // Run the tests and get the results
+        this.testingState = {
+          tests: {
+            lint: this.executeResultToOutput( await this.testLint(), ctqType.LINT ),
+            tsc: this.executeResultToOutput( await this.testTSC(), ctqType.TSC ),
+            transpile: this.executeResultToOutput( transpileResult, ctqType.TRANSPILE ),
+            simFuzz: this.fuzzResultToOutput( await this.testSimFuzz(), ctqType.SIM_FUZZ ),
+            studioFuzz: this.fuzzResultToOutput( await this.testStudioFuzz(), ctqType.STUDIO_FUZZ )
+          },
+          shas: shas,
+          timestamp: timestamp
+        };
 
-          // Periodically clean chipper/dist, but not on the first time for easier local testing
-          if ( count++ % 10 === 2 && !this.isTestMode ) {
-            await deleteDirectory( `${this.rootDir}/chipper/dist` );
-          }
+        const broken = this.isBroken( this.testingState );
 
-          winston.info( 'QuickServer: tsc' );
-          const tscResult = await execute( '../../../chipper/node_modules/typescript/bin/tsc', [], `${this.rootDir}/chipper/tsconfig/all`, { errors: 'resolve' } );
+        winston.info( `QuickServer broken: ${broken}` );
 
-          winston.info( 'QuickServer: transpiling' );
-          const transpileResult = await execute( 'node', [ 'js/scripts/transpile.js' ], `${this.rootDir}/chipper`, { errors: 'resolve' } );
+        await this.reportErrorStatus( broken );
 
-          winston.info( 'QuickServer: sim fuzz' );
-
-          let simFuzz = null;
-          try {
-            await withServer( async port => {
-              const url = `http://localhost:${port}/natural-selection/natural-selection_en.html?brand=phet&ea&debugger&fuzz`;
-              await puppeteerLoad( url, puppeteerOptions );
-            } );
-          }
-          catch( e ) {
-            simFuzz = e;
-          }
-
-          winston.info( 'QuickServer: studio fuzz' );
-          let studioFuzz = null;
-          try {
-            await withServer( async port => {
-              const url = `http://localhost:${port}/studio/index.html?sim=states-of-matter&phetioElementsDisplay=all&fuzz`;
-              await puppeteerLoad( url, puppeteerOptions );
-            } );
-          }
-          catch( e ) {
-            studioFuzz = e;
-          }
-
-          const executeResultToOutput = ( result, name ) => {
-            return {
-              passed: result.code === 0,
-
-              // full length message, used when someone clicks on a quickNode in CT for error details
-              message: `code: ${result.code}\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`,
-
-              // trimmed down and separated error messages, used to track the state of individual errors and show
-              // abbreviated errors for the Slack CT Notifier
-              errorMessages: result.code === 0 ? [] : this.parseCompositeError( result.stdout, name )
-            };
-          };
-          const fuzzResultToOutput = ( result, name ) => {
-            if ( result === null ) {
-              return { passed: true, message: '', errorMessages: [] };
-            }
-            else {
-              return { passed: false, message: '' + result, errorMessages: this.parseCompositeError( result, name ) };
-            }
-          };
-
-          // This would take up too much space
-          transpileResult.stdout = '';
-
-          this.testingState = {
-            lint: executeResultToOutput( lintResult, ctqType.LINT ),
-            tsc: executeResultToOutput( tscResult, ctqType.TSC ),
-            transpile: executeResultToOutput( transpileResult, ctqType.TRANSPILE ),
-            simFuzz: fuzzResultToOutput( simFuzz, ctqType.SIM_FUZZ ),
-            studioFuzz: fuzzResultToOutput( studioFuzz, ctqType.STUDIO_FUZZ ),
-            shas: shas,
-            timestamp: timestamp
-          };
-
-          try {
-            const broken = !this.testingState.lint.passed ||
-                           !this.testingState.tsc.passed ||
-                           !this.testingState.transpile.passed ||
-                           !this.testingState.simFuzz.passed ||
-                           !this.testingState.studioFuzz.passed;
-
-            await this.reportErrorStatus( broken, lastBroken );
-
-            lastBroken = broken;
-          }
-          catch( e ) {
-            winston.info( `Slack error: ${e}` );
-          }
-        }
+        this.lastBroken = broken;
       }
-      catch( e ) {
-        winston.info( `QuickServer error: ${e}` );
-        forceTests = true;
+      this.forceTests = this.isTestMode;
+    }
+    catch( e ) {
+      winston.info( `QuickServer error: ${e}` );
+      console.error( e );
+      this.forceTests = true; // ensure we immediately kick off next test
+    }
+  }
+
+  /**
+   * @private
+   * @param {Object} testingState
+   * @returns {boolean}
+   */
+  isBroken( testingState = this.testingState ) {
+    return _.some( Object.keys( testingState.tests ), name => !testingState.tests[ name ].passed );
+  }
+
+  /**
+   * @private
+   @returns {Promise<{code:number,stdout:string,stderr:string}>}
+   */
+  async testLint() {
+    winston.info( 'QuickServer: linting' );
+    return execute( gruntCommand, [ 'lint-everything', '--hide-progress-bar' ], `${this.rootDir}/perennial`, EXECUTE_OPTIONS );
+  }
+
+  /**
+   * @private
+   * @returns {Promise<{code:number,stdout:string,stderr:string}>}
+   */
+  async testTSC() {
+    winston.info( 'QuickServer: tsc' );
+
+    // Use the "node" executable so that it works across platforms, launching `tsc` as the command on windows results in ENOENT -4058.
+    return execute( 'node', [ '../../../chipper/node_modules/typescript/bin/tsc' ],
+      `${this.rootDir}/chipper/tsconfig/all`, EXECUTE_OPTIONS );
+  }
+
+  /**
+   * @private
+   * @returns {Promise<{code:number,stdout:string,stderr:string}>}
+   */
+  async testTranspile() {
+    winston.info( 'QuickServer: transpiling' );
+    return execute( 'node', [ 'js/scripts/transpile.js' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
+  }
+
+  /**
+   * @private
+   * @returns {Promise<string|null>}
+   */
+  async testSimFuzz() {
+    winston.info( 'QuickServer: sim fuzz' );
+
+    let simFuzz = null;
+    try {
+      await withServer( async port => {
+        const url = `http://localhost:${port}/${FUZZ_SIM}/${FUZZ_SIM}_en.html?brand=phet&ea&debugger&fuzz`;
+        await puppeteerLoad( url, this.puppeteerOptions );
+      } );
+    }
+    catch( e ) {
+      simFuzz = e;
+    }
+    return simFuzz;
+  }
+
+  /**
+   * @private
+   * @returns {Promise<string|null>}
+   */
+  async testStudioFuzz() {
+    winston.info( 'QuickServer: studio fuzz' );
+
+    let studioFuzz = null;
+    try {
+      await withServer( async port => {
+        const url = `http://localhost:${port}/studio/index.html?sim=${STUDIO_FUZZ_SIM}&phetioElementsDisplay=all&fuzz`;
+        await puppeteerLoad( url, this.puppeteerOptions );
+      } );
+    }
+    catch( e ) {
+      studioFuzz = e;
+    }
+    return studioFuzz;
+  }
+
+  /**
+   * @private
+   * @param {string[]} staleRepos
+   * @param {string[]} allRepos
+   * @returns {Promise<Object<string,string>>} - shas for repos
+   */
+  async synchronizeRepos( staleRepos, allRepos ) {
+    for ( const repo of staleRepos ) {
+      winston.info( `QuickServer: pulling ${repo}` );
+      await gitPull( repo );
+    }
+
+    winston.info( 'QuickServer: cloning missing repos' );
+    const clonedRepos = await cloneMissingRepos();
+
+    for ( const repo of [ ...staleRepos, ...clonedRepos ] ) {
+      if ( [ 'chipper', 'perennial', 'perennial-alias' ].includes( repo ) ) {
+        winston.info( `QuickServer: npm update ${repo}` );
+        await npmUpdate( repo );
       }
     }
+
+    winston.info( 'QuickServer: checking SHAs' );
+    const shas = {};
+    for ( const repo of allRepos ) {
+      shas[ repo ] = await gitRevParse( repo, 'master' );
+    }
+
+    // Periodically clean chipper/dist, but not on the first time for easier local testing
+    // If CTQ takes 1 minute to run, then this will happen every 16 hours or so.
+    if ( this.testCount++ % 1000 === 999 && !this.isTestMode ) {
+      await deleteDirectory( `${this.rootDir}/chipper/dist` );
+    }
+
+    return shas;
   }
 
   /**
@@ -284,11 +336,15 @@ class QuickServer {
    * @private
    * TODO for @chrisklus: add comments to this function https://github.com/phetsims/aqua/issues/166
    */
-  async reportErrorStatus( broken, lastBroken ) {
+  async reportErrorStatus( broken, lastBroken = this.lastBroken ) {
     if ( lastBroken === true && !broken ) {
       this.errorMessages.length = 0;
       winston.info( 'broken -> passing, sending CTQ passing message to Slack' );
       await sendSlackMessage( 'CTQ passing', this.isTestMode );
+    }
+    else if ( !broken && this.testCount === 1 ) {
+      winston.info( 'startup -> passing, sending CTQ startup-passing message to Slack' );
+      await sendSlackMessage( 'CTQ started up and passing', this.isTestMode );
     }
     else if ( broken ) {
       let message = '';
@@ -316,11 +372,9 @@ class QuickServer {
         }
       };
 
-      checkForNewErrors( this.testingState.lint );
-      checkForNewErrors( this.testingState.tsc );
-      checkForNewErrors( this.testingState.transpile );
-      checkForNewErrors( this.testingState.simFuzz );
-      checkForNewErrors( this.testingState.studioFuzz );
+      Object.keys( this.testingState.tests ).forEach( testKeyName => {
+        checkForNewErrors( this.testingState.tests[ testKeyName ] );
+      } );
 
       if ( message.length > 0 ) {
 
@@ -333,7 +387,7 @@ class QuickServer {
             assert && assert( lastBroken, 'Last cycle must be broken if pre-existing errors were found' );
             const sForError = previousErrorsFound.length > 1 ? 's' : '';
             const sForRemain = previousErrorsFound.length === 1 ? 's' : '';
-            message += `\n${previousErrorsFound.length} other pre-existing error${sForError} remain${sForRemain}.`;
+            message += `\n${previousErrorsFound.length} pre-existing error${sForError} remain${sForRemain}.`;
           }
           else {
             assert && assert( lastBroken, 'Last cycle must be broken if no pre-existing errors were found and you made it here' );
@@ -345,8 +399,14 @@ class QuickServer {
           message = 'CTQ failing:\n```' + message + '```';
         }
 
-        winston.info( message );
-        await sendSlackMessage( message, this.isTestMode );
+        try {
+          winston.info( `Sending to slack: ${message}` );
+          await sendSlackMessage( message, this.isTestMode );
+        }
+        catch( e ) {
+          winston.info( `Slack error: ${e}` );
+          console.error( e );
+        }
       }
       else {
         winston.info( 'broken -> broken, no new failures to report to Slack' );
@@ -355,6 +415,41 @@ class QuickServer {
     }
     else {
       winston.info( 'passing -> passing' );
+    }
+  }
+
+  /**
+   * @private
+   * @param {string} result
+   * @param {string} name
+   * @returns {{errorMessages: string[], passed: boolean, message: string}}
+   */
+  executeResultToOutput( result, name ) {
+    return {
+      passed: result.code === 0,
+
+      // full length message, used when someone clicks on a quickNode in CT for error details
+      message: `code: ${result.code}\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`,
+
+      // trimmed down and separated error messages, used to track the state of individual errors and show
+      // abbreviated errors for the Slack CT Notifier
+      errorMessages: result.code === 0 ? [] : this.parseCompositeError( result.stdout, name )
+    };
+  }
+
+
+  /**
+   * @private
+   * @param {string} result
+   * @param {string} name
+   * @returns {{errorMessages: string[], passed: boolean, message: string}}
+   */
+  fuzzResultToOutput( result, name ) {
+    if ( result === null ) {
+      return { passed: true, message: '', errorMessages: [] };
+    }
+    else {
+      return { passed: false, message: '' + result, errorMessages: this.parseCompositeError( result, name ) };
     }
   }
 
