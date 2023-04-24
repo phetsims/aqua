@@ -18,7 +18,7 @@ module.exports = {
       name: 'ct-chrome-clients',
       cwd: '/data/share/phet/continuous-testing/ct-chrome-clients/aqua',
       script: 'grunt',
-      args: 'client-server --clients=10'
+      args: 'client-server --clients=100'
     }
   ]
 };
