@@ -27,8 +27,8 @@ const createQuickResult = ( labelString, name ) => {
     }
   } ) );
   quickStatusProperty.link( quickStatus => {
-    if ( quickStatus && quickStatus[ name ] ) {
-      node.fill = quickStatus[ name ].passed ? constants.passColor : constants.failColor;
+    if ( quickStatus && quickStatus.tests && quickStatus.tests[ name ] ) {
+      node.fill = quickStatus.tests[ name ].passed ? constants.passColor : constants.failColor;
     }
     else {
       node.fill = constants.untestedColor;
