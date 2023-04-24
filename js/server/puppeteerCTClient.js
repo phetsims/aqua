@@ -14,7 +14,7 @@ process.on( 'SIGINT', () => process.exit() );
 ( async () => {
 
   assert( process.argv[ 2 ], 'usage: node puppeteerCTClient {{SOME_IDENTIFIER_HERE}}' );
-  const url = `https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-loop.html?id=${process.argv[ 2 ]}`;
+  const url = `https://sparky.colorado.edu/continuous-testing/aqua/html/continuous-loop.html?id=${process.argv[ 2 ]}`;
   const error = await puppeteerLoad( url, {
     waitAfterLoad: 15 * 60 * 1000, // 15 minutes
     allowedTimeToLoad: 120000,
