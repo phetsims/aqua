@@ -111,7 +111,6 @@ class ContinuousServer {
           this.deliverBrowserTest( res, requestInfo.query.old === 'true' );
         }
         if ( requestInfo.pathname === '/aquaserver/test-result' ) {
-          const startTime = Date.now();
           const result = JSON.parse( requestInfo.query.result );
           let message = result.message;
 
@@ -146,7 +145,6 @@ class ContinuousServer {
 
           res.writeHead( 200, jsonHeaders );
           res.end( JSON.stringify( { received: 'true' } ) );
-          winston.info( `test-result took ${Date.now() - startTime}ms` );
         }
         if ( requestInfo.pathname === '/aquaserver/status' ) {
           res.writeHead( 200, jsonHeaders );
@@ -273,13 +271,11 @@ class ContinuousServer {
       return;
     }
 
-    const startTime = Date.now();
     fs.writeFileSync( this.saveFile, JSON.stringify( {
       snapshots: this.snapshots.map( snapshot => snapshot.serialize() ),
       pendingSnapshot: this.pendingSnapshot ? this.pendingSnapshot.serializeStub() : null,
       trashSnapshots: this.trashSnapshots.map( snapshot => snapshot.serializeStub() )
     }, null, 2 ), 'utf-8' );
-    winston.info( `saveToFile took ${Date.now() - startTime}ms` );
   }
 
   /**
