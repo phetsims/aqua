@@ -107,10 +107,8 @@ class ContinuousServer {
         const requestInfo = url.parse( req.url, true );
 
         if ( requestInfo.pathname === '/aquaserver/next-test' ) {
-          const startTime = Date.now();
           // ?old=true or ?old=false, determines whether ES6 or other newer features can be run directly in the browser
           this.deliverBrowserTest( res, requestInfo.query.old === 'true' );
-          winston.info( `next-test took ${Date.now() - startTime}ms` );
         }
         if ( requestInfo.pathname === '/aquaserver/test-result' ) {
           const startTime = Date.now();
@@ -276,11 +274,13 @@ class ContinuousServer {
       return;
     }
 
+    const startTime = Date.now();
     fs.writeFileSync( this.saveFile, JSON.stringify( {
       snapshots: this.snapshots.map( snapshot => snapshot.serialize() ),
       pendingSnapshot: this.pendingSnapshot ? this.pendingSnapshot.serializeStub() : null,
       trashSnapshots: this.trashSnapshots.map( snapshot => snapshot.serializeStub() )
     }, null, 2 ), 'utf-8' );
+    winston.info( `saveToFile took ${Date.now() - startTime}ms` );
   }
 
   /**
