@@ -21,8 +21,8 @@ const createQuickResult = ( labelString, name ) => {
   node.addInputListener( new FireListener( {
     fire: () => {
       const quickStatus = quickStatusProperty.value;
-      if ( quickStatus && quickStatus[ name ] ) {
-        popup( node, quickStatus[ name ].message );
+      if ( quickStatus && quickStatus.tests && quickStatus.tests[ name ] ) {
+        popup( node, quickStatus.tests[ name ].message );
       }
     }
   } ) );
