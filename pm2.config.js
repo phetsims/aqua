@@ -6,7 +6,7 @@ module.exports = {
       name: 'ct-main',
       cwd: '/data/share/phet/continuous-testing/ct-main/aqua',
       script: 'grunt',
-      args: 'continuous-server --localCount=4'
+      args: 'continuous-server --localCount=20'
     },
     {
       name: 'ct-quick',
