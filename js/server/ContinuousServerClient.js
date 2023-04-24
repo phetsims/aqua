@@ -45,7 +45,7 @@ class ContinuousServerClient {
 
     const worker = new Worker( `${this.rootDir}/aqua/js/server/puppeteerCTClient.js`, {
       argv: [
-        'Sparky%20Puppeteer', 'http://localhost' ]
+        'Sparky%20Puppeteer', 'http://127.0.0.1' ]
     } );
 
     workerList.push( worker );
