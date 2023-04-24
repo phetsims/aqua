@@ -1,10 +1,11 @@
 // Copyright 2023, University of Colorado Boulder
 
 /**
- * From
- * run like:
+ * From sparky run:
+ * pm2 startOrReload pm2.config.js --update-env
+ *
+ * In general or for testing run:
  * pm2 start pm2.config.js --time
- * pm2 save
  *
  * Likely to be run as `phet` user on sparky.colorado.edu
  *
