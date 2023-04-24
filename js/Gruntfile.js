@@ -49,6 +49,7 @@ module.exports = grunt => {
       server.startServer( port );
       server.generateReportLoop();
       server.computeWeightsLoop();
+      server.autosaveLoop();
 
       if ( snapshot ) {
         server.createSnapshotLoop();

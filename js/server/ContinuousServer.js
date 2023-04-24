@@ -134,7 +134,6 @@ class ContinuousServer {
                 else {
                   ContinuousServer.testFail( test, milliseconds, message );
                 }
-                this.saveToFile();
               }
             }
             else {
@@ -436,8 +435,6 @@ class ContinuousServer {
 
     // Remove it from the snapshots
     this.trashSnapshots = this.trashSnapshots.filter( snap => snap !== snapshot );
-
-    this.saveToFile();
   }
 
   /**
@@ -551,6 +548,8 @@ class ContinuousServer {
 
               this.computeRecentTestWeights();
 
+              // Save after creating the snapshot, so that if we crash here, we won't be creating permanent garbage
+              // files under ct-snapshots.
               this.saveToFile();
 
               this.setStatus( 'Removing old snapshot files' );
@@ -560,11 +559,9 @@ class ContinuousServer {
                   this.trashSnapshots.push( snapshot );
 
                   // NOTE: NO await here, we're going to do that asynchronously so we don't block
-                  this.deleteTrashSnapshot( snapshot );
+                  this.deleteTrashSnapshot( snapshot ).then( () => this.saveToFile() );
                 }
               }
-
-              this.saveToFile();
             }
           }
         }
@@ -604,7 +601,6 @@ class ContinuousServer {
 
         if ( test.type === 'lint' ) {
           test.complete = true;
-          this.saveToFile();
           try {
             const output = await execute( gruntCommand, [ 'lint' ], `${snapshot.directory}/${test.repo}` );
 
@@ -613,11 +609,9 @@ class ContinuousServer {
           catch( e ) {
             ContinuousServer.testFail( test, Date.now() - startTimestamp, `Lint failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
           }
-          this.saveToFile();
         }
         else if ( test.type === 'lint-everything' ) {
           test.complete = true;
-          this.saveToFile();
           try {
             const output = await execute( gruntCommand, [ 'lint-everything', '--hide-progress-bar' ], `${snapshot.directory}/perennial` );
 
@@ -626,11 +620,9 @@ class ContinuousServer {
           catch( e ) {
             ContinuousServer.testFail( test, Date.now() - startTimestamp, `Lint-everything failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
           }
-          this.saveToFile();
         }
         else if ( test.type === 'build' ) {
           test.complete = true;
-          this.saveToFile();
           try {
             const output = await execute( gruntCommand, [ `--brands=${test.brands.join( ',' )}`, '--lint=false' ], `${snapshot.directory}/${test.repo}` );
 
@@ -640,7 +632,6 @@ class ContinuousServer {
           catch( e ) {
             ContinuousServer.testFail( test, Date.now() - startTimestamp, `Build failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
           }
-          this.saveToFile();
         }
         else {
           // uhhh, don't know what happened? Don't loop here without sleeping
@@ -667,6 +658,22 @@ class ContinuousServer {
       }
 
       await sleep( 30 * 1000 );
+    }
+  }
+
+  /**
+   * Regularly saves progress, so that when CT is restarted, not EVERYTHING is lost.
+   * @public
+   */
+  async autosaveLoop() {
+    while ( true ) { // eslint-disable-line no-constant-condition
+      try {
+        this.saveToFile();
+      }
+      catch( e ) {
+        this.setError( `autosave error: ${e} ${e.stack}` );
+      }
+      await sleep( 5 * 60 * 1000 ); // Run this every 5 minutes
     }
   }
 
