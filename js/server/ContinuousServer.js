@@ -107,10 +107,13 @@ class ContinuousServer {
         const requestInfo = url.parse( req.url, true );
 
         if ( requestInfo.pathname === '/aquaserver/next-test' ) {
+          const startTime = Date.now();
           // ?old=true or ?old=false, determines whether ES6 or other newer features can be run directly in the browser
           this.deliverBrowserTest( res, requestInfo.query.old === 'true' );
+          winston.info( `next-test took ${Date.now() - startTime}ms` );
         }
         if ( requestInfo.pathname === '/aquaserver/test-result' ) {
+          const startTime = Date.now();
           const result = JSON.parse( requestInfo.query.result );
           let message = result.message;
 
@@ -146,6 +149,7 @@ class ContinuousServer {
 
           res.writeHead( 200, jsonHeaders );
           res.end( JSON.stringify( { received: 'true' } ) );
+          winston.info( `test-result took ${Date.now() - startTime}ms` );
         }
         if ( requestInfo.pathname === '/aquaserver/status' ) {
           res.writeHead( 200, jsonHeaders );
