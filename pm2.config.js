@@ -1,5 +1,18 @@
 // Copyright 2023, University of Colorado Boulder
 
+/**
+ * From
+ * run like:
+ * pm2 start pm2.config.js --time
+ * pm2 save
+ *
+ * Likely to be run as `phet` user on sparky.colorado.edu
+ *
+ * @author Michael Kauzmann (PhET Interactive Simulations)
+ * @author Jonathan Olson (PhET Interactive Simulations)
+ * @author Matt Pennington (PhET Interactive Simulations)
+ */
+
 module.exports = {
   apps: [
     {
