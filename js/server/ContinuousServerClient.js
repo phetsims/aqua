@@ -43,7 +43,10 @@ class ContinuousServerClient {
 
     console.log( `Worker${workerNumber} new instance` );
 
-    const worker = new Worker( `${this.rootDir}/aqua/js/server/puppeteerCTClient.js`, { argv: [ 'Bayes%20Puppeteer' ] } );
+    const worker = new Worker( `${this.rootDir}/aqua/js/server/puppeteerCTClient.js`, {
+      argv: [
+        'Sparky%20Puppeteer', 'http://localhost' ]
+    } );
 
     workerList.push( worker );
 

@@ -13,9 +13,12 @@ process.on( 'SIGINT', () => process.exit() );
 
 ( async () => {
 
-  assert( process.argv[ 2 ], 'usage: node puppeteerCTClient {{SOME_IDENTIFIER_HERE}}' );
-  // http is used because sparky is not set up for https
-  const url = `http://sparky.colorado.edu/continuous-testing/aqua/html/continuous-loop.html?id=${process.argv[ 2 ]}`;
+  assert( process.argv[ 2 ], 'usage: node puppeteerCTClient {{SOME_IDENTIFIER_HERE}} {{SERVER}}' );
+
+  const server = process.argv[ 3 ] || 'https://sparky.colorado.edu';
+
+  // http so we don't need to overhead when running locally
+  const url = `${server}/continuous-testing/aqua/html/continuous-loop.html?id=${process.argv[ 2 ]}`;
   const error = await puppeteerLoad( url, {
     waitAfterLoad: 15 * 60 * 1000, // 15 minutes
     allowedTimeToLoad: 120000,
