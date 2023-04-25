@@ -465,9 +465,9 @@ class QuickServer {
     const errorMessages = [];
 
     // most lint and tsc errors have a file associated with them. look for them in a line via 4 sets of slashes
-    // TODO: improve with a file extension perhaps? https://github.com/phetsims/aqua/issues/166
-    const fileNameRegex = /^.*([\\/][^/\\]+){4}/;
-    const lintProblemRegex = /\s\d+:\d+\s+error\s/; // row:column error {{ERROR}}
+    // Extensions should match those found in CHIPPER/lint
+    const fileNameRegex = /^[^\s]*([\\/][^/\\]+){4}[^\s]*(\.js|\.ts|\.jsx|\.tsx|\.cjs|\.mjs)$/;
+    const lintProblemRegex = /^\d+:\d+\s+error\s/; // row:column error {{ERROR}}
 
     if ( name === ctqType.LINT ) {
       let currentFilename = null;
@@ -475,10 +475,10 @@ class QuickServer {
       // This message is duplicated in CHIPPER/lint, please change cautiously.
       const IMPORTANT_MESSAGE = 'All results (repeated from above)';
       assert( message.includes( IMPORTANT_MESSAGE ), 'expected formatting from lint' );
-      message = message.split( IMPORTANT_MESSAGE )[ 1 ];
+      message = message.split( IMPORTANT_MESSAGE )[ 1 ].trim();
 
       // split up the error message by line for parsing
-      const messageLines = message.split( /\r?\n/ ).filter( x => x.length > 0 );
+      const messageLines = message.split( /\r?\n/ ).map( line => line.trim() ).filter( line => line.length > 0 );
 
       // Look for a filename. once found, all subsequent lines are an individual errors to add until the next filename is reached
       messageLines.forEach( line => {
@@ -486,7 +486,7 @@ class QuickServer {
 
           // Assumes here that all problems are directly below the filename (no white spaces)
           if ( lintProblemRegex.test( line ) ) {
-            errorMessages.push( `lint: ${currentFilename}${line}` ); // TODO: ?? line.replace( /\s+/, ' ' ) https://github.com/phetsims/aqua/issues/166
+            errorMessages.push( `lint: ${currentFilename} -- ${line}` );
           }
           else {
             currentFilename = null;
