@@ -1,8 +1,9 @@
 // Copyright 2023, University of Colorado Boulder
 
 /**
- * From sparky run:
+ * From sparky run this. NOTE: It is very important to save after reload so that pm2 can recover from a server restart.
  * pm2 startOrReload pm2.config.js --update-env
+ * pm2 save
  *
  * In general or for testing run:
  * pm2 start pm2.config.js --time
