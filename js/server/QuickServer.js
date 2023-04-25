@@ -329,7 +329,6 @@ class QuickServer {
    * @param {boolean} broken
    * @param {boolean} lastBroken
    * @private
-   * TODO for @chrisklus: add comments to this function https://github.com/phetsims/aqua/issues/166
    */
   async reportErrorStatus( broken, lastBroken = this.lastBroken ) {
     if ( lastBroken === true && !broken ) {
