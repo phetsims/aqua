@@ -464,13 +464,15 @@ class QuickServer {
   parseCompositeError( message, name ) {
     const errorMessages = [];
 
-    // most lint and tsc errors have a file associated with them. look for them in a line via slashes
-    // TODO: not quite sure this is strong enough of a regex
-    const fileNameRegex = /.*\/.+\/.+\/.+\/.+/;
+    // most lint and tsc errors have a file associated with them. look for them in a line via 4 sets of slashes
+    // TODO: improve with a file extension perhaps? https://github.com/phetsims/aqua/issues/166
+    const fileNameRegex = /^.*([\\/][^/\\]+){4}/;
+    const lintProblemRegex = /\s\d+:\d+\s+error\s/; // row:column error {{ERROR}}
 
     if ( name === ctqType.LINT ) {
       let currentFilename = null;
 
+      // This message is duplicated in CHIPPER/lint, please change cautiously.
       const IMPORTANT_MESSAGE = 'All results (repeated from above)';
       assert( message.includes( IMPORTANT_MESSAGE ), 'expected formatting from lint' );
       message = message.split( IMPORTANT_MESSAGE )[ 1 ];
@@ -478,18 +480,20 @@ class QuickServer {
       // split up the error message by line for parsing
       const messageLines = message.split( /\r?\n/ ).filter( x => x.length > 0 );
 
-      // TODO: oh no, perhaps different formatting from testing on Windows? https://github.com/phetsims/aqua/issues/166
-      // look for a filename. once found, all subsequent lines are an individual errors to add until a blank line is reached
+      // Look for a filename. once found, all subsequent lines are an individual errors to add until the next filename is reached
       messageLines.forEach( line => {
         if ( currentFilename ) {
-          if ( line.length > 0 ) {
+
+          // Assumes here that all problems are directly below the filename (no white spaces)
+          if ( lintProblemRegex.test( line ) ) {
             errorMessages.push( `lint: ${currentFilename}${line}` ); // TODO: ?? line.replace( /\s+/, ' ' ) https://github.com/phetsims/aqua/issues/166
           }
           else {
             currentFilename = null;
           }
         }
-        else if ( fileNameRegex.test( line ) ) {
+
+        if ( !currentFilename && fileNameRegex.test( line ) ) {
           currentFilename = line.match( fileNameRegex )[ 0 ];
         }
       } );
