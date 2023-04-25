@@ -434,7 +434,7 @@ class QuickServer {
 
       // trimmed down and separated error messages, used to track the state of individual errors and show
       // abbreviated errors for the Slack CT Notifier
-      errorMessages: result.code === 0 ? [] : this.parseCompositeError( result.stdout, name )
+      errorMessages: result.code === 0 ? [] : this.parseCompositeError( result.stdout, name, result.stderr )
     };
   }
 
@@ -468,11 +468,19 @@ class QuickServer {
    *
    * @param {string} message
    * @param {string} name
+   * @param {string} stderr - if the error is in the running process, and not the report
    * @returns {string[]}
    * @private
    */
-  parseCompositeError( message, name ) {
+  parseCompositeError( message, name, stderr = '' ) {
     const errorMessages = [];
+
+    if ( stderr ) {
+      errorMessages.push( `error testing ${name}: ${stderr}` );
+      if ( !message ) {
+        return errorMessages;
+      }
+    }
 
     // most lint and tsc errors have a file associated with them. look for them in a line via 4 sets of slashes
     // Extensions should match those found in CHIPPER/lint
