@@ -211,7 +211,8 @@ class QuickServer {
     winston.info( 'QuickServer: tsc' );
 
     // Use the "node" executable so that it works across platforms, launching `tsc` as the command on windows results in ENOENT -4058.
-    return execute( 'node', [ '../../../chipper/node_modules/typescript/bin/tsc' ],
+    // Pretty false will make the output more machine readable.
+    return execute( 'node', [ '../../../chipper/node_modules/typescript/bin/tsc', '--pretty', 'false' ],
       `${this.rootDir}/chipper/tsconfig/all`, EXECUTE_OPTIONS );
   }
 
@@ -454,6 +455,15 @@ class QuickServer {
   }
 
   /**
+   * @private
+   * @param {string} message
+   * @returns {string}
+   */
+  splitAndTrimMessage( message ) {
+    return message.split( /\r?\n/ ).map( line => line.trim() ).filter( line => line.length > 0 );
+  }
+
+  /**
    * Parses individual errors out of a collection of the same type of error, e.g. lint
    *
    * @param {string} message
@@ -466,7 +476,8 @@ class QuickServer {
 
     // most lint and tsc errors have a file associated with them. look for them in a line via 4 sets of slashes
     // Extensions should match those found in CHIPPER/lint
-    const fileNameRegex = /^[^\s]*([\\/][^/\\]+){4}[^\s]*(\.js|\.ts|\.jsx|\.tsx|\.cjs|\.mjs)$/;
+    // Don't match to the end of the line ($),  because tsc puts the file and error on the same line.
+    const fileNameRegex = /^[^\s]*([\\/][^/\\]+){4}[^\s]*(\.js|\.ts|\.jsx|\.tsx|\.cjs|\.mjs)/;
     const lintProblemRegex = /^\d+:\d+\s+error\s/; // row:column error {{ERROR}}
 
     if ( name === ctqType.LINT ) {
@@ -478,7 +489,7 @@ class QuickServer {
       message = message.split( IMPORTANT_MESSAGE )[ 1 ].trim();
 
       // split up the error message by line for parsing
-      const messageLines = message.split( /\r?\n/ ).map( line => line.trim() ).filter( line => line.length > 0 );
+      const messageLines = this.splitAndTrimMessage( message );
 
       // Look for a filename. once found, all subsequent lines are an individual errors to add until the next filename is reached
       messageLines.forEach( line => {
@@ -499,13 +510,12 @@ class QuickServer {
       } );
     }
     else if ( name === ctqType.TSC ) {
-      let currentError = '';
 
       // split up the error message by line for parsing
-      // TODO: factor out carriage return?
-      // TODO: also filter on empty lines like lint does?
-      const messageLines = message.split( /\r?\n/ );
+      const messageLines = this.splitAndTrimMessage( message );
 
+      // Some errors span multiple lines, like a stack, but each new error starts with a file/row/column/error number
+      let currentError = '';
       const addCurrentError = () => {
         if ( currentError.length ) {
           errorMessages.push( currentError );
@@ -520,10 +530,12 @@ class QuickServer {
 
           currentError = `tsc: ${line}`;
         }
-        else if ( currentError.length && line.length ) {
+        else {
           currentError += `\n${line}`;
         }
       } );
+
+      // Push the final error file
       addCurrentError();
     }
 
