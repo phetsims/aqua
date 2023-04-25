@@ -30,7 +30,6 @@ const sendSlackMessage = require( './sendSlackMessage' );
 const ctqType = {
   LINT: 'lint',
   TSC: 'tsc',
-  TRANSPILE: 'transpile',
   SIM_FUZZ: 'simFuzz',
   STUDIO_FUZZ: 'studioFuzz'
 };
@@ -149,18 +148,11 @@ class QuickServer {
 
         const shas = await this.synchronizeRepos( staleRepos, reposToCheck );
 
-        // TODO: get rid of result and move to synchronizeRepos();
-        const transpileResult = await this.testTranspile();
-
-        // This would take up too much spa  ce
-        transpileResult.stdout = '';
-
         // Run the tests and get the results
         this.testingState = {
           tests: {
             lint: this.executeResultToOutput( await this.testLint(), ctqType.LINT ),
             tsc: this.executeResultToOutput( await this.testTSC(), ctqType.TSC ),
-            transpile: this.executeResultToOutput( transpileResult, ctqType.TRANSPILE ),
             simFuzz: this.fuzzResultToOutput( await this.testSimFuzz(), ctqType.SIM_FUZZ ),
             studioFuzz: this.fuzzResultToOutput( await this.testStudioFuzz(), ctqType.STUDIO_FUZZ )
           },
@@ -220,7 +212,7 @@ class QuickServer {
    * @private
    * @returns {Promise<{code:number,stdout:string,stderr:string}>}
    */
-  async testTranspile() {
+  async transpile() {
     winston.info( 'QuickServer: transpiling' );
     return execute( 'node', [ 'js/scripts/transpile.js' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
   }
@@ -298,6 +290,8 @@ class QuickServer {
     if ( this.testCount++ % 1000 === 999 && !this.isTestMode ) {
       await deleteDirectory( `${this.rootDir}/chipper/dist` );
     }
+
+    await this.transpile();
 
     return shas;
   }

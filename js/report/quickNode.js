@@ -58,7 +58,6 @@ const quickNode = new HBox( {
     quickTimestampText,
     createQuickResult( 'lint', 'lint' ),
     createQuickResult( 'tsc', 'tsc' ),
-    createQuickResult( 'transpile', 'transpile' ),
     createQuickResult( 'simFuzz', 'simFuzz' ),
     createQuickResult( 'studioFuzz', 'studioFuzz' )
   ]
