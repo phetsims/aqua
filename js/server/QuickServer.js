@@ -4,6 +4,8 @@
  * Coordinates continuous testing, and provides HTTP APIs for reports or clients that run browser tests.
  *
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Michael Kauzmann (PhET Interactive Simulations)
+ * @author Chris Klusendorf (PhET Interactive Simulations)
  */
 
 
@@ -151,10 +153,10 @@ class QuickServer {
         // Run the tests and get the results
         this.testingState = {
           tests: {
-            lint: this.executeResultToOutput( await this.testLint(), ctqType.LINT ),
-            tsc: this.executeResultToOutput( await this.testTSC(), ctqType.TSC ),
-            simFuzz: this.fuzzResultToOutput( await this.testSimFuzz(), ctqType.SIM_FUZZ ),
-            studioFuzz: this.fuzzResultToOutput( await this.testStudioFuzz(), ctqType.STUDIO_FUZZ )
+            lint: this.executeResultToTestData( await this.testLint(), ctqType.LINT ),
+            tsc: this.executeResultToTestData( await this.testTSC(), ctqType.TSC ),
+            simFuzz: this.fuzzResultToTestData( await this.testSimFuzz(), ctqType.SIM_FUZZ ),
+            studioFuzz: this.fuzzResultToTestData( await this.testStudioFuzz(), ctqType.STUDIO_FUZZ )
           },
           shas: shas,
           timestamp: timestamp
@@ -327,88 +329,115 @@ class QuickServer {
    * Checks the error messages and reports the current status to the logs and Slack.
    *
    * @param {boolean} broken
-   * @param {boolean} lastBroken
    * @private
    */
-  async reportErrorStatus( broken, lastBroken = this.lastBroken ) {
-    if ( lastBroken === true && !broken ) {
+  async reportErrorStatus( broken ) {
+
+    // Robustness handling just in case there are errors that are tracked from last broken state
+    if ( !broken ) {
       this.errorMessages.length = 0;
+    }
+
+    if ( this.lastBroken && !broken ) {
       winston.info( 'broken -> passing, sending CTQ passing message to Slack' );
-      await sendSlackMessage( 'CTQ passing', this.isTestMode );
+      await this.slackMessage( 'CTQ passing' );
     }
     else if ( !broken && this.testCount === 1 ) {
       winston.info( 'startup -> passing, sending CTQ startup-passing message to Slack' );
-      await sendSlackMessage( 'CTQ started up and passing', this.isTestMode );
+      await this.slackMessage( 'CTQ started up and passing' );
     }
     else if ( broken ) {
-      let message = '';
-      let newErrorCount = 0;
-      const previousErrorsFound = [];
-
-      const checkForNewErrors = testResult => {
-        if ( !testResult.passed ) {
-          testResult.errorMessages.forEach( errorMessage => {
-            if ( _.every( this.errorMessages, preExistingErrorMessage => {
-
-              // TODO: can't this replace be done earlier in the error parsing? https://github.com/phetsims/aqua/issues/166
-              const preExistingErrorMessageWithNoSpaces = preExistingErrorMessage.replace( /\s/g, '' );
-              const newErrorMessageWithNoSpaces = errorMessage.replace( /\s/g, '' );
-              return preExistingErrorMessageWithNoSpaces !== newErrorMessageWithNoSpaces;
-            } ) ) {
-              this.errorMessages.push( errorMessage );
-              message += `\n${errorMessage}`;
-              newErrorCount++;
-            }
-            else {
-              previousErrorsFound.push( errorMessage );
-            }
-          } );
-        }
-      };
-
-      Object.keys( this.testingState.tests ).forEach( testKeyName => {
-        checkForNewErrors( this.testingState.tests[ testKeyName ] );
-      } );
-
-      if ( message.length > 0 ) {
-
-        if ( previousErrorsFound.length || lastBroken ) {
-          winston.info( 'broken -> more broken, sending additional CTQ failure message to Slack' );
-          const sForFailure = newErrorCount > 1 ? 's' : '';
-          message = `CTQ additional failure${sForFailure}:\n\`\`\`${message}\`\`\``;
-
-          if ( previousErrorsFound.length ) {
-            assert && assert( lastBroken, 'Last cycle must be broken if pre-existing errors were found' );
-            const sForError = previousErrorsFound.length > 1 ? 's' : '';
-            const sForRemain = previousErrorsFound.length === 1 ? 's' : '';
-            message += `\n${previousErrorsFound.length} pre-existing error${sForError} remain${sForRemain}.`;
-          }
-          else {
-            assert && assert( lastBroken, 'Last cycle must be broken if no pre-existing errors were found and you made it here' );
-            message += '\nAll other pre-existing errors fixed.';
-          }
-        }
-        else {
-          winston.info( 'passing -> broken, sending CTQ failure message to Slack' );
-          message = 'CTQ failing:\n```' + message + '```';
-        }
-
-        try {
-          winston.info( `Sending to slack: ${message}` );
-          await sendSlackMessage( message, this.isTestMode );
-        }
-        catch( e ) {
-          winston.info( `Slack error: ${e}` );
-          console.error( e );
-        }
-      }
-      else {
-        winston.info( 'broken -> broken, no new failures to report to Slack' );
-        assert && assert( previousErrorsFound.length, 'Previous errors must exist if no new errors are found and CTQ is still broken' );
-      }
+      await this.handleBrokenState();
     }
     else {
       winston.info( 'passing -> passing' );
+    }
+  }
+
+  /**
+   * When in a broken state, handle all cases that may occur:
+   * - Newly broken (report everything)
+   * - Same broken as last state (report nothing)
+   * - Some new items are broken (report only new things)
+   * - Some previously broken items have been fixed (update internal state but no new reporting)
+   *
+   * @private
+   */
+  async handleBrokenState() {
+    let message = '';
+    let newErrorCount = 0;
+    const previousErrorsFound = [];
+
+    const checkForNewErrors = testResult => {
+      if ( !testResult.passed ) {
+        testResult.errorMessages.forEach( errorMessage => {
+          if ( _.every( this.errorMessages, preExistingErrorMessage => {
+
+            // TODO: can't this replace be done earlier in the error parsing? https://github.com/phetsims/aqua/issues/166
+            const preExistingErrorMessageWithNoSpaces = preExistingErrorMessage.replace( /\s/g, '' );
+            const newErrorMessageWithNoSpaces = errorMessage.replace( /\s/g, '' );
+            return preExistingErrorMessageWithNoSpaces !== newErrorMessageWithNoSpaces;
+          } ) ) {
+            this.errorMessages.push( errorMessage );
+            message += `\n${errorMessage}`;
+            newErrorCount++;
+          }
+          else {
+            previousErrorsFound.push( errorMessage );
+          }
+        } );
+      }
+    };
+
+    Object.keys( this.testingState.tests ).forEach( testKeyName => {
+      checkForNewErrors( this.testingState.tests[ testKeyName ] );
+    } );
+
+    if ( message.length > 0 ) {
+
+      if ( previousErrorsFound.length || this.lastBroken ) {
+        winston.info( 'broken -> more broken, sending additional CTQ failure message to Slack' );
+        const sForFailure = newErrorCount > 1 ? 's' : '';
+        message = `CTQ additional failure${sForFailure}:\n\`\`\`${message}\`\`\``;
+
+        if ( previousErrorsFound.length ) {
+          assert && assert( this.lastBroken, 'Last cycle must be broken if pre-existing errors were found' );
+          const sForError = previousErrorsFound.length > 1 ? 's' : '';
+          const sForRemain = previousErrorsFound.length === 1 ? 's' : '';
+          message += `\n${previousErrorsFound.length} pre-existing error${sForError} remain${sForRemain}.`;
+        }
+        else {
+          assert && assert( this.lastBroken, 'Last cycle must be broken if no pre-existing errors were found and you made it here' );
+          message += '\nAll other pre-existing errors fixed.';
+        }
+      }
+      else {
+        winston.info( 'passing -> broken, sending CTQ failure message to Slack' );
+        message = 'CTQ failing:\n```' + message + '```';
+      }
+
+      await this.slackMessage( message, this.isTestMode );
+    }
+    else {
+      winston.info( 'broken -> broken, no new failures to report to Slack' );
+      assert && assert( previousErrorsFound.length, 'Previous errors must exist if no new errors are found and CTQ is still broken' );
+    }
+  }
+
+  /**
+   * send a message to slack, with error handling
+   * @param {string} message
+   * @returns {Promise<void>}
+   * @private
+   */
+  async slackMessage( message ) {
+    try {
+      winston.info( `Sending to slack: ${message}` );
+      await sendSlackMessage( message, this.isTestMode );
+    }
+    catch( e ) {
+      winston.info( `Slack error: ${e}` );
+      console.error( e );
     }
   }
 
@@ -418,7 +447,7 @@ class QuickServer {
    * @param {string} name
    * @returns {{errorMessages: string[], passed: boolean, message: string}}
    */
-  executeResultToOutput( result, name ) {
+  executeResultToTestData( result, name ) {
     return {
       passed: result.code === 0,
 
@@ -438,7 +467,7 @@ class QuickServer {
    * @param {string} name
    * @returns {{errorMessages: string[], passed: boolean, message: string}}
    */
-  fuzzResultToOutput( result, name ) {
+  fuzzResultToTestData( result, name ) {
     if ( result === null ) {
       return { passed: true, message: '', errorMessages: [] };
     }
@@ -539,7 +568,6 @@ class QuickServer {
       // Push the final error file
       addCurrentError();
     }
-
 
     // if we are not a lint or tsc error, or if those errors were not able to be parsed above, send the whole message
     if ( !errorMessages.length ) {
