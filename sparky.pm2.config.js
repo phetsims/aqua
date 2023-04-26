@@ -2,10 +2,10 @@
 
 /**
  * From sparky run:
- * pm2 startOrReload pm2.config.js --update-env
+ * pm2 startOrReload sparky.pm2.config.js --update-env
  *
  * In general or for testing run:
- * pm2 start pm2.config.js --time
+ * pm2 start sparky.pm2.config.js --time
  *
  * Likely to be run as `phet` user on sparky.colorado.edu
  *
