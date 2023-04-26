@@ -117,7 +117,7 @@ class QuickServer {
     } );
 
     this.puppeteerOptions = {
-      waitAfterLoad: this.isTestMode ? 3000 : 10000,
+      waitAfterLoad: this.isTestMode ? 1000 : 10000,
       allowedTimeToLoad: 120000,
       puppeteerTimeout: 120000,
       browser: browser
@@ -364,34 +364,45 @@ class QuickServer {
    * @private
    */
   async handleBrokenState() {
+
+    // The message reported to slack, depending on our state
     let message = '';
+
+    // Number of errors that were not in the previous broken state
     let newErrorCount = 0;
+
+    // Keep track of the previous errors that still exist so we don't duplicate reporting
     const previousErrorsFound = [];
 
     const checkForNewErrors = testResult => {
-      if ( !testResult.passed ) {
-        testResult.errorMessages.forEach( errorMessage => {
-          if ( _.every( this.errorMessages, preExistingErrorMessage => {
+      !testResult.passed && testResult.errorMessages.forEach( errorMessage => {
 
-            // TODO: can't this replace be done earlier in the error parsing? https://github.com/phetsims/aqua/issues/166
-            const preExistingErrorMessageWithNoSpaces = preExistingErrorMessage.replace( /\s/g, '' );
-            const newErrorMessageWithNoSpaces = errorMessage.replace( /\s/g, '' );
-            return preExistingErrorMessageWithNoSpaces !== newErrorMessageWithNoSpaces;
-          } ) ) {
-            this.errorMessages.push( errorMessage );
-            message += `\n${errorMessage}`;
-            newErrorCount++;
+        let isPreexisting = false;
+
+        for ( let i = 0; i < this.errorMessages.length; i++ ) {
+          const preexistingErrorMessage = this.errorMessages[ i ];
+
+          // Remove spaces for a bit more maintainability in case the spacing of errors changes for an outside reason
+          if ( preexistingErrorMessage.replace( /\s/g, '' ) === errorMessage.replace( /\s/g, '' ) ) {
+            isPreexisting = true;
+            break;
           }
-          else {
-            previousErrorsFound.push( errorMessage );
-          }
-        } );
-      }
+        }
+
+        // If this message matches any we currently have
+        if ( isPreexisting ) {
+          previousErrorsFound.push( errorMessage );
+        }
+        else {
+          this.errorMessages.push( errorMessage );
+          message += `\n${errorMessage}`;
+          newErrorCount++;
+        }
+      } );
     };
 
-    Object.keys( this.testingState.tests ).forEach( testKeyName => {
-      checkForNewErrors( this.testingState.tests[ testKeyName ] );
-    } );
+    // See if there are any new errors in our tests
+    Object.keys( this.testingState.tests ).forEach( testKeyName => checkForNewErrors( this.testingState.tests[ testKeyName ] ) );
 
     if ( message.length > 0 ) {
 
@@ -401,13 +412,13 @@ class QuickServer {
         message = `CTQ additional failure${sForFailure}:\n\`\`\`${message}\`\`\``;
 
         if ( previousErrorsFound.length ) {
-          assert && assert( this.lastBroken, 'Last cycle must be broken if pre-existing errors were found' );
+          assert( this.lastBroken, 'Last cycle must be broken if pre-existing errors were found' );
           const sForError = previousErrorsFound.length > 1 ? 's' : '';
           const sForRemain = previousErrorsFound.length === 1 ? 's' : '';
           message += `\n${previousErrorsFound.length} pre-existing error${sForError} remain${sForRemain}.`;
         }
         else {
-          assert && assert( this.lastBroken, 'Last cycle must be broken if no pre-existing errors were found and you made it here' );
+          assert( this.lastBroken, 'Last cycle must be broken if no pre-existing errors were found and you made it here' );
           message += '\nAll other pre-existing errors fixed.';
         }
       }
@@ -420,7 +431,8 @@ class QuickServer {
     }
     else {
       winston.info( 'broken -> broken, no new failures to report to Slack' );
-      assert && assert( previousErrorsFound.length, 'Previous errors must exist if no new errors are found and CTQ is still broken' );
+      assert( newErrorCount === 0, 'No new errors if no message' );
+      assert( previousErrorsFound.length, 'Previous errors must exist if no new errors are found and CTQ is still broken' );
     }
   }
 
