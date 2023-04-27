@@ -144,7 +144,7 @@ class QuickServer {
 
       const timestamp = Date.now();
 
-      if ( staleRepos.length || this.forceTests ) {
+      if ( staleRepos.length || this.testCount === 0 || this.forceTests ) {
 
         winston.info( `QuickServer: stale repos: ${staleRepos}` );
 
