@@ -44,7 +44,7 @@ const linear = ( a1, a2, b1, b2, a3 ) => {
 const twoHours = 1000 * 60 * 60 * 2;
 const twelveHours = 1000 * 60 * 60 * 12;
 
-const NUM_SNAPSHOTS_TO_KEEP_IN_REPORT = 30;
+const NUM_SNAPSHOTS_TO_KEEP_IN_REPORT = 10;
 
 class ContinuousServer {
   /**
