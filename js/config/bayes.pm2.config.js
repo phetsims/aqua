@@ -19,17 +19,20 @@ module.exports = {
     {
       name: 'yotta-server',
       cwd: '/data/share/phet/yotta-statistics/yotta/',
-      script: 'js/reports/yotta-server.js'
+      script: 'js/reports/yotta-server.js',
+      time: true
     },
     {
       name: 'phettest-server',
       cwd: '/data/web/htdocs/dev/phettest/phettest',
-      script: 'phettest-server.js'
+      script: 'phettest-server.js',
+      time: true
     },
     {
       name: 'ct-chrome-clients',
       cwd: '/data/share/phet/continuous-testing/ct-chrome-clients/aqua',
       script: 'grunt',
+      time: true,
       args: 'client-server --clients=16 --ctID=Bayes%20Puppeteer'
     }
   ]

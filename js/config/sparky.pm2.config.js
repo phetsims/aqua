@@ -20,19 +20,22 @@ module.exports = {
       name: 'ct-main',
       cwd: '/data/share/phet/continuous-testing/ct-main/aqua',
       script: 'grunt',
-      args: 'continuous-server --localCount=20'
+      args: 'continuous-server --localCount=20',
+      time: true
     },
     {
       name: 'ct-quick',
       cwd: '/data/share/phet/continuous-testing/ct-quick/aqua',
       script: 'grunt',
-      args: 'quick-server'
+      args: 'quick-server',
+      time: true
     },
     {
       name: 'ct-chrome-clients',
       cwd: '/data/share/phet/continuous-testing/ct-chrome-clients/aqua',
       script: 'grunt',
-      args: 'client-server --clients=100 --serverURL=http://127.0.0.1'
+      args: 'client-server --clients=100 --serverURL=http://127.0.0.1',
+      time: true
     }
   ]
 };
