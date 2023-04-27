@@ -85,15 +85,26 @@ module.exports = grunt => {
   grunt.registerTask(
     'client-server',
     'Launches puppeteer clients to run tests for CT with the following options:\n' +
-    '--clients=NUMBER : specify how many puppeteer clients to run with, defaults to 16\n',
+    '--clients=number : specify how many puppeteer clients to run with, defaults to 16\n' +
+    '--ctID=string : specify id to give to continuous-loop.html, in URL string, defaults to "Sparky%20Puppeteer"\n' +
+    '--serverURL=string : defaults to "https://sparky.colorado.edu/"\n',
     () => {
 
       // We don't finish! Don't tell grunt this...
       grunt.task.current.async();
 
-      const server = new ContinuousServerClient( {
-        numberOfPuppeteers: grunt.option( 'clients' ) ? grunt.option( 'clients' ) : 16
-      } );
+      const options = {};
+      if ( grunt.option( 'clients' ) ) {
+        options.numberOfPuppeteers = grunt.option( 'clients' );
+      }
+      if ( grunt.option( 'ctID' ) ) {
+        options.ctID = grunt.option( 'ctID' );
+      }
+      if ( grunt.option( 'serverURL' ) ) {
+        options.serverURL = grunt.option( 'serverURL' );
+      }
+
+      const server = new ContinuousServerClient( options );
       server.startMainLoop();
     }
   );

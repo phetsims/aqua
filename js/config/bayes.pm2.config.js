@@ -25,6 +25,12 @@ module.exports = {
       name: 'phettest-server',
       cwd: '/data/web/htdocs/dev/phettest/phettest',
       script: 'phettest-server.js'
+    },
+    {
+      name: 'ct-chrome-clients',
+      cwd: '/data/share/phet/continuous-testing/ct-chrome-clients/aqua',
+      script: 'grunt',
+      args: 'client-server --clients=16 --ctID=Bayes%20Puppeteer'
     }
   ]
 };

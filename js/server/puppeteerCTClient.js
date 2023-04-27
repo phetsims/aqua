@@ -13,19 +13,22 @@ process.on( 'SIGINT', () => process.exit() );
 
 ( async () => {
 
-  assert( process.argv[ 2 ], 'usage: node puppeteerCTClient {{SOME_IDENTIFIER_HERE}} {{SERVER}}' );
+  const ctID = process.argv[ 2 ];
+  assert( ctID, 'usage: node puppeteerCTClient {{SOME_IDENTIFIER_HERE}} {{SERVER}}' );
 
-  const server = process.argv[ 3 ] || 'https://sparky.colorado.edu';
+  let server = process.argv[ 3 ];
+  assert( server, 'usage: node puppeteerCTClient {{SOME_IDENTIFIER_HERE}} {{SERVER}}' );
+
+  server = server.endsWith( '/' ) ? server : `${server}/`;
 
   // http so we don't need to overhead when running locally
-  const url = `${server}/continuous-testing/aqua/html/continuous-loop.html?id=${process.argv[ 2 ]}`;
+  const url = `${server}continuous-testing/aqua/html/continuous-loop.html?id=${ctID}`;
+  parentPort.postMessage( `Loading ${url}` );
+
   const error = await puppeteerLoad( url, {
     waitAfterLoad: 15 * 60 * 1000, // 15 minutes
     allowedTimeToLoad: 120000,
     puppeteerTimeout: 1000000000,
-
-    // A page error is what we are testing for. Don't fail the browser instance out when an assertion occurs
-    rejectPageErrors: false,
 
     launchOptions: {
 

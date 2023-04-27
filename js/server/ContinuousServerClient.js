@@ -20,8 +20,14 @@ class ContinuousServerClient {
   constructor( options ) {
 
     options = {
+
+      // Path to the root of PhET git repos (relative to this file)
       rootDir: path.normalize( `${__dirname}/../../../` ),
+
+      // How many instances (worker threads) should be created?
       numberOfPuppeteers: 16,
+      ctID: 'Sparky%20Puppeteer',
+      serverURL: 'https://sparky.colorado.edu/',
       ...options
     };
 
@@ -30,6 +36,8 @@ class ContinuousServerClient {
     this.rootDir = options.rootDir;
 
     this.numberOfPuppeteers = options.numberOfPuppeteers;
+    this.ctID = options.ctID;
+    this.serverURL = options.serverURL;
   }
 
   /**
@@ -44,8 +52,7 @@ class ContinuousServerClient {
     console.log( `Worker${workerNumber} new instance` );
 
     const worker = new Worker( `${this.rootDir}/aqua/js/server/puppeteerCTClient.js`, {
-      argv: [
-        'Sparky%20Puppeteer', 'http://127.0.0.1' ]
+      argv: [ this.ctID, this.serverURL ]
     } );
 
     workerList.push( worker );
@@ -70,6 +77,10 @@ class ContinuousServerClient {
 
     let count = 0;
     const workers = [];
+
+    console.log( `Starting up ${this.numberOfPuppeteers} test browsers` );
+    console.log( `ctID: ${this.ctID}` );
+    console.log( `serverURL: ${this.serverURL}` );
 
     while ( true ) { // eslint-disable-line no-constant-condition
 
