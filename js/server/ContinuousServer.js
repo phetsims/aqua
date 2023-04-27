@@ -682,6 +682,7 @@ class ContinuousServer {
   async generateReportLoop() {
     while ( true ) { // eslint-disable-line no-constant-condition
       try {
+        winston.info( 'Generating Report' );
         const testNameMap = {};
         this.snapshots.forEach( snapshot => snapshot.tests.forEach( test => {
           testNameMap[ test.nameString ] = test.names;
