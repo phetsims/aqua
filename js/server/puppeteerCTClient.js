@@ -30,6 +30,9 @@ process.on( 'SIGINT', () => process.exit() );
     allowedTimeToLoad: 120000,
     puppeteerTimeout: 1000000000,
 
+    // A page error is what we are testing for. Don't fail the browser instance out when an assertion occurs
+    rejectPageErrors: false,
+
     launchOptions: {
 
       // With this flag, temp files are written to /tmp/ on bayes, which caused https://github.com/phetsims/aqua/issues/145
