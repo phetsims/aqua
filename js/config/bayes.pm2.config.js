@@ -5,7 +5,7 @@
  * pm2 startOrReload bayes.pm2.config.js --update-env
  *
  * In general or for testing run:
- * pm2 start bayes.pm2.config.js --time
+ * pm2 start bayes.pm2.config.js
  *
  * Likely to be run as `phet` user on sparky.colorado.edu
  *
