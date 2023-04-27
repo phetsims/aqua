@@ -44,6 +44,8 @@ const linear = ( a1, a2, b1, b2, a3 ) => {
 const twoHours = 1000 * 60 * 60 * 2;
 const twelveHours = 1000 * 60 * 60 * 12;
 
+const NUM_SNAPSHOTS_TO_KEEP_IN_REPORT = 30;
+
 class ContinuousServer {
   /**
    * @param {boolean} useRootDir - If true, we won't create/copy, and we'll just use the files there instead
@@ -691,7 +693,7 @@ class ContinuousServer {
         const numElapsedTimes = testNames.map( () => 0 );
 
         const snapshotSummaries = [];
-        for ( const snapshot of this.snapshots ) {
+        for ( const snapshot of this.snapshots.slice( 0, NUM_SNAPSHOTS_TO_KEEP_IN_REPORT ) ) {
           snapshotSummaries.push( {
             timestamp: snapshot.timestamp,
             shas: snapshot.shas,
