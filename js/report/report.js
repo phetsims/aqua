@@ -364,6 +364,7 @@ if ( options.full ) {
       const snapshotLabels = snapshots.map( ( snapshot, index ) => {
         const totalTestCount = snapshot.tests.length;
         const completedTestCount = snapshot.tests.filter( x => x.y || x.n ).length;
+        const failedTestCount = snapshot.tests.filter( x => x.n > 0 ).length;
 
         const textOptions = { font: new PhetFont( { size: 10 } ) };
 
@@ -387,8 +388,9 @@ if ( options.full ) {
             }
 
             const completedTests = `${completedTestCount} / ${totalTestCount} Tests Completed`;
+            const failedTests = `${failedTestCount} Tests Failed`;
             const shas = JSON.stringify( snapshot.shas, null, 2 );
-            popup( label, `${snapshot.timestamp}\n\n${completedTests}\n\n${diffString}\n\n${shas}` );
+            popup( label, `${snapshot.timestamp}\n\n${completedTests}\n${failedTests}\n\n${diffString}\n\n${shas}` );
           }
         } ) );
         return label;
