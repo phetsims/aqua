@@ -253,7 +253,7 @@ class QuickServer {
     let studioFuzz = null;
     try {
       await withServer( async port => {
-        const url = `http://localhost:${port}/studio/index.html?sim=${STUDIO_FUZZ_SIM}&phetioElementsDisplay=all&fuzz`;
+        const url = `http://localhost:${port}/studio/index.html?sim=${STUDIO_FUZZ_SIM}&phetioElementsDisplay=all&fuzz&phetioWrapperDebug=true`;
         await puppeteerLoad( url, this.puppeteerOptions );
       } );
     }
