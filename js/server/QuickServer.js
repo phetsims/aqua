@@ -8,7 +8,6 @@
  * @author Chris Klusendorf (PhET Interactive Simulations)
  */
 
-
 const cloneMissingRepos = require( '../../../perennial/js/common/cloneMissingRepos' );
 const deleteDirectory = require( '../../../perennial/js/common/deleteDirectory' );
 const execute = require( '../../../perennial/js/common/execute' );
@@ -32,8 +31,8 @@ const sendSlackMessage = require( './sendSlackMessage' );
 const ctqType = {
   LINT: 'lint',
   TSC: 'tsc',
-  SIM_FUZZ: 'simFuzz',
-  STUDIO_FUZZ: 'studioFuzz'
+  SIM_FUZZ: 'simFuzz', // Should end with "Fuzz"
+  STUDIO_FUZZ: 'studioFuzz' // Should end with "Fuzz"
 };
 
 // Headers that we'll include in all server replies
@@ -121,7 +120,7 @@ class QuickServer {
     } );
 
     this.puppeteerOptions = {
-      waitAfterLoad: this.isTestMode ? 1000 : 10000,
+      waitAfterLoad: this.isTestMode ? 3000 : 10000,
       allowedTimeToLoad: 120000,
       puppeteerTimeout: 120000,
       browser: browser
@@ -238,7 +237,7 @@ class QuickServer {
       } );
     }
     catch( e ) {
-      simFuzz = e;
+      simFuzz = e.toString();
     }
     return simFuzz;
   }
@@ -258,7 +257,7 @@ class QuickServer {
       } );
     }
     catch( e ) {
-      studioFuzz = e;
+      studioFuzz = e.toString();
     }
     return studioFuzz;
   }
@@ -488,6 +487,9 @@ class QuickServer {
       return { passed: true, message: '', errorMessages: [] };
     }
     else {
+
+      // We want to remove the "port" variation so that the same sim error has the same error message
+      result = result.replace( /localhost:\d+/g, 'localhost:8080' );
       return { passed: false, message: '' + result, errorMessages: this.parseCompositeError( result, name ) };
     }
   }
