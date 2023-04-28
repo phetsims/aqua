@@ -9,7 +9,7 @@
 
 const TestResult = require( './TestResult' );
 const assert = require( 'assert' );
-const _ = require( 'lodash' ); // eslint-disable-line require-statement-match
+const _ = require( 'lodash' );
 
 // constants
 const TEST_TYPES = [

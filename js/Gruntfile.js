@@ -11,7 +11,7 @@ const Gruntfile = require( '../../chipper/js/grunt/Gruntfile' );
 const ContinuousServer = require( './server/ContinuousServer' );
 const ContinuousServerClient = require( './server/ContinuousServerClient' );
 const assert = require( 'assert' );
-const _ = require( 'lodash' ); // eslint-disable-line require-statement-match
+const _ = require( 'lodash' );
 const winston = require( 'winston' );
 const QuickServer = require( './server/QuickServer' );
 

@@ -8,7 +8,7 @@
  * @author Michael Kauzmann (PhET Interactive Simulations)
  */
 
-const _ = require( 'lodash' ); // eslint-disable-line require-statement-match
+const _ = require( 'lodash' );
 const path = require( 'path' );
 const assert = require( 'assert' );
 const { Worker } = require( 'worker_threads' ); // eslint-disable-line require-statement-match

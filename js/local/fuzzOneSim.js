@@ -3,7 +3,7 @@
 
 const puppeteer = require( 'puppeteer' );
 const puppeteerPage = require( './puppeteerPage' );
-const _ = require( '../../../sherpa/lib/lodash-4.17.4.js' ); // eslint-disable-line require-statement-match
+const _ = require( '../../../sherpa/lib/lodash-4.17.4' );
 const child_process = require( 'child_process' );
 
 ( async () => {
