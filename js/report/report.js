@@ -1,9 +1,10 @@
 // Copyright 2020-2023, University of Colorado Boulder
 
 /**
- * Displays a self-updating report of continuous test results
+ * Displays a self-updating report of continuous test results.
  *
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Michael Kauzmann (PhET Interactive Simulations)
  */
 
 import BooleanProperty from '../../../axon/js/BooleanProperty.js';
