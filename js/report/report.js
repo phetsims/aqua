@@ -10,6 +10,7 @@ import BooleanProperty from '../../../axon/js/BooleanProperty.js';
 import EnumerationDeprecatedProperty from '../../../axon/js/EnumerationDeprecatedProperty.js';
 import Multilink from '../../../axon/js/Multilink.js';
 import Property from '../../../axon/js/Property.js';
+import Utils from '../../../dot/js/Utils.js';
 import EnumerationDeprecated from '../../../phet-core/js/EnumerationDeprecated.js';
 import PhetFont from '../../../scenery-phet/js/PhetFont.js';
 import { Display, DOM, FireListener, HBox, Node, Rectangle, Text, VBox } from '../../../scenery/js/imports.js';
@@ -361,10 +362,16 @@ if ( options.full ) {
       const padding = 3;
 
       const snapshotLabels = snapshots.map( ( snapshot, index ) => {
+        const totalTestCount = snapshot.tests.length;
+        const completedTestCount = snapshot.tests.filter( x => x.y || x.n ).length;
+
+        const textOptions = { font: new PhetFont( { size: 10 } ) };
+
         const label = new VBox( {
           spacing: 2,
           children: [
-            ...new Date( snapshot.timestamp ).toLocaleString().replace( ',', '' ).replace( ' AM', 'am' ).replace( ' PM', 'pm' ).split( ' ' ).map( str => new Text( str, { font: new PhetFont( { size: 10 } ) } ) )
+            ...new Date( snapshot.timestamp ).toLocaleString().replace( ',', '' ).replace( ' AM', 'am' ).replace( ' PM', 'pm' ).split( ' ' ).map( str => new Text( str, textOptions ) ),
+            new Text( `${Utils.roundSymmetric( completedTestCount / totalTestCount * 100 )}%`, textOptions )
           ],
           cursor: 'pointer'
         } );
@@ -379,7 +386,9 @@ if ( options.full ) {
               } ).map( repo => `${repo}: ${previousSnapshot.shas[ repo ]} => ${snapshot.shas[ repo ]}` ).join( '\n' );
             }
 
-            popup( label, `${snapshot.timestamp}\n\n${diffString}\n\n${JSON.stringify( snapshot.shas, null, 2 )}` );
+            const completedTests = `${completedTestCount} / ${totalTestCount} Tests Completed`;
+            const shas = JSON.stringify( snapshot.shas, null, 2 );
+            popup( label, `${snapshot.timestamp}\n\n${completedTests}\n\n${diffString}\n\n${shas}` );
           }
         } ) );
         return label;
