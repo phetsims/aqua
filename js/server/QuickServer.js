@@ -515,11 +515,10 @@ class QuickServer {
   parseCompositeError( message, name, stderr = '' ) {
     const errorMessages = [];
 
+    // If there is stderr from a process, assume that means there was a problem conducting the test, and ignore the message
     if ( stderr ) {
       errorMessages.push( `error testing ${name}: ${stderr}` );
-      if ( !message ) {
-        return errorMessages;
-      }
+      return errorMessages;
     }
 
     // most lint and tsc errors have a file associated with them. look for them in a line via 4 sets of slashes
