@@ -25,7 +25,8 @@ class ContinuousServerClient {
       rootDir: path.normalize( `${__dirname}/../../../` ),
 
       // How many instances (worker threads) should be created?
-      numberOfPuppeteers: 16,
+      numberOfPuppeteers: 8,
+      numberOfFirefoxes: 0,
       ctID: 'Sparky%20Puppeteer',
       serverURL: 'https://sparky.colorado.edu/',
       ...options
@@ -36,8 +37,12 @@ class ContinuousServerClient {
     this.rootDir = options.rootDir;
 
     this.numberOfPuppeteers = options.numberOfPuppeteers;
+    this.numberOfFirefoxes = options.numberOfFirefoxes;
     this.ctID = options.ctID;
     this.serverURL = options.serverURL;
+
+    this.firefoxWorkers = [];
+    this.puppeteerWorkers = [];
   }
 
   /**
@@ -45,13 +50,14 @@ class ContinuousServerClient {
    * @private
    * @param {Worker[]} workerList
    * @param {number} workerNumber
+   * @param {string} clientScriptName
    * @returns {Promise<unknown>}
    */
-  newClientWorker( workerList, workerNumber ) {
+  newClientWorker( workerList, workerNumber, clientScriptName = 'puppeteerCTClient.js' ) {
 
     console.log( `Worker${workerNumber} new instance` );
 
-    const worker = new Worker( `${this.rootDir}/aqua/js/server/puppeteerCTClient.js`, {
+    const worker = new Worker( `${this.rootDir}/aqua/js/server/${clientScriptName}`, {
       argv: [ this.ctID, this.serverURL ]
     } );
 
@@ -76,7 +82,6 @@ class ContinuousServerClient {
   async startMainLoop() {
 
     let count = 0;
-    const workers = [];
 
     console.log( `Starting up ${this.numberOfPuppeteers} test browsers` );
     console.log( `ctID: ${this.ctID}` );
@@ -85,8 +90,12 @@ class ContinuousServerClient {
     while ( true ) { // eslint-disable-line no-constant-condition
 
       // Always keep this many workers chugging away
-      while ( workers.length < this.numberOfPuppeteers ) {
-        this.newClientWorker( workers, count++ );
+      while ( this.puppeteerWorkers.length < this.numberOfPuppeteers ) {
+        this.newClientWorker( this.puppeteerWorkers, count++ );
+      }
+      // Always keep this many workers chugging away
+      while ( this.firefoxWorkers.length < this.numberOfFirefoxes ) {
+        this.newClientWorker( this.firefoxWorkers, count++, 'playwrightCTClient.js' );
       }
 
       // Check back in every 5 seconds to see if we need to restart any workers.

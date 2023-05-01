@@ -87,7 +87,8 @@ module.exports = grunt => {
   grunt.registerTask(
     'client-server',
     'Launches puppeteer clients to run tests for CT with the following options:\n' +
-    '--clients=number : specify how many puppeteer clients to run with, defaults to 16\n' +
+    '--puppeteerClients=number : specify how many puppeteer clients to run with, defaults to 16\n' +
+    '--firefoxClients=number : specify how many playwright firefox clients to run with, defaults to 0\n' +
     '--ctID=string : specify id to give to continuous-loop.html, in URL string, defaults to "Sparky%20Puppeteer"\n' +
     '--serverURL=string : defaults to "https://sparky.colorado.edu/"\n',
     () => {
@@ -97,8 +98,11 @@ module.exports = grunt => {
       grunt.task.current.async();
 
       const options = {};
-      if ( grunt.option( 'clients' ) ) {
-        options.numberOfPuppeteers = grunt.option( 'clients' );
+      if ( grunt.option( 'puppeteerClients' ) ) {
+        options.numberOfPuppeteers = grunt.option( 'puppeteerClients' );
+      }
+      if ( grunt.option( 'firefoxClients' ) ) {
+        options.numberOfPuppeteers = grunt.option( 'firefoxClients' );
       }
       if ( grunt.option( 'ctID' ) ) {
         options.ctID = grunt.option( 'ctID' );

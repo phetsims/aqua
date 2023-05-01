@@ -149,7 +149,7 @@ class QuickServer {
     this.puppeteerOptions = {
       waitAfterLoad: this.isTestMode ? 3000 : 10000,
       allowedTimeToLoad: 120000,
-      puppeteerTimeout: 120000,
+      gotoTimeout: 120000,
       browser: browser
     };
 

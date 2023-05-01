@@ -1,12 +1,12 @@
-// Copyright 2022-2023, University of Colorado Boulder
+// Copyright 2023, University of Colorado Boulder
 
 /**
- * Launch puppeteer and point it to CT running on a server for 15 minutes.
+ * Launch playwright and point it to CT running on a server for 15 minutes.
  * @author Michael Kauzmann (PhET Interactive Simulations)
  */
 
 const assert = require( 'assert' );
-const puppeteerLoad2 = require( '../../../perennial/js/common/puppeteerLoad2' );
+const playwrightLoad = require( '../../../perennial/js/common/playwrightLoad' );
 const { parentPort } = require( 'worker_threads' ); // eslint-disable-line require-statement-match
 
 process.on( 'SIGINT', () => process.exit() );
@@ -27,32 +27,13 @@ process.on( 'SIGINT', () => process.exit() );
   parentPort && parentPort.postMessage( loadingMessage );
   console.log( loadingMessage );
 
-  const error = await puppeteerLoad2( url, {
-    waitAfterLoad: 15 * 60 * 1000, // 15 minutes
-    allowedTimeToLoad: 120000,
-    gotoTimeout: 1000000000,
+  const error = await playwrightLoad( url, {
+    waitAfterLoad: 10 * 60 * 1000, // 15 minutes
+    allowedTimeToLoad: 2 * 60 * 1000,
+    gotoTimeout: 1000000000, // a long time
 
     // A page error is what we are testing for. Don't fail the browser instance out when an assertion occurs
-    rejectPageErrors: false,
-
-    launchOptions: {
-
-      // With this flag, temp files are written to /tmp/ on bayes, which caused https://github.com/phetsims/aqua/issues/145
-      // /dev/shm/ is much bigger
-      ignoreDefaultArgs: [ '--disable-dev-shm-usage' ],
-
-      // Command line arguments passed to the chrome instance,
-      args: [
-        '--enable-precise-memory-info',
-
-        // To prevent filling up `/tmp`, see https://github.com/phetsims/aqua/issues/145
-        `--user-data-dir=${process.cwd()}/../tmp/puppeteerUserData/`,
-
-        // Fork child processes directly to prevent orphaned chrome instances from lingering on sparky, https://github.com/phetsims/aqua/issues/150#issuecomment-1170140994
-        '--no-zygote',
-        '--no-sandbox'
-      ]
-    }
+    rejectPageErrors: false
   } );
   if ( error ) {
     console.error( error );
