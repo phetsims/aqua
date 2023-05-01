@@ -46,7 +46,7 @@ process.on( 'SIGINT', () => process.exit() );
         // To prevent filling up `/tmp`, see https://github.com/phetsims/aqua/issues/145
         `--user-data-dir=${process.cwd()}/../tmp/puppeteerUserData/`,
 
-        // Fork child processes directly to prevent orphaned chrome instances from lingering on bayes, https://github.com/phetsims/aqua/issues/150#issuecomment-1170140994
+        // Fork child processes directly to prevent orphaned chrome instances from lingering on sparky, https://github.com/phetsims/aqua/issues/150#issuecomment-1170140994
         '--no-zygote',
         '--no-sandbox'
       ]
