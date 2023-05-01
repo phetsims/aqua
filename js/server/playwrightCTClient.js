@@ -25,7 +25,7 @@ process.on( 'SIGINT', () => process.exit() );
   const url = `${server}continuous-testing/aqua/html/continuous-loop.html?id=${ctID}`;
   const loadingMessage = `Loading ${url}`;
   parentPort && parentPort.postMessage( loadingMessage );
-  console.log( loadingMessage );
+  // console.log( loadingMessage );
 
   const error = await playwrightLoad( url, {
     waitAfterLoad: 10 * 60 * 1000, // 15 minutes
@@ -36,7 +36,7 @@ process.on( 'SIGINT', () => process.exit() );
     rejectPageErrors: false
   } );
   if ( error ) {
-    console.error( error );
+    // console.error( error );
 
     // Send the error to the parent Node process that spawned the worker.
     parentPort && parentPort.postMessage( error );
