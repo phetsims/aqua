@@ -6,7 +6,7 @@
  */
 
 const assert = require( 'assert' );
-const puppeteerLoad2 = require( '../../../perennial/js/common/puppeteerLoad2' );
+const puppeteerLoad = require( '../../../perennial/js/common/puppeteerLoad' );
 const { parentPort } = require( 'worker_threads' ); // eslint-disable-line require-statement-match
 
 process.on( 'SIGINT', () => process.exit() );
@@ -27,7 +27,7 @@ process.on( 'SIGINT', () => process.exit() );
   parentPort && parentPort.postMessage( loadingMessage );
   console.log( loadingMessage );
 
-  const error = await puppeteerLoad2( url, {
+  const error = await puppeteerLoad( url, {
     waitAfterLoad: 15 * 60 * 1000, // 15 minutes
     allowedTimeToLoad: 120000,
     gotoTimeout: 1000000000,
