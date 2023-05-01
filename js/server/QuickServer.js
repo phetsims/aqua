@@ -44,7 +44,6 @@ const jsonHeaders = {
 const FUZZ_SIM = 'natural-selection';
 const STUDIO_FUZZ_SIM = 'states-of-matter';
 const WAIT_BETWEEN_RUNS = 20000; // in ms
-
 const EXECUTE_OPTIONS = { errors: 'resolve' };
 
 class QuickServer {
@@ -80,6 +79,28 @@ class QuickServer {
 
     // Passed to puppeteerLoad()
     this.puppeteerOptions = {};
+
+    this.wireUpMessageOnExit();
+  }
+
+  /**
+   * Send a slack message when exiting unexpectedly to say that we exited.
+   * @private
+   */
+  wireUpMessageOnExit() {
+
+    // catching signals and do something before exit
+    [ 'SIGINT', 'SIGHUP', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT', 'SIGBUS', 'SIGFPE', 'SIGUSR1',
+      'SIGSEGV', 'SIGUSR2', 'SIGTERM', 'beforeExit', 'uncaughtException', 'unhandledRejection'
+    ].forEach( sig => {
+      process.on( sig, () => {
+        const message = `CTQ has caught ${sig} and will now exit.`;
+        winston.info( message );
+        this.slackMessage( message ).then( () => {
+          process.exit( 1 );
+        } );
+      } );
+    } );
   }
 
   // @private
@@ -99,8 +120,11 @@ class QuickServer {
    */
   async startMainLoop() {
 
-    // Launch the browser once and reuse it to generate new pages in puppeteerLoad
-    const browser = await puppeteer.launch( {
+    // Factor out so that webstorm doesn't complain about this whole block inline with the `launch` call
+    const launchOptions = {
+      handleSIGHUP: false,
+      handleSIGINT: false,
+      handleSIGTERM: false,
 
       // With this flag, temp files are written to /tmp/ on bayes, which caused https://github.com/phetsims/aqua/issues/145
       // /dev/shm/ is much bigger
@@ -117,7 +141,10 @@ class QuickServer {
         '--no-zygote',
         '--no-sandbox'
       ]
-    } );
+    };
+
+    // Launch the browser once and reuse it to generate new pages in puppeteerLoad
+    const browser = await puppeteer.launch( launchOptions );
 
     this.puppeteerOptions = {
       waitAfterLoad: this.isTestMode ? 3000 : 10000,
@@ -321,7 +348,7 @@ class QuickServer {
         }
       }
       catch( e ) {
-        this.setError( `server error: ${e}` );
+        winston.error( `server error: ${e}` );
       }
     } ).listen( port );
 
@@ -532,7 +559,7 @@ class QuickServer {
 
       // This message is duplicated in CHIPPER/lint, please change cautiously.
       const IMPORTANT_MESSAGE = 'All results (repeated from above)';
-      assert( message.includes( IMPORTANT_MESSAGE ), 'expected formatting from lint' );
+      assert( message.includes( IMPORTANT_MESSAGE ), 'expected formatting from lint ' + message );
       message = message.split( IMPORTANT_MESSAGE )[ 1 ].trim();
 
       // split up the error message by line for parsing

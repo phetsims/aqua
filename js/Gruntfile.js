@@ -6,14 +6,13 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
+// AQUA wants to opt out of global SIGINT handling so that it can handle it itself.
+global.processEventOptOut = true;
 
 const Gruntfile = require( '../../chipper/js/grunt/Gruntfile' );
-const ContinuousServer = require( './server/ContinuousServer' );
-const ContinuousServerClient = require( './server/ContinuousServerClient' );
 const assert = require( 'assert' );
 const _ = require( 'lodash' );
 const winston = require( 'winston' );
-const QuickServer = require( './server/QuickServer' );
 
 module.exports = grunt => {
   Gruntfile( grunt );
@@ -45,6 +44,7 @@ module.exports = grunt => {
       console.log( builtReportURL );
       console.log( loopURL );
 
+      const ContinuousServer = require( './server/ContinuousServer' );
       const server = new ContinuousServer( useRootDir );
       server.startServer( port );
       server.generateReportLoop();
@@ -68,6 +68,8 @@ module.exports = grunt => {
     '--testing : for running locally (will immediately kick into testing instead of waiting for changes)\n' +
     '--port=PORT : specify a custom port for the server interface\n',
     () => {
+      const QuickServer = require( './server/QuickServer' );
+
       // We don't finish! Don't tell grunt this...
       grunt.task.current.async();
 
@@ -89,6 +91,7 @@ module.exports = grunt => {
     '--ctID=string : specify id to give to continuous-loop.html, in URL string, defaults to "Sparky%20Puppeteer"\n' +
     '--serverURL=string : defaults to "https://sparky.colorado.edu/"\n',
     () => {
+      const ContinuousServerClient = require( './server/ContinuousServerClient' );
 
       // We don't finish! Don't tell grunt this...
       grunt.task.current.async();
