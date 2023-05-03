@@ -8,6 +8,7 @@
 const assert = require( 'assert' );
 const playwrightLoad = require( '../../../perennial/js/common/playwrightLoad' );
 const { parentPort } = require( 'worker_threads' ); // eslint-disable-line require-statement-match
+const playwright = require( '../../../perennial/node_modules/playwright' );
 
 process.on( 'SIGINT', () => process.exit() );
 
@@ -22,12 +23,13 @@ process.on( 'SIGINT', () => process.exit() );
   server = server.endsWith( '/' ) ? server : `${server}/`;
 
   // http so we don't need to overhead when running locally
-  const url = `${server}continuous-testing/aqua/html/continuous-loop.html?id=${ctID}`;
+  const url = `${server}continuous-testing/aqua/html/continuous-loop.html?id=${ctID}%20Playwright%20Firefox`;
   const loadingMessage = `Loading ${url}`;
   parentPort && parentPort.postMessage( loadingMessage );
   // console.log( loadingMessage );
 
   const error = await playwrightLoad( url, {
+    testingBrowserCreator: playwright.firefox, // hard coded to firefox at this time
     waitAfterLoad: 10 * 60 * 1000, // 15 minutes
     allowedTimeToLoad: 2 * 60 * 1000,
     gotoTimeout: 1000000000, // a long time

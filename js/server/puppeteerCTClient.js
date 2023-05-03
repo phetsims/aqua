@@ -22,7 +22,7 @@ process.on( 'SIGINT', () => process.exit() );
   server = server.endsWith( '/' ) ? server : `${server}/`;
 
   // http so we don't need to overhead when running locally
-  const url = `${server}continuous-testing/aqua/html/continuous-loop.html?id=${ctID}`;
+  const url = `${server}continuous-testing/aqua/html/continuous-loop.html?id=${ctID}%20Puppeteer`;
   const loadingMessage = `Loading ${url}`;
   parentPort && parentPort.postMessage( loadingMessage );
   // console.log( loadingMessage );

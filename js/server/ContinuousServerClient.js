@@ -27,7 +27,7 @@ class ContinuousServerClient {
       // How many instances (worker threads) should be created?
       numberOfPuppeteers: 8,
       numberOfFirefoxes: 0,
-      ctID: 'Sparky%20Puppeteer',
+      ctID: 'Sparky',
       serverURL: 'https://sparky.colorado.edu/',
       ...options
     };

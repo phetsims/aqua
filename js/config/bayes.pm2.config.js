@@ -33,7 +33,7 @@ module.exports = {
       cwd: '/data/share/phet/continuous-testing/ct-chrome-clients/aqua',
       script: 'grunt',
       time: true,
-      args: 'client-server --puppeteerClients=16 --ctID=Bayes%20Puppeteer'
+      args: 'client-server --puppeteerClients=16 --ctID=Bayes'
     }
   ]
 };
