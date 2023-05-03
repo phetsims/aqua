@@ -290,7 +290,14 @@ if ( options.full ) {
       if ( filterString.length ) {
         // Spaces separate multiple search terms
         filterString.split( ' ' ).forEach( filterPart => {
-          tests = tests.filter( test => _.some( test.names, name => name.includes( filterPart ) ) );
+          tests = tests.filter( test => {
+            const matchesTest = _.some( test.names, name => name.includes( filterPart ) );
+
+            const matchesErrorMessage = _.some( snapshots, snapshot => _.some( test.indices, index => {
+              return snapshot.tests[ index ].m && _.some( snapshot.tests[ index ].m, message => message.includes( filterPart ) );
+            } ) );
+            return matchesTest || matchesErrorMessage;
+          } );
         } );
       }
 
