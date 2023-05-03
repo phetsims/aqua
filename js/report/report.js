@@ -39,11 +39,18 @@ const options = QueryStringMachine.getAll( {
     defaultValue: ''
   },
 
+  // Errors like 'window.location probably changed' can be distracting, so allow omitting them, see https://github.com/phetsims/aqua/issues/173
+  showBeforeUnloadErrors: {
+    type: 'flag'
+  },
+
   full: {
     type: 'boolean',
     defaultValue: true
   }
 } );
+
+const isOnBeforeUnloadMessage = message => message.includes( 'window.location probably changed' );
 
 const rootNode = new Node();
 const display = new Display( rootNode, {
@@ -73,12 +80,28 @@ if ( options.full ) {
 
   window.reportProperty = reportProperty;
 
+  const prepareReport = report => {
+    report.snapshots.forEach( snapshot => {
+      snapshot.tests.forEach( test => {
+        test.failedIgnoreLocationChangeCount = test.n;
+        if ( test.m && !options.showBeforeUnloadErrors ) {
+          test.m.forEach( message => {
+            if ( isOnBeforeUnloadMessage( message ) ) {
+              test.failedIgnoreLocationChangeCount -= 1;
+            }
+          } );
+        }
+      } );
+    } );
+    return report;
+  };
+
   // Report loop
   ( async () => {
     while ( true ) { // eslint-disable-line no-constant-condition
       const result = await request( '/aquaserver/report' );
       if ( result ) {
-        reportProperty.value = result;
+        reportProperty.value = prepareReport( result );
       }
       await sleep( 20000 );
     }
@@ -273,7 +296,7 @@ if ( options.full ) {
 
       if ( sort === Sort.IMPORTANCE ) {
         tests = _.sortBy( tests, test => {
-          const failIndex = _.findIndex( snapshots, snapshot => _.some( test.indices, index => snapshot.tests[ index ].n ) );
+          const failIndex = _.findIndex( snapshots, snapshot => _.some( test.indices, index => snapshot.tests[ index ].failedIgnoreLocationChangeCount ) );
           const passIndex = _.findIndex( snapshots, snapshot => _.some( test.indices, index => snapshot.tests[ index ].y ) );
           if ( failIndex >= 0 ) {
             return failIndex;
@@ -365,7 +388,8 @@ if ( options.full ) {
       const snapshotLabels = snapshots.map( ( snapshot, index ) => {
         const totalTestCount = snapshot.tests.length;
         const completedTestCount = snapshot.tests.filter( x => x.y || x.n ).length;
-        const failedTestCount = snapshot.tests.filter( x => x.n > 0 ).length;
+        const failedTestCount = snapshot.tests.filter( x => x.failedIgnoreLocationChangeCount > 0 ).length;
+        const beforeUnloadErrorsCount = snapshot.tests.filter( test => test.m && _.some( test.m, m => isOnBeforeUnloadMessage( m ) ) ).length;
 
         const textOptions = { font: new PhetFont( { size: 10 } ) };
 
@@ -390,8 +414,9 @@ if ( options.full ) {
 
             const completedTests = `${completedTestCount} / ${totalTestCount} Tests Completed`;
             const failedTests = `${failedTestCount} Tests Failed`;
+            const beforeUnloadFailedTests = options.showBeforeUnloadErrors ? '' : `\n+${beforeUnloadErrorsCount} more tests failed from "window.location probably changed" errors.`;
             const shas = JSON.stringify( snapshot.shas, null, 2 );
-            popup( label, `${snapshot.timestamp}\n\n${completedTests}\n${failedTests}\n\n${diffString}\n\n${shas}` );
+            popup( label, `${snapshot.timestamp}\n\n${completedTests}\n${failedTests}${beforeUnloadFailedTests}\n\n${diffString}\n\n${shas}` );
           }
         } ) );
         return label;
@@ -451,12 +476,16 @@ if ( options.full ) {
 
             if ( typeof snapshotTest.y === 'number' ) {
               passCount += snapshotTest.y;
-              failCount += snapshotTest.n;
+              failCount += snapshotTest.failedIgnoreLocationChangeCount;
               if ( snapshotTest.y + snapshotTest.n === 0 ) {
                 untestedCount++;
               }
               if ( snapshotTest.m ) {
-                messages = messages.concat( snapshotTest.m.map( message => {
+
+                // Omit before-unload errors unless we opt into them with a query parameter.
+                const snapshotMessages = snapshotTest.m.filter( message => options.showBeforeUnloadErrors || !isOnBeforeUnloadMessage( message ) );
+
+                messages = messages.concat( snapshotMessages.map( message => {
                   let resultMessage = `${report.testNames[ index ].join( ' : ' )}\n${message}\nSnapshot from ${new Date( snapshot.timestamp ).toLocaleString()}`;
                   while ( resultMessage.includes( '\n\n\n' ) ) {
                     resultMessage = resultMessage.replace( '\n\n\n', '\n\n' );
