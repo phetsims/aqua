@@ -102,7 +102,7 @@ module.exports = grunt => {
         options.numberOfPuppeteers = grunt.option( 'puppeteerClients' );
       }
       if ( grunt.option( 'firefoxClients' ) ) {
-        options.numberOfPuppeteers = grunt.option( 'firefoxClients' );
+        options.numberOfFirefoxes = grunt.option( 'firefoxClients' );
       }
       if ( grunt.option( 'ctID' ) ) {
         options.ctID = grunt.option( 'ctID' );

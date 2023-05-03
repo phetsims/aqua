@@ -34,7 +34,7 @@ module.exports = {
       name: 'ct-chrome-clients',
       cwd: '/data/share/phet/continuous-testing/ct-chrome-clients/aqua',
       script: 'grunt',
-      args: 'client-server --puppeteerClients=100 --serverURL=http://127.0.0.1',
+      args: 'client-server --puppeteerClients=70 --firefoxClients=30 --serverURL=http://127.0.0.1',
       time: true
     }
   ]
