@@ -81,7 +81,7 @@ if ( options.full ) {
   window.reportProperty = reportProperty;
 
   const prepareReport = report => {
-    report.snapshots.forEach( snapshot => {
+    report && report.snapshots && report.snapshots.forEach( snapshot => {
       snapshot.tests.forEach( test => {
         test.failedIgnoreLocationChangeCount = test.n;
         if ( test.m && !options.showBeforeUnloadErrors ) {
