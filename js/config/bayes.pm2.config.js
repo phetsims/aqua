@@ -29,8 +29,8 @@ module.exports = {
       time: true
     },
     {
-      name: 'ct-chrome-clients',
-      cwd: '/data/share/phet/continuous-testing/ct-chrome-clients/aqua',
+      name: 'ct-browser-clients',
+      cwd: '/data/share/phet/continuous-testing/ct-browser-clients/aqua',
       script: 'grunt',
       time: true,
       args: 'client-server --puppeteerClients=16 --ctID=Bayes'
