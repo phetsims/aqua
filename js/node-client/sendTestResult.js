@@ -22,7 +22,8 @@ const winston = require( 'winston' );
  */
 module.exports = async function( message, testInfo, passed, options ) {
   options = _.extend( {
-    server: 'https://sparky.colorado.edu' // {string} - The server to use
+    server: 'https://sparky.colorado.edu', // {string} - The server to use
+    id: 'node-client' // {string} - The ID of the client
   }, options );
 
   winston.info( `Sending test result [${passed ? 'PASS' : 'FAIL'}]${message === undefined ? '' : ` with message:\n${message}`}` );

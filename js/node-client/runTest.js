@@ -8,7 +8,7 @@
 
 const _ = require( 'lodash' );
 const sendTestResult = require( './sendTestResult' );
-const puppeteer = require( 'puppeteer' );
+const puppeteer = require( '../../../perennial/node_modules/puppeteer' );
 const winston = require( 'winston' );
 const sleep = require( '../../../perennial/js/common/sleep' );
 
@@ -18,7 +18,7 @@ const sleep = require( '../../../perennial/js/common/sleep' );
  *
  * @param {Object} testInfo
  * @param {Object} [options]
- * @returns {Promise.<Object>} - Resolves with data
+ * @returns {Promise}
  */
 module.exports = async function( testInfo, options ) {
   options = _.extend( {
@@ -43,12 +43,18 @@ module.exports = async function( testInfo, options ) {
   } ) )}`;
 
   const url = `${options.server}/continuous-testing/aqua/html/${testInfo.url}${testInfo.url.includes( '?' ) ? '&' : '?'}${testInfoQueryParam}`;
-  winston.info( 'testing url', url );
 
   const ownsBrowser = !options.browser;
 
   let browser;
   let page;
+  let log = '';
+
+  // Gets included in any error/fail messages
+  const logResult = message => {
+    winston.info( message );
+    log += `${message}\n`;
+  };
 
   try {
     browser = options.browser || await options.browserCreator.launch( options.launchOptions );
@@ -70,8 +76,6 @@ module.exports = async function( testInfo, options ) {
 
     // Define a window.onMessageReceivedEvent function on the page.
     await page.exposeFunction( 'onPostMessageReceived', async e => {
-      // winston.info( 'postMessage', e );
-
       try {
         e = JSON.parse( e );
       }
@@ -82,14 +86,16 @@ module.exports = async function( testInfo, options ) {
       if ( e.type === 'test-pass' ) {
         receivedPassFail = true;
 
-        winston.info( 'PASS received, sending' );
-        winston.info( await sendTestResult( e.message, testInfo, true, options ) );
+        winston.info( 'Sending PASS result' );
+        const serverMessage = await sendTestResult( e.message, testInfo, true, options );
+        winston.info( `Server receipt: ${JSON.stringify( serverMessage )}` );
       }
       else if ( e.type === 'test-fail' ) {
         receivedPassFail = false;
 
-        winston.info( 'FAIL received, sending' );
-        winston.info( await sendTestResult( e.message, testInfo, false, options ) );
+        winston.info( 'Sending FAIL result' );
+        const serverMessage = await sendTestResult( `${e.message}\n${log}`, testInfo, false, options );
+        winston.info( `Server receipt: ${JSON.stringify( serverMessage )}` );
       }
       else if ( e.type === 'test-next' ) {
         gotNextTest = true;
@@ -97,7 +103,8 @@ module.exports = async function( testInfo, options ) {
       }
     } );
 
-    await page.evaluateOnNewDocument( () => {
+    // Support puppeteer (evaluateOnNewDocument) or playwright (addInitScript)
+    await ( ( page.evaluateOnNewDocument || page.addInitScript )( () => {
       const oldParent = window.parent;
 
       window.parent = {
@@ -108,35 +115,24 @@ module.exports = async function( testInfo, options ) {
           }
         }
       };
-    } );
+    } ) );
 
     page.on( 'response', async response => {
-
       // 200 and 300 class status are most likely fine here
       if ( response.url() === url && response.status() >= 400 ) {
-        winston.info( `Could not load from status: ${response.status()}` );
+        logResult( `[ERROR] Could not load from status: ${response.status()}` );
       }
     } );
-    page.on( 'console', msg => winston.info( 'console', msg.text() ) );
+    page.on( 'console', msg => logResult( `[CONSOLE] ${msg.text()}` ) );
 
     page.on( 'error', message => {
-      winston.info( `puppeteer error: ${message}` );
-      // reject( new Error( message ) );
+      logResult( `[ERROR] ${message}` );
     } );
     page.on( 'pageerror', message => {
-      // if ( options.rejectPageErrors ) {
-        winston.info( `puppeteer pageerror: ${message}` );
-        // reject( new Error( message ) );
-      // }
+      logResult( `[PAGE ERROR] ${message}` );
     } );
-    // page.on( 'frameattached', async frame => {
-    //   winston.info( 'attached', frame.url() );
-    // } );
-    // page.on( 'framedetached', async frame => {
-    //   winston.info( 'detached', frame.url() );
-    // } );
-    page.on( 'framenavigated', async frame => {
-      winston.info( 'navigated', frame.url() );
+    page.on( 'framenavigated', frame => {
+      logResult( `[NAVIGATED] ${frame.url()}` );
     } );
 
     // Run asynchronously
@@ -151,25 +147,25 @@ module.exports = async function( testInfo, options ) {
         }
       }
     } )();
+
+    logResult( `[URL] ${url}` );
     await page.goto( url, {
       timeout: majorTimeout
     } );
-    const result = await promise;
-    winston.info( 'promise resolved' );
+    await promise;
+    winston.debug( 'promise resolved' );
 
     !page.isClosed() && await page.close();
-    winston.info( 'page closed' );
+    winston.debug( 'page closed' );
 
     // If we created a temporary browser, close it
     ownsBrowser && await browser.close();
-    winston.info( 'browser closed' );
-
-    return result;
+    winston.debug( 'browser closed' );
   }
 
   catch( e ) {
     page && !page.isClosed() && await page.close();
     ownsBrowser && await browser.close();
-    throw e;
+    throw new Error( `${e}\n${log}` );
   }
 };
