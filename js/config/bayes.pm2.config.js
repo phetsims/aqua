@@ -34,6 +34,12 @@ module.exports = {
       script: 'grunt',
       time: true,
       args: 'client-server --puppeteerClients=16 --ctID=Bayes'
+    },
+    {
+      name: 'monday-server',
+      cwd: '/data/share/phet/monday/monday',
+      script: 'app.js',
+      time: true
     }
   ]
 };
