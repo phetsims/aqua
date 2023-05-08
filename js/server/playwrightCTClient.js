@@ -15,10 +15,10 @@ process.on( 'SIGINT', () => process.exit() );
 ( async () => {
 
   const ctID = process.argv[ 2 ];
-  assert( ctID, 'usage: node puppeteerCTClient {{SOME_IDENTIFIER_HERE}} {{SERVER}}' );
+  assert( ctID, 'usage: node playwrightCTClient {{SOME_IDENTIFIER_HERE}} {{SERVER}}' );
 
   let server = process.argv[ 3 ];
-  assert( server, 'usage: node puppeteerCTClient {{SOME_IDENTIFIER_HERE}} {{SERVER}}' );
+  assert( server, 'usage: node playwrightCTClient {{SOME_IDENTIFIER_HERE}} {{SERVER}}' );
 
   server = server.endsWith( '/' ) ? server : `${server}/`;
 
