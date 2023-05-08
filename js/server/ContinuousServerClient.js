@@ -55,7 +55,7 @@ class ContinuousServerClient {
    */
   newClientWorker( workerList, workerNumber, clientScriptName = 'puppeteerCTClient.js' ) {
 
-    console.log( `Worker${workerNumber} new instance` );
+    console.log( `Worker${workerNumber} new instance of ${clientScriptName}` );
 
     const worker = new Worker( `${this.rootDir}/aqua/js/server/${clientScriptName}`, {
       argv: [ this.ctID, this.serverURL ]
@@ -83,7 +83,7 @@ class ContinuousServerClient {
 
     let count = 0;
 
-    console.log( `Starting up ${this.numberOfPuppeteers} test browsers` );
+    console.log( `Starting up ${this.numberOfPuppeteers} Puppeteer and ${this.numberOfFirefoxes} Firefox test browsers` );
     console.log( `ctID: ${this.ctID}` );
     console.log( `serverURL: ${this.serverURL}` );
 
