@@ -63,8 +63,8 @@ class ContinuousServerClient {
 
     workerList.push( worker );
 
-    worker.on( 'message', message => { console.log( `Worker${workerNumber} Message from puppeteerClient:`, message ); } );
-    worker.on( 'error', e => { console.error( `Worker${workerNumber} Error from puppeteerClient:`, e ); } );
+    worker.on( 'message', message => { console.log( `Worker${workerNumber} Message from browser client:`, message ); } );
+    worker.on( 'error', e => { console.error( `Worker${workerNumber} Error from browser client:`, e ); } );
     worker.on( 'exit', code => {
       console.log( `Worker${workerNumber} instance complete` );
       const index = _.indexOf( workerList, worker );
