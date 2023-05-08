@@ -29,14 +29,14 @@ module.exports = async function( options ) {
   let lastFailure;
 
   while ( attemptsLeft-- > 0 ) {
-    try {
+    // try {
       await runTest( testInfo, options );
       winston.debug( 'runTest completed' );
       return;
-    }
-    catch( e ) {
-      lastFailure = e;
-    }
+    // }
+    // catch( e ) {
+    //   lastFailure = e;
+    // }
   }
 
   winston.info( 'FAILED TO RUN TEST' );

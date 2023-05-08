@@ -104,7 +104,7 @@ module.exports = async function( testInfo, options ) {
     } );
 
     // Support puppeteer (evaluateOnNewDocument) or playwright (addInitScript)
-    await ( ( page.evaluateOnNewDocument || page.addInitScript )( () => {
+    await ( ( page.evaluateOnNewDocument || page.addInitScript ).call( page, () => {
       const oldParent = window.parent;
 
       window.parent = {
@@ -165,7 +165,7 @@ module.exports = async function( testInfo, options ) {
 
   catch( e ) {
     page && !page.isClosed() && await page.close();
-    ownsBrowser && await browser.close();
+    ownsBrowser && browser && await browser.close();
     throw new Error( `${e}\n${log}` );
   }
 };
