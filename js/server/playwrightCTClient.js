@@ -35,7 +35,11 @@ process.on( 'SIGINT', () => process.exit() );
     gotoTimeout: 1000000000, // a long time
 
     // A page error is what we are testing for. Don't fail the browser instance out when an assertion occurs
-    rejectPageErrors: false
+    rejectPageErrors: false,
+
+    launchOptions: {
+      timeout: 480000
+    }
   } );
   if ( error ) {
     // console.error( error );
