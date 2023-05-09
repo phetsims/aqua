@@ -22,8 +22,8 @@ const winston = require( 'winston' );
  */
 module.exports = async function( message, testInfo, passed, options ) {
   options = _.extend( {
-    server: 'https://sparky.colorado.edu', // {string} - The server to use
-    id: 'node-client' // {string} - The ID of the client
+    serverURL: 'https://sparky.colorado.edu', // {string} - The server to use
+    ctID: 'Sparky Node Puppeteer' // {string} - The ID of the client
   }, options );
 
   winston.info( `Sending test result [${passed ? 'PASS' : 'FAIL'}]${message === undefined ? '' : ` with message:\n${message}`}` );
@@ -34,8 +34,8 @@ module.exports = async function( message, testInfo, passed, options ) {
     snapshotName: testInfo.snapshotName,
     timestamp: testInfo.timestamp,
     message: message,
-    id: options.id
+    id: options.ctID
   };
 
-  return ( await axios( `${options.server}/aquaserver/test-result?result=${encodeURIComponent( JSON.stringify( result ) )}` ) ).data;
+  return ( await axios( `${options.serverURL}/aquaserver/test-result?result=${encodeURIComponent( JSON.stringify( result ) )}` ) ).data;
 };

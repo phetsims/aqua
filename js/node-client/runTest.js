@@ -21,10 +21,10 @@ const sleep = require( '../../../perennial/js/common/sleep' );
  * @returns {Promise}
  */
 module.exports = async function( testInfo, options ) {
-  options = _.extend( {
-    server: 'https://sparky.colorado.edu', // {string} - The server to use
+  options = _.merge( {
+    serverURL: 'https://sparky.colorado.edu', // {string} - The server to use
     browserCreator: puppeteer,
-    browser: null,
+    browser: null, // If provided, browserCreator is not used to create a browser, and this browser is not closed.
 
     launchOptions: {
       args: [
@@ -42,7 +42,7 @@ module.exports = async function( testInfo, options ) {
     timestamp: testInfo.timestamp
   } ) )}`;
 
-  const url = `${options.server}/continuous-testing/aqua/html/${testInfo.url}${testInfo.url.includes( '?' ) ? '&' : '?'}${testInfoQueryParam}`;
+  const url = `${options.serverURL}/continuous-testing/aqua/html/${testInfo.url}${testInfo.url.includes( '?' ) ? '&' : '?'}${testInfoQueryParam}`;
 
   const ownsBrowser = !options.browser;
 
@@ -62,7 +62,7 @@ module.exports = async function( testInfo, options ) {
     page = await browser.newPage();
     await page.setDefaultNavigationTimeout( majorTimeout );
 
-    // TODO: have pendingPassFail when the result isn't sent
+    // TODO: have pendingPassFail when the result isn't sent, https://github.com/phetsims/aqua/issues/178
     let receivedPassFail = false;
     let gotNextTest = false;
 

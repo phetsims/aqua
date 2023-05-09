@@ -115,4 +115,45 @@ module.exports = grunt => {
       server.startMainLoop();
     }
   );
+
+  grunt.registerTask(
+    'ct-node-client',
+    'Launches puppeteer clients to run tests for CT with the following options:\n' +
+    '--browser=string : specify what browser to test on, supported: "puppeteer" or "firefox"\n' +
+    '--ctID=string : specify id to give to CT reporting, defaults to "Sparky Node Client"\n' +
+    '--serverURL=string : defaults to "https://sparky.colorado.edu/"\n',
+    () => {
+      const runNextTest = require( './node-client/runNextTest' );
+      const playwright = require( '../../perennial/node_modules/playwright' );
+
+      // We don't finish! Don't tell grunt this...
+      grunt.task.current.async();
+
+      const options = {};
+      const browser = grunt.option( 'browser' );
+      if ( browser ) {
+        if ( browser === 'firefox' ) {
+          options.browserCreator = playwright.firefox;
+        }
+        else {
+          assert( browser === 'puppeteer', 'supported browsers: puppeteer or firefox' );
+        }
+      }
+      if ( grunt.option( 'ctID' ) ) {
+        options.ctID = grunt.option( 'ctID' );
+      }
+      if ( grunt.option( 'serverURL' ) ) {
+        options.serverURL = grunt.option( 'serverURL' );
+      }
+
+      winston.info( 'Starting node client' );
+      winston.info( `Config: ${JSON.stringify( options )}` );
+
+      ( async () => {
+        while ( true ) { // eslint-disable-line no-constant-condition
+          await runNextTest( options );
+        }
+      } )();
+    }
+  );
 };

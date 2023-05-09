@@ -18,12 +18,12 @@ const axios = require( 'axios' );
  */
 module.exports = async function( options ) {
   options = _.extend( {
-    server: 'https://sparky.colorado.edu', // {string} - The server to use
+    serverURL: 'https://sparky.colorado.edu', // {string} - The server to use
     old: false // {boolean} - Provided for compatibility/testing, anything using this should be new enough
 
   }, options );
 
-  const response = await axios( `${options.server}/aquaserver/next-test?old=${options.old}` );
+  const response = await axios( `${options.serverURL}/aquaserver/next-test?old=${options.old}` );
 
   if ( response.status !== 200 ) {
     throw new Error( `nextTest request failed with status ${response.status} ${response}` );
