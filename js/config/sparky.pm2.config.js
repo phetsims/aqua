@@ -2,7 +2,9 @@
 
 /**
  * From sparky run:
- * pm2 startOrReload sparky.pm2.config.js --update-env
+ * cd aqua;
+ * pm2 startOrReload js/config/sparky.pm2.config.js --update-env;
+ * pm2 save;
  *
  * In general or for testing run:
  * pm2 start sparky.pm2.config.js
