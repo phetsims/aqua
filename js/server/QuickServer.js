@@ -249,7 +249,6 @@ class QuickServer {
    */
   async testPhetioCompare() {
     winston.info( 'QuickServer: phet-io compare' );
-    await npmUpdate( PHET_IO_COMPARE_SIM );
     return execute( gruntCommand, [ 'compare-phet-io-api' ], `${this.rootDir}/${PHET_IO_COMPARE_SIM}`, EXECUTE_OPTIONS );
   }
 
@@ -318,7 +317,7 @@ class QuickServer {
     const clonedRepos = await cloneMissingRepos();
 
     for ( const repo of [ ...staleRepos, ...clonedRepos ] ) {
-      if ( [ 'chipper', 'perennial', 'perennial-alias' ].includes( repo ) ) {
+      if ( [ 'chipper', 'perennial', 'perennial-alias', PHET_IO_COMPARE_SIM ].includes( repo ) ) {
         winston.info( `QuickServer: npm update ${repo}` );
         await npmUpdate( repo );
       }
