@@ -59,7 +59,8 @@ const quickNode = new HBox( {
     createQuickResult( 'lint', 'lint' ),
     createQuickResult( 'tsc', 'tsc' ),
     createQuickResult( 'simFuzz', 'simFuzz' ),
-    createQuickResult( 'studioFuzz', 'studioFuzz' )
+    createQuickResult( 'studioFuzz', 'studioFuzz' ),
+    createQuickResult( 'phetioCompare', 'phetioCompare' )
   ]
 } );
 

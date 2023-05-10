@@ -32,7 +32,8 @@ const ctqType = {
   LINT: 'lint',
   TSC: 'tsc',
   SIM_FUZZ: 'simFuzz', // Should end with "Fuzz"
-  STUDIO_FUZZ: 'studioFuzz' // Should end with "Fuzz"
+  STUDIO_FUZZ: 'studioFuzz', // Should end with "Fuzz"
+  PHET_IO_COMPARE: 'phetioCompare',
 };
 
 // Headers that we'll include in all server replies
@@ -43,6 +44,7 @@ const jsonHeaders = {
 
 const FUZZ_SIM = 'natural-selection';
 const STUDIO_FUZZ_SIM = 'states-of-matter';
+const PHET_IO_COMPARE_SIM = 'density';
 const WAIT_BETWEEN_RUNS = 20000; // in ms
 const EXECUTE_OPTIONS = { errors: 'resolve' };
 
@@ -186,7 +188,8 @@ class QuickServer {
             lint: this.executeResultToTestData( await this.testLint(), ctqType.LINT ),
             tsc: this.executeResultToTestData( await this.testTSC(), ctqType.TSC ),
             simFuzz: this.fuzzResultToTestData( await this.testSimFuzz(), ctqType.SIM_FUZZ ),
-            studioFuzz: this.fuzzResultToTestData( await this.testStudioFuzz(), ctqType.STUDIO_FUZZ )
+            studioFuzz: this.fuzzResultToTestData( await this.testStudioFuzz(), ctqType.STUDIO_FUZZ ),
+            phetioCompare: this.executeResultToTestData( await this.testPhetioCompare(), ctqType.PHET_IO_COMPARE )
           },
           shas: shas,
           timestamp: timestamp
@@ -238,6 +241,15 @@ class QuickServer {
     // Pretty false will make the output more machine readable.
     return execute( 'node', [ '../../../chipper/node_modules/typescript/bin/tsc', '--pretty', 'false' ],
       `${this.rootDir}/chipper/tsconfig/all`, EXECUTE_OPTIONS );
+  }
+
+  /**
+   * @private
+   * @returns {Promise<{code:number,stdout:string,stderr:string}>}
+   */
+  async testPhetioCompare() {
+    winston.info( 'QuickServer: phet-io compare' );
+    return execute( gruntCommand, [ 'compare-phet-io-api' ], `${this.rootDir}/${PHET_IO_COMPARE_SIM}`, EXECUTE_OPTIONS );
   }
 
   /**
