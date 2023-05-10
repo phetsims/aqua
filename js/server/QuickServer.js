@@ -249,6 +249,7 @@ class QuickServer {
    */
   async testPhetioCompare() {
     winston.info( 'QuickServer: phet-io compare' );
+    await npmUpdate( PHET_IO_COMPARE_SIM );
     return execute( gruntCommand, [ 'compare-phet-io-api' ], `${this.rootDir}/${PHET_IO_COMPARE_SIM}`, EXECUTE_OPTIONS );
   }
 
