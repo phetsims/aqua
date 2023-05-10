@@ -50,7 +50,7 @@ const options = QueryStringMachine.getAll( {
   }
 } );
 
-const isOnBeforeUnloadMessage = message => message.includes( 'window.location probably changed' );
+const isOnBeforeUnloadMessage = message => message.includes( 'window.location probably changed' ) && !message.includes( 'Sparky Node Puppeteer' );
 
 const rootNode = new Node();
 const display = new Display( rootNode, {
