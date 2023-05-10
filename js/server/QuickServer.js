@@ -33,7 +33,7 @@ const ctqType = {
   TSC: 'tsc',
   SIM_FUZZ: 'simFuzz', // Should end with "Fuzz"
   STUDIO_FUZZ: 'studioFuzz', // Should end with "Fuzz"
-  PHET_IO_COMPARE: 'phetioCompare',
+  PHET_IO_COMPARE: 'phetioCompare'
 };
 
 // Headers that we'll include in all server replies
