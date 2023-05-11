@@ -33,6 +33,29 @@ module.exports = async function( testInfo, options ) {
     }
   }, options );
 
+  // Puppeteer-specific Options
+  if ( options.browserCreator === puppeteer ) {
+    options = _.merge( {
+      launchOptions: {
+
+        // With this flag, temp files are written to /tmp/ on bayes, which caused https://github.com/phetsims/aqua/issues/145
+        // /dev/shm/ is much bigger
+        ignoreDefaultArgs: [ '--disable-dev-shm-usage' ],
+        args: [
+
+          '--enable-precise-memory-info',
+
+          // To prevent filling up `/tmp`, see https://github.com/phetsims/aqua/issues/145
+          `--user-data-dir=${process.cwd()}/../tmp/puppeteerUserData/`,
+
+          // Fork child processes directly to prevent orphaned chrome instances from lingering on sparky, https://github.com/phetsims/aqua/issues/150#issuecomment-1170140994
+          '--no-zygote',
+          '--no-sandbox'
+        ]
+      }
+    }, options );
+  }
+
   const majorTimeout = 280000;
   const bailTimout = 400000;
 

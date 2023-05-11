@@ -2,7 +2,9 @@
 
 /**
  * From bayes run:
- * pm2 startOrReload bayes.pm2.config.js --update-env
+ * cd aqua;
+ * pm2 startOrReload js/config/bayes.pm2.config.js --update-env;
+ * pm2 save;
  *
  * In general or for testing run:
  * pm2 start bayes.pm2.config.js
