@@ -143,7 +143,7 @@ module.exports = async function( testInfo, options ) {
           resolve();
         }
         else {
-          reject( new Error( `Did not get next-test message in ${bailTimout}ms` ) );
+          reject( new Error( `Did not get next-test message in ${bailTimout}ms: ${JSON.stringify( testInfo.test )}` ) );
         }
       }
     } )();
