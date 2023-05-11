@@ -294,7 +294,7 @@ if ( options.full ) {
             const matchesTest = _.some( test.names, name => name.includes( filterPart ) );
 
             const matchesErrorMessage = _.some( snapshots, snapshot => _.some( test.indices, index => {
-              return snapshot.tests[ index ].m && _.some( snapshot.tests[ index ].m, message => message.includes( filterPart ) );
+              return snapshot.tests[ index ].m && _.some( snapshot.tests[ index ].m, message => !isOnBeforeUnloadMessage( message ) && message.includes( filterPart ) );
             } ) );
             return matchesTest || matchesErrorMessage;
           } );
