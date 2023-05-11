@@ -124,7 +124,6 @@ module.exports = grunt => {
     '--serverURL=string : defaults to "https://sparky.colorado.edu/"\n',
     () => {
       const runNextTest = require( './node-client/runNextTest' );
-      const playwright = require( '../../perennial/node_modules/playwright' );
 
       // We don't finish! Don't tell grunt this...
       grunt.task.current.async();
@@ -133,7 +132,7 @@ module.exports = grunt => {
       const browser = grunt.option( 'browser' );
       if ( browser ) {
         if ( browser === 'firefox' ) {
-          options.browserCreator = playwright.firefox;
+          options.browserCreator = require( '../../perennial/node_modules/playwright' ).firefox;
         }
         else {
           assert( browser === 'puppeteer', 'supported browsers: puppeteer or firefox' );

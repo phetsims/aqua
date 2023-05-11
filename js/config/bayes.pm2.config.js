@@ -29,16 +29,18 @@ module.exports = {
       time: true
     },
     {
-      name: 'ct-browser-clients',
-      cwd: '/data/share/phet/continuous-testing/ct-browser-clients/aqua',
-      script: 'grunt',
-      time: true,
-      args: 'client-server --puppeteerClients=16 --ctID=Bayes'
-    },
-    {
       name: 'monday-server',
       cwd: '/data/share/phet/monday/monday',
       script: 'app.js',
+      time: true
+    },
+    {
+      name: 'ct-node-puppeteer-client',
+      cwd: '/data/share/phet/continuous-testing/ct-browser-clients/aqua',
+      args: 'ct-node-client --ctID="Bayes Node Puppeteer"',
+      script: 'grunt',
+      exec_mode: 'cluster',
+      instances: 16,
       time: true
     }
   ]
