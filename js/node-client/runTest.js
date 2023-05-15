@@ -146,7 +146,15 @@ module.exports = async function( testInfo, options ) {
         logResult( `[ERROR] Could not load from status: ${response.status()}` );
       }
     } );
-    page.on( 'console', msg => logResult( `[CONSOLE] ${msg.text()}` ) );
+    page.on( 'console', msg => {
+      let messageTxt = msg.text();
+
+      // Append the location to messages that would benefit from it.
+      if ( messageTxt.includes( 'net:' ) || messageTxt.includes( 'Failed to load resource' ) ) {
+        messageTxt += `: \t ${msg.location().url}`;
+      }
+      logResult( `[CONSOLE] ${messageTxt}` );
+    } );
 
     page.on( 'error', message => {
       logResult( `[ERROR] ${message}` );
