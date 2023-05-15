@@ -26,7 +26,7 @@ module.exports = async function( message, testInfo, passed, options ) {
     ctID: 'Sparky Node Puppeteer' // {string} - The ID of the client
   }, options );
 
-  winston.info( `Sending test result [${passed ? 'PASS' : 'FAIL'}]${message === undefined ? '' : ` with message:\n${message}`}${passed ? '' : ` \n\ttestInfo:${JSON.stringify( testInfo )}`}` );
+  winston.info( `Sending test result [${passed ? 'PASS' : 'FAIL'}]${message === undefined ? '' : ` with message:\n${message}`}` );
 
   const result = {
     passed: passed,
