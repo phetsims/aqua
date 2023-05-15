@@ -27,7 +27,9 @@ const url = require( 'url' );
 const winston = require( 'winston' );
 
 // in days, any shapshots that are older will be removed from the continuous report
-const NUMBER_OF_DAYS_TO_KEEP_SNAPSHOTS = 2;
+const NUMBER_OF_DAYS_TO_KEEP_SNAPSHOTS = 4;
+const MAX_SNAPSHOTS = 70;
+const NUMBER_OF_FULL_SNAPSHOTS = 20;
 
 // Headers that we'll include in all server replies
 const jsonHeaders = {
@@ -43,8 +45,6 @@ const linear = ( a1, a2, b1, b2, a3 ) => {
 // {number} - in milliseconds
 const twoHours = 1000 * 60 * 60 * 2;
 const twelveHours = 1000 * 60 * 60 * 12;
-
-const NUM_SNAPSHOTS_TO_KEEP_IN_REPORT = 100;
 
 class ContinuousServer {
   /**
@@ -540,7 +540,7 @@ class ContinuousServer {
               this.pendingSnapshot = null;
 
               const cutoffTimestamp = Date.now() - 1000 * 60 * 60 * 24 * NUMBER_OF_DAYS_TO_KEEP_SNAPSHOTS;
-              while ( this.snapshots.length > 70 || this.snapshots[ this.snapshots.length - 1 ].timestamp < cutoffTimestamp && !this.snapshots[ this.snapshots.length - 1 ].exists ) {
+              while ( this.snapshots.length > MAX_SNAPSHOTS || this.snapshots[ this.snapshots.length - 1 ].timestamp < cutoffTimestamp && !this.snapshots[ this.snapshots.length - 1 ].exists ) {
                 this.snapshots.pop();
               }
 
@@ -551,8 +551,7 @@ class ContinuousServer {
               this.saveToFile();
 
               this.setStatus( 'Removing old snapshot files' );
-              const numActiveSnapshots = 3;
-              for ( const snapshot of this.snapshots.slice( numActiveSnapshots ) ) {
+              for ( const snapshot of this.snapshots.slice( NUMBER_OF_FULL_SNAPSHOTS ) ) {
                 if ( snapshot.exists && !this.trashSnapshots.includes( snapshot ) ) {
                   this.trashSnapshots.push( snapshot );
 
@@ -694,7 +693,7 @@ class ContinuousServer {
         const numElapsedTimes = testNames.map( () => 0 );
 
         const snapshotSummaries = [];
-        for ( const snapshot of this.snapshots.slice( 0, NUM_SNAPSHOTS_TO_KEEP_IN_REPORT ) ) {
+        for ( const snapshot of this.snapshots.slice( 0, MAX_SNAPSHOTS ) ) {
           snapshotSummaries.push( {
             timestamp: snapshot.timestamp,
             shas: snapshot.shas,
