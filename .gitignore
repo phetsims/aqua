@@ -10,3 +10,4 @@ node_modules/
 screenshots/
 logs/*.txt
 .continuous-testing-state.json
+.continuous-testing-state-backup.json
