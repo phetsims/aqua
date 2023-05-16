@@ -75,14 +75,16 @@ function sendMouseToggleEvent() {
     0, // button
     null );
 
+  const context = new iframe.contentWindow.phet.scenery.EventContext( domEvent );
+
   input.validatePointers();
 
   if ( isMouseDown ) {
-    input.mouseUp( new iframe.contentWindow.phet.dot.Vector2( mouseX, mouseY ), domEvent );
+    input.mouseUp( new iframe.contentWindow.phet.dot.Vector2( mouseX, mouseY ), context );
     isMouseDown = false;
   }
   else {
-    input.mouseDown( null, new iframe.contentWindow.phet.dot.Vector2( mouseX, mouseY ), domEvent );
+    input.mouseDown( null, new iframe.contentWindow.phet.dot.Vector2( mouseX, mouseY ), context );
     isMouseDown = true;
   }
 
@@ -105,7 +107,10 @@ function sendMouseMoveEvent() {
     null );
 
   input.validatePointers();
-  input.mouseMove( new iframe.contentWindow.phet.dot.Vector2( mouseX, mouseY ), domEvent );
+  input.mouseMove(
+    new iframe.contentWindow.phet.dot.Vector2( mouseX, mouseY ),
+    new iframe.contentWindow.phet.scenery.EventContext( domEvent )
+  );
 
   mouseLastMoved = true;
 }
