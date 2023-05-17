@@ -10,7 +10,6 @@
 const copyDirectory = require( '../../../perennial/js/common/copyDirectory' );
 const createDirectory = require( '../../../perennial/js/common/createDirectory' );
 const deleteDirectory = require( '../../../perennial/js/common/deleteDirectory' );
-const gruntCommand = require( '../../../perennial/js/common/gruntCommand' );
 const execute = require( '../../../perennial/js/common/execute' );
 const getRepoList = require( '../../../perennial/js/common/getRepoList' );
 const gitLastCommitTimestamp = require( '../../../perennial/js/common/gitLastCommitTimestamp' );
@@ -84,8 +83,6 @@ class Snapshot {
         this.setStatus( `Copying snapshot files: ${repo}` );
         await copyDirectory( `${this.rootDir}/${repo}`, `${this.directory}/${repo}`, {} );
       }
-
-      await execute( gruntCommand, [ 'output-js-all' ], `${this.directory}/chipper` );
     }
 
     this.setStatus( 'Scanning commit timestamps' );
