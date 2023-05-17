@@ -85,7 +85,6 @@ class Snapshot {
         await copyDirectory( `${this.rootDir}/${repo}`, `${this.directory}/${repo}`, {} );
       }
 
-      this.setStatus( 'Running output-js-all on snapshot' );
       await execute( gruntCommand, [ 'output-js-all' ], `${this.directory}/chipper` );
     }
 
