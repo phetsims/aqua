@@ -35,15 +35,17 @@ module.exports = {
       cwd: '/data/share/phet/monday/monday',
       script: 'app.js',
       time: true
-    },
-    {
-      name: 'ct-node-puppeteer-client',
-      cwd: '/data/share/phet/continuous-testing/ct-browser-clients/aqua',
-      args: 'ct-node-client --ctID="Bayes Node Puppeteer"',
-      script: 'grunt',
-      exec_mode: 'cluster',
-      instances: 16,
-      time: true
     }
+    // TODO: comment back in when https://github.com/phetsims/aqua/issues/185 is fixed
+    // ,
+    // {
+    //   name: 'ct-node-puppeteer-client',
+    //   cwd: '/data/share/phet/continuous-testing/ct-browser-clients/aqua',
+    //   args: 'ct-node-client --ctID="Bayes Node Puppeteer"',
+    //   script: 'grunt',
+    //   exec_mode: 'cluster',
+    //   instances: 16,
+    //   time: true
+    // }
   ]
 };
