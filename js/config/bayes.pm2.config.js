@@ -32,7 +32,7 @@ module.exports = {
     },
     {
       name: 'monday-server',
-      cwd: '/data/share/phet/monday/monday',
+      cwd: '/data/share/phet/monday/monday/js',
       script: 'app.js',
       time: true
     }
