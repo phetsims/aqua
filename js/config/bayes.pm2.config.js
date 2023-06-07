@@ -32,8 +32,8 @@ module.exports = {
     },
     {
       name: 'monday-server',
-      cwd: '/data/share/phet/monday/monday/js',
-      script: 'app.js',
+      cwd: '/data/share/phet/monday/monday',
+      script: 'js/app.js',
       time: true
     }
     // TODO: comment back in when https://github.com/phetsims/aqua/issues/185 is fixed
