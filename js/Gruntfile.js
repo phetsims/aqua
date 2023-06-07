@@ -134,6 +134,9 @@ module.exports = grunt => {
         if ( browser === 'firefox' ) {
           options.browserCreator = require( '../../perennial/node_modules/playwright' ).firefox;
         }
+        if ( browser === 'safari' ) {
+          options.browserCreator = require( '../../perennial/node_modules/playwright' ).webkit;
+        }
         else {
           assert( browser === 'puppeteer', 'supported browsers: puppeteer or firefox' );
         }

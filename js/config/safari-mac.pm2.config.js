@@ -17,10 +17,10 @@ module.exports = {
     {
       name: 'ct-node-safari-client',
       cwd: '/Users/phet-dev/PhET/continuous-testing/aqua',
-      args: 'ct-node-client --ctID="Safari from Node"',
+      args: 'ct-node-client --ctID="Safari from Node" --browser=safari',
       script: 'grunt',
       exec_mode: 'cluster',
-      instances: 16,
+      instances: 8,
       time: true
     }
   ]
