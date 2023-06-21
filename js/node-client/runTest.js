@@ -11,6 +11,7 @@ const sendTestResult = require( './sendTestResult' );
 const puppeteer = require( '../../../perennial/node_modules/puppeteer' );
 const winston = require( 'winston' );
 const sleep = require( '../../../perennial/js/common/sleep' );
+require( 'dotenv' ).config();
 
 /**
  * Runs a CT test
@@ -35,25 +36,26 @@ module.exports = async function( testInfo, options ) {
 
   // Puppeteer-specific Options
   if ( options.browserCreator === puppeteer ) {
-    options = _.merge( {
-      launchOptions: {
 
-        // With this flag, temp files are written to /tmp/ on bayes, which caused https://github.com/phetsims/aqua/issues/145
-        // /dev/shm/ is much bigger
-        ignoreDefaultArgs: [ '--disable-dev-shm-usage' ],
-        args: [
+    // Do NOT merge all options here, it will mutate the other options like browserCreator (effecting tripple equals checking)
+    options.launchOptions = _.merge( {
 
-          '--enable-precise-memory-info',
+      // With this flag, temp files are written to /tmp/ on bayes, which caused https://github.com/phetsims/aqua/issues/145
+      // /dev/shm/ is much bigger
+      ignoreDefaultArgs: [ '--disable-dev-shm-usage' ],
+      args: [
+        '--disable-gpu',
 
-          // To prevent filling up `/tmp`, see https://github.com/phetsims/aqua/issues/145
-          `--user-data-dir=${process.cwd()}/../tmp/puppeteerUserData/`,
+        '--enable-precise-memory-info',
 
-          // Fork child processes directly to prevent orphaned chrome instances from lingering on sparky, https://github.com/phetsims/aqua/issues/150#issuecomment-1170140994
-          '--no-zygote',
-          '--no-sandbox'
-        ]
-      }
-    }, options );
+        // To prevent filling up `/tmp`, see https://github.com/phetsims/aqua/issues/145
+        `--user-data-dir=${process.cwd()}/../tmp/puppeteerUserData/`,
+
+        // Fork child processes directly to prevent orphaned chrome instances from lingering on sparky, https://github.com/phetsims/aqua/issues/150#issuecomment-1170140994
+        '--no-zygote',
+        '--no-sandbox'
+      ]
+    }, options.launchOptions );
   }
 
   const majorTimeout = 280000;
@@ -84,6 +86,12 @@ module.exports = async function( testInfo, options ) {
 
     page = await browser.newPage();
     await page.setDefaultNavigationTimeout( majorTimeout );
+
+    // The API for playwright was much more complicated, so just support puppeteer
+    if ( !options.browser && options.browserCreator === puppeteer &&
+         process.env.BASIC_PASSWORD && process.env.BASIC_USERNAME ) {
+      await page.authenticate( { username: process.env.BASIC_USERNAME, password: process.env.BASIC_PASSWORD } );
+    }
 
     // TODO: have pendingPassFail when the result isn't sent, https://github.com/phetsims/aqua/issues/178
     let receivedPassFail = false;

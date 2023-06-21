@@ -9,6 +9,7 @@
   "devDependencies": {
     "@slack/bolt": "~3.11.0",
     "axios": "~0.26.1",
+    "dotenv": "^16.0.3",
     "grunt": "~1.5.3",
     "lodash": "~4.17.10",
     "ncp": "~2.0.0",
