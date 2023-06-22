@@ -42,7 +42,7 @@ module.exports = {
     {
       name: 'ct-node-puppeteer-client',
       cwd: '/data/share/phet/continuous-testing/ct-node-client/aqua',
-      args: 'ct-node-client --ctID="Sparky Node Puppeteer"',
+      args: 'ct-node-client --ctID="Sparky Node Puppeteer" --serverURL=http://127.0.0.1',
       script: 'grunt',
       exec_mode: 'cluster',
       instances: 75,
