@@ -1,14 +1,15 @@
 # How to manage Continuous Testing (CT) service
 
-_Everything in this document is intended to be run on bayes.colorado.edu while logged in as user phet-admin._ The
-simplest way to accomplish this is to login to bayes with your CU Identikey, then run `sudo -i -u phet-admin`. VPN may
-be required to reach bayes.colorado.edu if off campus.
+_Everything in this document is intended to be run on sparky.colorado.edu while logged in as user phet (unless otherwise
+stated)._ The simplest way to accomplish this is to login to bayes with your CU Identikey, then
+run `sudo -i -u phet`. VPN may
+be required to reach sparky.colorado.edu if off campus.
 
 At a high level, there is:
 
 - The server process (running on bayes.colorado.edu, but can also be run anywhere)
-- Browsers running tests (we run Chrome processes on bayes, pointed to the main server)
-- The report interface (e.g. https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-report.html) which
+- Browsers running tests (we run Puppeteer and Playright browser instances via node processes on sparky, pointed to the main server)
+- The report interface (e.g. https://sparky.colorado.edu/continuous-testing/aqua/html/continuous-report.html) which
   displays the CT state.
 
 # Tests, and changing what is tested
@@ -21,7 +22,7 @@ etc.)
 
 # Server process
 
-The CT server runs from the `continuous-server` grunt task, and on bayes is kept running (and logging) with pm2 (more
+The CT server runs from the `continuous-server` grunt task, and on sparky is kept running (and logging) with pm2 (more
 information below). The code is under `aqua/js/server`, and launches from aqua's `Gruntfile.js`.
 
 The server by default will scan the (clean) working copy (pulling/cloning repos as needed), and when changes are
@@ -29,19 +30,19 @@ detected will (by default) copy things over into a snapshot directory (under `ct
 will load files from under that directory, and builds will be done there also. This snapshot will never change SHAs or
 contents (besides the builds and being deleted when it is not needed).
 
-Continuous testing on bayes.colorado.edu has all of our repositories checked out
+Continuous testing on sparky.colorado.edu has all of our repositories checked out
 at `/data/share/phet/continuous-testing`. Everything under this directory is served via HTTPS
-at https://bayes.colorado.edu/continuous-testing/. Requests to the server are made
-to https://bayes.colorado.edu/aquaserver/* (internal API) which is redirected to the port 45366 internally to our server
+at https://sparky.colorado.edu/continuous-testing/. Requests to the server are made
+to https://sparky.colorado.edu/aquaserver/* (internal API) which is redirected to the port 45366 internally to our server
 process.
 
 The server will have a certain number of locally running loops, doing build/lint tasks for tests. This is specified with
-a command-line flag when starting (currently we're using 8 concurrent builds/lints on bayes.colorado.edu).
+a command-line flag when starting (currently we're using 8 concurrent builds/lints on sparky.colorado.edu).
 
 It also saves state information in `aqua/.continuous-testing-state.json`, so on relaunches it won't lose data. This will
 need to be wiped when the internal server formats change.
 
-## pm2 on bayes.colorado.edu
+## pm2 on sparky.colorado.edu
 
 So far, we've used pm2 (https://github.com/Unitech/pm2) to handle running the server process (handling automatic
 restarting, logging, etc.).
@@ -58,7 +59,7 @@ Typically, you can run `pm2 list` to display the running processes, and it will 
 ```
 
 `pm2 start continuous-server` and `pm2 stop continuous-server` will start and stop the process. Be patient after
-starting CT; it make take 15 minutes for data to appear at https://bayes.colorado.edu/continuous-testing.
+starting CT; it make take 15 minutes for data to appear at https://sparky.colorado.edu/continuous-testing.
 
 `pm2 logs` will show recent log lines (stored in files), and will show a stream of logs from that point on (exit with
 CTRL-C). `pm2 logs` should be used to diagnose any issues with the server process.
@@ -92,7 +93,7 @@ cd /data/share/phet/continuous-quick-server/aqua
 pm2 start "grunt quick-server" --name "continuous-quick-server" --time
 ```
 
-## Updating the bayes server code
+## Updating the CT server code
 
 Test locally for server changes, and push when ready. Notify the team on slack#dev-public
 
@@ -127,8 +128,8 @@ more details are specified in the report and browser sections).
 
 # Testing loop
 
-Browsers should be pointed to `aqua/html/continuous-loop.html` to test for any continuous server. For the main bayes CT,
-this will be https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-loop.html. It will continuously request
+Browsers should be pointed to `aqua/html/continuous-loop.html` to test for any continuous server. For the main CT,
+this will be https://sparky.colorado.edu/continuous-testing/aqua/html/continuous-loop.html. It will continuously request
 tests from the server, run them, and report back results in a loop. It should still work while the server is down, and
 will "reconnect" once the server comes back up. This will do things like fuzz sims, run unit tests, check page loads,
 etc.
@@ -137,10 +138,10 @@ It's important to note the REQUIRED query parameter `id`, which should be provid
 testing. This will be shown in error reports, and can help track what computer/os/browser were used for specific
 failures.
 
-It can take a `server` query parameter, which determines where API requests should be made. This isn't needed for bayes'
+It can take a `server` query parameter, which determines where API requests should be made. This isn't needed for sparky'
 testing.
 
-# Chrome processes (bayes testing loop)
+# Chrome processes (sparky testing loop)
 
 Since we don't have actual devices set up and running tests, we have a semi-sufficient solution of running headless
 Chrome processes server-side. I'll typically run 9 processes or so (running too much more actually taxes things too
@@ -170,7 +171,7 @@ it run:
 
 ```sh
 cd /data/share/phet/continuous-testing/aqua/scripts
-./bayes-chrome.sh {{NUMBER}}
+./sparky-chrome.sh {{NUMBER}}
 ```
 
 and exit (leaving it still running). Replace `{{NUMBER}}` with the number 1 through 9 (whichever session it is).
@@ -183,8 +184,8 @@ Chrome process) constantly running tests from the server.
 
 # Report interface
 
-The main interface is available at https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-report.html. It
-will send API requests `https://bayes.colorado.edu/aquaserver/*` (which on the server will be mapped to the port 45366,
+The main interface is available at https://sparky.colorado.edu/continuous-testing/aqua/html/continuous-report.html. It
+will send API requests `https://sparky.colorado.edu/aquaserver/*` (which on the server will be mapped to the port 45366,
 to our running node server process).
 
 The reports can also be directed to point to any server API with the `?server` query parameter,
@@ -194,11 +195,11 @@ There are two ways of running the report interface from any location: `continuou
 of aqua), and `continuous-unbuilt-report.html` (which loads the aqua interface with modules, and should be used while
 developing the interface).
 
-## Updating the interface on bayes
+## Updating the interface on sparky
 
 Notify the team on slack#dev-public
 
-To move interface changes to bayes, you'll want to go to the aqua directory for
+To move interface changes to sparky, you'll want to go to the aqua directory for
 CT (`/data/share/phet/continuous-testing/aqua`), pull (since it will not pull aqua during its testing loop), and
 run `grunt`. This will build the interface under `aqua/build` which is used by `continuous-report.html`.
 
@@ -213,13 +214,15 @@ before testing on it. See all options and details in `js/Gruntfile`.
 ## Running the report locally
 
 Both [continuous-report.html](../html/continuous-report.html) (built version)
-and [continuous-unbuilt-report.html](../html/continuous-unbuilt-report.html) are available for running locally. the unbuilt
-report can be run with just a transpile step, which is helpful when making changes to `js/report/report.js`. Run with a 
+and [continuous-unbuilt-report.html](../html/continuous-unbuilt-report.html) are available for running locally. the
+unbuilt
+report can be run with just a transpile step, which is helpful when making changes to `js/report/report.js`. Run with a
 URL like this for fast iteration: `
 
-http://localhost:8080/aqua/html/continuous-unbuilt-report.html?server=https://bayes.colorado.edu/&maxColumns=5`.
+http://localhost:8080/aqua/html/continuous-unbuilt-report.html?server=https://sparky.colorado.edu/&maxColumns=5`.
 
-Note how the URL supports retreiving the same data from bayes, so you don't HAVE to have a local server running to iterate
+Note how the URL supports retrieving the same data from sparky, so you don't HAVE to have a local server running to
+iterate
 on the front end.
 
 The report is built as a "standalone" repo with `grunt`;
@@ -228,7 +231,7 @@ The report is built as a "standalone" repo with `grunt`;
 
 Usually, inspect `pm2 logs` to see if something is going on. If it's scrolled past an error, you can tail the actual
 file that the logs stream to. Typically it might be a missing repo, a private repo that it can't resolve, or sometimes
-you'll need to re-clone a repo if there was a history-changing operation. (Since bayes is constantly pulling, if someone
+you'll need to re-clone a repo if there was a history-changing operation. (Since sparky is constantly pulling, if someone
 pushes a history change and then reverts it or something like that, a `git pull` won't work and recloning will be
 necessary).
 
@@ -239,6 +242,7 @@ We'll add any future ways of fixing things as we run across them here.
 
 # Troubleshooting
 
-## Tests not finishing? 
+## Tests not finishing?
 
-Cells are partially green instead of fully green?  Perhaps try `pm2 restart continuous-client` as described in https://github.com/phetsims/aqua/issues/158 
+Cells are partially green instead of fully green? Perhaps try `pm2 restart continuous-client` as described
+in https://github.com/phetsims/aqua/issues/158 
