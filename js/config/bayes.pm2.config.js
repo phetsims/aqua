@@ -35,17 +35,17 @@ module.exports = {
       cwd: '/data/share/phet/monday/monday',
       script: 'js/app.js',
       time: true
+    },
+    {
+      name: 'ct-puppeteer-client',
+      cwd: '/data/share/phet/continuous-testing/ct-browser-clients/aqua',
+
+      // This is the static IP for sparky, but it gets around the DNS, which was causing trouble in https://github.com/phetsims/aqua/issues/185#issuecomment-1604337447
+      args: 'ct-node-client --ctID="Bayes Node Puppeteer" --serverURL=https://128.138.93.172/',
+      script: 'grunt',
+      exec_mode: 'cluster',
+      instances: 16,
+      time: true
     }
-    // TODO: comment back in when https://github.com/phetsims/aqua/issues/185 is fixed
-    // ,
-    // {
-    //   name: 'ct-node-puppeteer-client',
-    //   cwd: '/data/share/phet/continuous-testing/ct-browser-clients/aqua',
-    //   args: 'ct-node-client --ctID="Bayes Node Puppeteer"',
-    //   script: 'grunt',
-    //   exec_mode: 'cluster',
-    //   instances: 16,
-    //   time: true
-    // }
   ]
 };
