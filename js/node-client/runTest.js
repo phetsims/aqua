@@ -10,6 +10,7 @@ const _ = require( 'lodash' );
 const sendTestResult = require( './sendTestResult' );
 const puppeteer = require( '../../../perennial/node_modules/puppeteer' );
 const winston = require( 'winston' );
+const path = require( 'path' );
 const sleep = require( '../../../perennial/js/common/sleep' );
 require( 'dotenv' ).config();
 
@@ -49,7 +50,7 @@ module.exports = async function( testInfo, options ) {
         '--enable-precise-memory-info',
 
         // To prevent filling up `/tmp`, see https://github.com/phetsims/aqua/issues/145
-        `--user-data-dir=${process.cwd()}/../tmp/puppeteerUserData/`,
+        `--user-data-dir=${path.normalize( `${process.cwd()}/../tmp/puppeteerUserData/` )}`,
 
         // Fork child processes directly to prevent orphaned chrome instances from lingering on sparky, https://github.com/phetsims/aqua/issues/150#issuecomment-1170140994
         '--no-zygote',
