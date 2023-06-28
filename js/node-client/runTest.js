@@ -141,9 +141,7 @@ module.exports = async function( testInfo, options ) {
       window.parent = {
         postMessage: e => {
           window.onPostMessageReceived && window.onPostMessageReceived( e );
-          if ( oldParent ) {
-            oldParent.postMessage( e );
-          }
+          oldParent && oldParent.postMessage( e, '*' );
         }
       };
     } ) );
