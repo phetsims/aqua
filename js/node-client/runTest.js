@@ -68,7 +68,8 @@ module.exports = async function( testInfo, options ) {
     timestamp: testInfo.timestamp
   } ) )}`;
 
-  const url = `${options.serverURL}/continuous-testing/aqua/html/${testInfo.url}${testInfo.url.includes( '?' ) ? '&' : '?'}${testInfoQueryParam}`;
+  // const url = `${options.serverURL}/continuous-testing/aqua/html/${testInfo.url}${testInfo.url.includes( '?' ) ? '&' : '?'}${testInfoQueryParam}`;
+  const url = `http://localhost:8080/aqua/html/wrapper-test.html?url=..%2F..%2Fphet-io-wrappers%2Fmigration%2F%3Fsim%3Dmolecule-polarity%26locales%3D*%26phetioDebug%3Dtrue%26phetioWrapperDebug%3Dtrue%26fuzz%26oldVersion%3D1.2%26migrationRate%3D1000%26silent%26webgl%3Dfalse&testInfo=%7B%22test%22%3A%5B%22molecule-polarity%22%2C%22migration%22%2C%221.2-%3Emaster%22%5D%2C%22snapshotName%22%3A%22snapshot-1687971529669%22%2C%22timestamp%22%3A1687971977115%7D`;
 
   const ownsBrowser = !options.browser;
 

@@ -61,7 +61,7 @@
 
       // Sent by Joist due to the postMessage* query parameters
       if ( data.type === 'continuous-test-wrapper-error' ) {
-
+        console.log( 'got the error' );
         const transpiledStacktrace = await window.transpileStacktrace( data.stack );
         aqua.simpleFail( `${data.message}\n${transpiledStacktrace}` );
       }
