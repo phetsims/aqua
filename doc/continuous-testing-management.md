@@ -43,6 +43,9 @@ a command-line flag when starting (currently we're using 8 concurrent builds/lin
 It also saves state information in `aqua/.continuous-testing-state.json`, so on relaunches it won't lose data. This will
 need to be wiped when the internal server formats change.
 
+sparky's web server is `nginx`. You likely shouldn't need to change anything about this, but if you do manage config with
+`/etc/nginx/default.d/sparky.colorado.edu.conf` and manage the process called `nginx` with `systemctl`
+
 ## pm2 on sparky.colorado.edu
 
 We've pm2 (https://github.com/Unitech/pm2) to handle running the server process (handling automatic
