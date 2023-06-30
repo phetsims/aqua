@@ -1,4 +1,4 @@
-// Copyright 2020-2022, University of Colorado Boulder
+// Copyright 2020-2023, University of Colorado Boulder
 
 /**
  * Runs a phet-io wrapper test in an iframe, and passes results to our parent frame (continuous-loop.html).
