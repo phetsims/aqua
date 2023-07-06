@@ -78,7 +78,7 @@ Typically, you can run `pm2 list` to display the running processes, and it will 
 Use `pm2 show <id|name>` to get more details about an app
 ```
 
-If opperating on all pm2 processes, use `aqua/js/config/sparky.pm2.config.js` to set things up, or make changes to what
+If operating on all pm2 processes, use `aqua/js/config/sparky.pm2.config.js` to set things up, or make changes to what
 processes are run.
 
 If you need to just restart or temporarily change a single process, you can do so like:
