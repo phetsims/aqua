@@ -30,7 +30,7 @@ The general CT structure is made of 3 parts.
 * headless browser clients that run browser tests and deliver results back to the server (ct-node-client).
 * A "quick" server (ct-quick) that is a separate process to find quick and obvious issues with the codebase even faster.
 
-`sparky.colorado.edu` hosts the majority of the code for CT. It's located under `/data/share/phet/continuous-testsing/`
+`sparky.colorado.edu` hosts the majority of the code for CT. It's located under `/data/share/phet/continuous-testing/`
 and it is run/managed by `pm2`. All tasks are run from aqua/ grunt tasks. The current list of tasks being run can be
 found in `aqua/js/config/sparky.pm2.config`. There you can find where each grunt task (explained below) is run from.
 
