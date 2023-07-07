@@ -20,7 +20,24 @@ next CT snapshot. Run `node js/listContinuousTests.js` in perennial in order to 
 There is no need to restart the CT server or other interfaces to change what is tested (unless a new test type is added,
 etc.)
 
-# Server process (ct-main)
+# Server setup and structure
+
+## Overview
+
+The general CT structure is made of 3 parts.
+
+* A server (ct-main) that hosts snapshots and tests
+* headless browser clients that run browser tests and deliver results back to the server (ct-node-client).
+* A "quick" server (ct-quick) that is a separate process to find quick and obvious issues with the codebase even faster.
+
+`sparky.colorado.edu` hosts the majority of the code for CT. It's located under `/data/share/phet/continuous-testsing/`
+and it is run/managed by `pm2`. All tasks are run from aqua/ grunt tasks. The current list of tasks being run can be
+found in `aqua/js/config/sparky.pm2.config`. There you can find where each grunt task (explained below) is run from.
+
+There are clients run from outside sparky as well. On bayes and on a macbook in the Physics building, more clients are
+running that test browser tests. See `aqua/js/config/bayes.pm2.config` and `aqua/js/config/safari-mac.pm2.config`.
+
+## The Continuous Server (ct-main)
 
 The CT server runs from the `continuous-server` grunt task, and on sparky is kept running (and logging) with pm2 (more
 information below). The code is under `aqua/js/server`, and launches from aqua's `Gruntfile.js`.
@@ -43,8 +60,26 @@ a command-line flag when starting (currently we're using 8 concurrent builds/lin
 It also saves state information in `aqua/.continuous-testing-state.json`, so on relaunches it won't lose data. This will
 need to be wiped when the internal server formats change.
 
-sparky's web server is `nginx`. You likely shouldn't need to change anything about this, but if you do manage config with
+sparky's web server is `nginx`. You likely shouldn't need to change anything about this, but if you do manage config
+with
 `/etc/nginx/default.d/sparky.colorado.edu.conf` and manage the process called `nginx` with `systemctl`
+
+## The Quick Server (ct-quick)
+
+The quick server is a side process that reports a basic and fast set of tests to see if anything large and important
+is wrong with the code base. This server is run separately, and can be viewed as part of the same report as the full
+CT.
+
+## Node Clients (ct-node-client)
+
+Aqua supporting browser testing via Puppeteer and Playwright Node packages. These load browser tests through headless
+browsers on the server and report problems to ct-main.
+
+## Clients running continuous-loop.html (ct-browser-clients)
+
+An outdated approach of browser testing with worse logging and error handling. Use only with caution.
+
+NOTE: that this has replaced been replaced by ct-node-clients.
 
 ## pm2 on sparky.colorado.edu
 
@@ -94,7 +129,6 @@ alternative). In that case:
 ```sh
 pm2 list # see if it is started, and also starts the pm2 daemon if it wasn't running
 pm2 resurrect
-
 ```
 
 This should work if the previous configuration (all processes) was correctly saved before the reboot, otherwise follow
