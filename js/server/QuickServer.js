@@ -326,7 +326,7 @@ class QuickServer {
     winston.info( 'QuickServer: checking SHAs' );
     const shas = {};
     for ( const repo of allRepos ) {
-      shas[ repo ] = await gitRevParse( repo, 'master' );
+      shas[ repo ] = await gitRevParse( repo, 'main' );
     }
 
     // Periodically clean chipper/dist, but not on the first time for easier local testing

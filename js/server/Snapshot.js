@@ -75,7 +75,7 @@ class Snapshot {
     // @public {Object} - maps repo {string} => sha {string}
     this.shas = {};
     for ( const repo of this.repos ) {
-      this.shas[ repo ] = await gitRevParse( repo, 'master' );
+      this.shas[ repo ] = await gitRevParse( repo, 'main' );
     }
 
     if ( !useRootDir ) {

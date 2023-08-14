@@ -449,7 +449,7 @@ class ContinuousServer {
 
       wasStale = false;
       for ( const repo of Object.keys( this.snapshots[ 0 ].shas ) ) {
-        if ( await gitRevParse( repo, 'master' ) !== this.snapshots[ 0 ].shas[ repo ] ) {
+        if ( await gitRevParse( repo, 'main' ) !== this.snapshots[ 0 ].shas[ repo ] ) {
           wasStale = true;
           break;
         }
