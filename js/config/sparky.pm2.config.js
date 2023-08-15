@@ -33,13 +33,6 @@ module.exports = {
       time: true
     },
     {
-      name: 'ct-browser-clients',
-      cwd: '/data/share/phet/continuous-testing/ct-browser-clients/aqua',
-      script: 'grunt',
-      args: 'client-server --puppeteerClients=5 --firefoxClients=5 --serverURL=http://127.0.0.1',
-      time: true
-    },
-    {
       name: 'ct-node-puppeteer-client',
       cwd: '/data/share/phet/continuous-testing/ct-node-client/aqua',
 
@@ -47,7 +40,7 @@ module.exports = {
       args: 'ct-node-client --ctID="Sparky Node Puppeteer" --serverURL=http://128.138.93.172/',
       script: 'grunt',
       exec_mode: 'cluster',
-      instances: 75,
+      instances: 85,
       time: true
     },
     {
@@ -56,7 +49,7 @@ module.exports = {
       args: 'ct-node-client --ctID="Sparky Node Firefox" --browser=firefox --serverURL=http://127.0.0.1',
       script: 'grunt',
       exec_mode: 'cluster',
-      instances: 35,
+      instances: 45,
       time: true
     }
   ]
