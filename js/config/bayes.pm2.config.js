@@ -38,7 +38,7 @@ module.exports = {
     },
     {
       name: 'ct-puppeteer-client',
-      cwd: '/data/share/phet/continuous-testing/ct-browser-clients/aqua',
+      cwd: '/data/share/phet/continuous-testing/ct-node-clients/aqua',
 
       // This is the static IP for sparky, but it gets around the DNS, which was causing trouble in https://github.com/phetsims/aqua/issues/185#issuecomment-1604337447
       args: 'ct-node-client --ctID="Bayes Node Puppeteer" --serverURL=http://128.138.93.172/',
