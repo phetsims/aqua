@@ -19,11 +19,13 @@ Then go to the repo and `grunt update` will create the top-level tests HTML:
 cd repo
 grunt update
 ```
+
 Then populate js/{{REPO}}-tests.js with tests, see `dot/js/dot-tests.js` for a good example.
 
 Point your browser to {{REPO}}-tests.html to see the QUnit page.
 
-Tests should be placed adjacent to the file they test (if applicable). For example, Vector2Tests.js is adjacent to Vector2.js.
+Tests should be placed adjacent to the file they test (if applicable). For example, Vector2Tests.js is adjacent to
+Vector2.js.
 
 # How to add unit tests to a repo that already has unit tests
 
