@@ -14,6 +14,9 @@ const assert = require( 'assert' );
 const _ = require( 'lodash' );
 const winston = require( 'winston' );
 
+// Stream winston logging to the console
+winston.default.transports.console.level = 'info';
+
 module.exports = grunt => {
   Gruntfile( grunt );
 
@@ -84,6 +87,7 @@ module.exports = grunt => {
     }
   );
 
+  // @deprecated
   grunt.registerTask(
     'client-server',
     'Launches puppeteer clients to run tests for CT with the following options:\n' +
@@ -121,7 +125,8 @@ module.exports = grunt => {
     'Launches puppeteer clients to run tests for CT with the following options:\n' +
     '--browser=string : specify what browser to test on, supported: "puppeteer" or "firefox"\n' +
     '--ctID=string : specify id to give to CT reporting, defaults to "Sparky Node Client"\n' +
-    '--serverURL=string : defaults to "https://sparky.colorado.edu/"\n',
+    '--serverURL=string : defaults to "https://sparky.colorado.edu/. For local testing --serverURL=http://localhost:45366"\n' +
+    '--fileServerURL=string : defaults to "https://sparky.colorado.edu/continuous-testing. For local testing --fileServerURL=http://localhost"\n',
     () => {
       const runNextTest = require( './node-client/runNextTest' );
 
@@ -146,6 +151,9 @@ module.exports = grunt => {
       }
       if ( grunt.option( 'serverURL' ) ) {
         options.serverURL = grunt.option( 'serverURL' );
+      }
+      if ( grunt.option( 'fileServerURL' ) ) {
+        options.fileServerURL = grunt.option( 'fileServerURL' );
       }
 
       winston.info( 'Starting node client' );

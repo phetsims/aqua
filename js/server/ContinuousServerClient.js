@@ -6,6 +6,8 @@
  * and will need to be updated if that URL is no longer correct.
  *
  * @author Michael Kauzmann (PhET Interactive Simulations)
+ *
+ * @deprecated
  */
 
 const _ = require( 'lodash' );

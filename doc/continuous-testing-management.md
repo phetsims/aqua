@@ -232,9 +232,11 @@ See all options and details in `js/Gruntfile`.
 Then for testing server changes with the report, the report and loop interfaces can be given the query
 parameter `?server=http%3A%2F%2Flocalhost%3A45366` to specify the server location (for API access). Depending on your
 local testing URL, the report interface then would
-be http://localhost/aqua/html/continuous-unbuilt-report.html?server=http%3A%2F%2Flocalhost%3A45366 and browser-based
-tests can be run with http://localhost/aqua/html/continuous-loop.html?server=http%3A%2F%2Flocalhost%3A45366&id=local (
-more details are specified in the report and browser sections).
+be http://localhost/aqua/html/continuous-unbuilt-report.html?server=http%3A%2F%2Flocalhost%3A45366.
+
+Tests can be run in the browser via: http://localhost/aqua/html/continuous-loop.html?server=http%3A%2F%2Flocalhost%3A45366&id=local 
+
+Tests can be run using the node process via `grunt ct-node-client --ctID=blargity --browser=puppeteer --serverURL=http://localhost:45366 --fileServerURL=http://localhost`
 
 ## Running the report locally
 
