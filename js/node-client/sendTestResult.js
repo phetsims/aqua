@@ -26,7 +26,7 @@ module.exports = async function( message, testInfo, passed, options ) {
     ctID: 'Sparky Node Puppeteer' // {string} - The ID of the client
   }, options );
 
-  winston.info( `Sending test result [${passed ? 'PASS' : 'FAIL'}]${message === undefined ? '' : ` with message:\n${message}`}` );
+  winston.info( `Sending test result [${passed ? 'PASS' : 'FAIL'}]${message === undefined ? '' : ` with message:\n${message.slice( 0, 1000 )}...`}` );
 
   const result = {
     passed: passed,
@@ -38,8 +38,8 @@ module.exports = async function( message, testInfo, passed, options ) {
   };
 
   return ( await axios( {
-    method: 'get',
-    url: `${options.serverURL}/aquaserver/test-result?result=${encodeURIComponent( JSON.stringify( result ) )}`,
+    method: 'post',
+    url: `${options.serverURL}/aquaserver/test-result`,
     data: result
   } ) ).data;
 };
