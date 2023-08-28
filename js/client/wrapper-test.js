@@ -27,7 +27,7 @@
 
   let hasLoaded = false;
 
-  setTimeout( () => {
+  const timeoutID = setTimeout( () => {
     if ( hasLoaded ) {
       aqua.simplePass(); // Only pass the 'run' if it loads AND doesn't error for the entire duration
     }
@@ -51,15 +51,19 @@
 
       // Sent by Joist due to the postMessage* query parameters
       if ( data.type === 'continuous-test-wrapper-error' ) {
+        clearTimeout( timeoutID );
 
         const transpiledStacktrace = await window.transpileStacktrace( data.stack );
         aqua.simpleFail( `${data.message}\n${transpiledStacktrace}` );
       }
       else if ( data.type === 'continuous-test-wrapper-unload' ) {
+        clearTimeout( timeoutID );
+
         aqua.simpleFail( 'Unloaded frame before complete, window.location probably changed' );
       }
       else if ( data.type === 'continuous-test-wrapper-load' ) {
-        // NOTE: loads may happen more than once, e.g. the mirror wrapper
+
+        // Don't pass here, instead use the timeout as a duration for the test.
         hasLoaded = true;
       }
     }
