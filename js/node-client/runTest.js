@@ -106,32 +106,49 @@ module.exports = async function( testInfo, options ) {
       reject = rej;
     } );
 
+    // Make sure not to resolve if we still have results being sent.
+    let currentSendingCount = 0;
+
+    const resolveIfReady = () => {
+      if ( currentSendingCount === 0 && gotNextTest ) {
+        resolve();
+      }
+    };
+
     // Define a window.onMessageReceivedEvent function on the page.
-    await page.exposeFunction( 'onPostMessageReceived', async e => {
+    await page.exposeFunction( 'onPostMessageReceived', async event => {
       try {
-        e = JSON.parse( e );
+        event = JSON.parse( event );
       }
       catch( e ) {
         return;
       }
 
-      if ( e.type === 'test-pass' ) {
+      if ( event.type === 'test-pass' ) {
         receivedPassFail = true;
-
         winston.info( 'Sending PASS result' );
-        const serverMessage = await sendTestResult( e.message, testInfo, true, options );
-        winston.info( `Server receipt: ${JSON.stringify( serverMessage )}` );
-      }
-      else if ( e.type === 'test-fail' ) {
-        receivedPassFail = false;
 
-        winston.info( 'Sending FAIL result' );
-        const serverMessage = await sendTestResult( `${e.message}\n${log}`, testInfo, false, options );
+        currentSendingCount++;
+        const serverMessage = await sendTestResult( event.message, testInfo, true, options );
+        currentSendingCount--;
+
         winston.info( `Server receipt: ${JSON.stringify( serverMessage )}` );
+        resolveIfReady();
       }
-      else if ( e.type === 'test-next' ) {
+      else if ( event.type === 'test-fail' ) {
+        receivedPassFail = false;
+        winston.info( 'Sending FAIL result' );
+
+        currentSendingCount++;
+        const serverMessage = await sendTestResult( `${event.message}\n${log}`, testInfo, false, options );
+        currentSendingCount--;
+
+        winston.info( `Server receipt: ${JSON.stringify( serverMessage )}` );
+        resolveIfReady();
+      }
+      else if ( event.type === 'test-next' ) {
         gotNextTest = true;
-        resolve();
+        resolveIfReady();
       }
     } );
 
@@ -140,9 +157,9 @@ module.exports = async function( testInfo, options ) {
       const oldParent = window.parent;
 
       window.parent = {
-        postMessage: e => {
-          window.onPostMessageReceived && window.onPostMessageReceived( e );
-          oldParent && oldParent.postMessage( e, '*' );
+        postMessage: event => {
+          window.onPostMessageReceived && window.onPostMessageReceived( event );
+          oldParent && oldParent.postMessage( event, '*' );
         }
       };
     } ) );
