@@ -109,58 +109,25 @@ class ContinuousServer {
         const requestInfo = url.parse( req.url, true );
 
         const pathname = requestInfo.pathname;
-        if ( pathname === '/aquaserver/next-test' ) {
-          // ?old=true or ?old=false, determines whether ES6 or other newer features can be run directly in the browser
-          this.deliverBrowserTest( res, requestInfo.query.old === 'true' );
-        }
-        if ( pathname === '/aquaserver/test-result' ) {
-          const result = JSON.parse( requestInfo.query.result );
-          let message = result.message;
+        let body = '';
 
-          const snapshot = _.find( this.snapshots, snapshot => snapshot.name === result.snapshotName );
-          if ( snapshot ) {
-            const testNames = result.test;
+        req.on( 'data', chunk => {
+          body += chunk.toString();
+        } );
 
-            const test = _.find( snapshot.tests, test => {
-              return _.isEqual( testNames, test.names );
-            } );
-            if ( test ) {
-              if ( !message || message.indexOf( 'errors.html#timeout' ) < 0 ) {
-                if ( !result.passed ) {
-                  message = `${result.message ? ( `${result.message}\n` ) : ''}id: ${result.id}`;
-                }
-                const milliseconds = Date.now() - result.timestamp;
-                if ( result.passed ) {
-                  ContinuousServer.testPass( test, milliseconds, message );
-                }
-                else {
-                  ContinuousServer.testFail( test, milliseconds, message );
-                }
-              }
-            }
-            else {
-              winston.info( `Could not find test under snapshot: ${result.snapshotName} ${result.test.toString()}` );
-            }
+        req.on( 'end', () => {
+          try {
+            console.log( 'body', body );
+            const parsedBody = body ? JSON.parse( body ) : body;
+            this.dispatchRequest( pathname, requestInfo, parsedBody, res );
           }
-          else {
-            winston.info( `Could not find snapshot for name: ${result.snapshotName}` );
+          catch( e ) {
+            res.writeHead( 500, jsonHeaders );
+            res.end( JSON.stringify( {
+              error: e.message
+            } ) );
           }
-
-          res.writeHead( 200, jsonHeaders );
-          res.end( JSON.stringify( { received: 'true' } ) );
-        }
-        if ( pathname === '/aquaserver/status' ) {
-          res.writeHead( 200, jsonHeaders );
-          res.end( JSON.stringify( {
-            status: this.status,
-            startupTimestamp: this.startupTimestamp,
-            lastErrorString: this.lastErrorString
-          } ) );
-        }
-        if ( pathname === '/aquaserver/report' ) {
-          res.writeHead( 200, jsonHeaders );
-          res.end( this.reportJSON );
-        }
+        } );
       }
       catch( e ) {
         this.setError( `server error: ${e}` );
@@ -172,6 +139,70 @@ class ContinuousServer {
     } ).listen( port );
 
     winston.info( `running on port ${port}` );
+  }
+
+  /**
+   *
+   * @param {string} pathname - endpoint
+   * @param {Object} requestInfo - see http docs
+   * @param {Object} body - JSON parsed body
+   * @param {Response} response - see ServerResponse
+   * @private
+   */
+  dispatchRequest( pathname, requestInfo, body, response ) {
+
+    if ( pathname === '/aquaserver/next-test' ) {
+      // ?old=true or ?old=false, determines whether ES6 or other newer features can be run directly in the browser
+      this.deliverBrowserTest( response, requestInfo.query.old === 'true' );
+    }
+    if ( pathname === '/aquaserver/test-result' ) {
+      const result = body;
+      let message = result.message;
+
+      const snapshot = _.find( this.snapshots, snapshot => snapshot.name === result.snapshotName );
+      if ( snapshot ) {
+        const testNames = result.test;
+
+        const test = _.find( snapshot.tests, test => {
+          return _.isEqual( testNames, test.names );
+        } );
+        if ( test ) {
+          if ( !message || message.indexOf( 'errors.html#timeout' ) < 0 ) {
+            if ( !result.passed ) {
+              message = `${result.message ? ( `${result.message}\n` ) : ''}id: ${result.id}`;
+            }
+            const milliseconds = Date.now() - result.timestamp;
+            if ( result.passed ) {
+              ContinuousServer.testPass( test, milliseconds, message );
+            }
+            else {
+              ContinuousServer.testFail( test, milliseconds, message );
+            }
+          }
+        }
+        else {
+          winston.info( `Could not find test under snapshot: ${result.snapshotName} ${result.test.toString()}` );
+        }
+      }
+      else {
+        winston.info( `Could not find snapshot for name: ${result.snapshotName}` );
+      }
+
+      response.writeHead( 200, jsonHeaders );
+      response.end( JSON.stringify( { received: 'true' } ) );
+    }
+    if ( pathname === '/aquaserver/status' ) {
+      response.writeHead( 200, jsonHeaders );
+      response.end( JSON.stringify( {
+        status: this.status,
+        startupTimestamp: this.startupTimestamp,
+        lastErrorString: this.lastErrorString
+      } ) );
+    }
+    if ( pathname === '/aquaserver/report' ) {
+      response.writeHead( 200, jsonHeaders );
+      response.end( this.reportJSON );
+    }
   }
 
   /**

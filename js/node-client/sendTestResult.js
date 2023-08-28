@@ -37,5 +37,9 @@ module.exports = async function( message, testInfo, passed, options ) {
     id: options.ctID
   };
 
-  return ( await axios( `${options.serverURL}/aquaserver/test-result?result=${encodeURIComponent( JSON.stringify( result ) )}` ) ).data;
+  return ( await axios( {
+    method: 'get',
+    url: `${options.serverURL}/aquaserver/test-result?result=${encodeURIComponent( JSON.stringify( result ) )}`,
+    data: result
+  } ) ).data;
 };

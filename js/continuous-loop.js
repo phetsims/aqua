@@ -111,8 +111,9 @@ function sendTestResult( message, testInfo, passed ) {
     message: message,
     id: options.id
   };
-  req.open( 'get', `${options.server}/aquaserver/test-result?result=${encodeURIComponent( JSON.stringify( result ) )}` );
-  req.send();
+  // Must be a post to support sending via the body
+  req.open( 'post', `${options.server}/aquaserver/test-result` );
+  req.send( JSON.stringify( result ) );
   resetTimer();
 }
 
