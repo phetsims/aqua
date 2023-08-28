@@ -108,11 +108,12 @@ class ContinuousServer {
       try {
         const requestInfo = url.parse( req.url, true );
 
-        if ( requestInfo.pathname === '/aquaserver/next-test' ) {
+        const pathname = requestInfo.pathname;
+        if ( pathname === '/aquaserver/next-test' ) {
           // ?old=true or ?old=false, determines whether ES6 or other newer features can be run directly in the browser
           this.deliverBrowserTest( res, requestInfo.query.old === 'true' );
         }
-        if ( requestInfo.pathname === '/aquaserver/test-result' ) {
+        if ( pathname === '/aquaserver/test-result' ) {
           const result = JSON.parse( requestInfo.query.result );
           let message = result.message;
 
@@ -148,7 +149,7 @@ class ContinuousServer {
           res.writeHead( 200, jsonHeaders );
           res.end( JSON.stringify( { received: 'true' } ) );
         }
-        if ( requestInfo.pathname === '/aquaserver/status' ) {
+        if ( pathname === '/aquaserver/status' ) {
           res.writeHead( 200, jsonHeaders );
           res.end( JSON.stringify( {
             status: this.status,
@@ -156,13 +157,17 @@ class ContinuousServer {
             lastErrorString: this.lastErrorString
           } ) );
         }
-        if ( requestInfo.pathname === '/aquaserver/report' ) {
+        if ( pathname === '/aquaserver/report' ) {
           res.writeHead( 200, jsonHeaders );
           res.end( this.reportJSON );
         }
       }
       catch( e ) {
         this.setError( `server error: ${e}` );
+        res.writeHead( 500, jsonHeaders );
+        res.end( JSON.stringify( {
+          error: e.message
+        } ) );
       }
     } ).listen( port );
 
