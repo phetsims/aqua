@@ -50,6 +50,12 @@
       }
     },
 
+    // To load a PhET-iO wrapper for testing instead of a sim. Currently on 'studio' and 'migration' are supported
+    wrapperName: {
+      type: 'string',
+      defaultValue: ''
+    },
+
     // How many simulations to built at once (if testBuilt is selected). Uses test-server.js (which should be launched with Node.js)
     testConcurrentBuilds: {
       type: 'number',
@@ -207,6 +213,15 @@
     simStatusElements[ simName ].classList.add( `loading-${isBuild ? 'build' : 'dev'}` );
   }
 
+  // loads a wrapper into the iframe
+  function loadWrapper( simName, wrapperName, isBuild ) {
+    wrapperName = wrapperName === 'studio' ? wrapperName : `phet-io-wrappers/${wrapperName}`;
+    iframe.src = QueryStringMachine.appendQueryString(
+      QueryStringMachine.appendQueryString( `../../${wrapperName}/`, `?sim=${simName}` ),
+      simulationQueryString );
+    simStatusElements[ simName ].classList.add( `loading-${isBuild ? 'build' : 'dev'}` );
+  }
+
 // switches to the next sim (if there are any)
   function nextSim() {
     clearTimeout( timeoutId );
@@ -223,7 +238,12 @@
       const test = testQueue.shift();
       currentSim = test.simName;
       currentTest = test;
-      loadSim( test.simName, test.isBuild );
+      if ( test.wrapperName !== '' ) {
+        loadWrapper( test.simName, test.wrapperName );
+      }
+      else {
+        loadSim( test.simName, test.isBuild );
+      }
       timeoutId = setTimeout( nextSim, options.testDuration );
     }
     else {
@@ -302,17 +322,23 @@
       if ( url.indexOf( '_en_phet.html' ) >= 0 ) {
         return url.slice( 0, url.lastIndexOf( '_en_phet.html' ) ).slice( url.lastIndexOf( '/' ) + 1 );
       }
+      else if ( /[?&]sim=/.test( url ) ) {
+        return url.match( /sim=([\w-]+)/ )[ 1 ];
+      }
+      else if ( url.includes( 'phet-io.colorado.edu/sims' ) ) {
+        console.log( 'wooo!!', url.match( /phet-io.colorado.edu\/sims\/([\w-]+)\// )[ 1 ] );
+        return url.match( /phet-io.colorado.edu\/sims\/([\w-]+)\// )[ 1 ];
+      }
       else {
         return url.slice( 0, url.lastIndexOf( '_en.html' ) ).slice( url.lastIndexOf( '/' ) + 1 );
       }
     }
 
-    // const simName;
-    if ( data.type === 'load' ) {
-      onSimLoad( simNameFromURL( data.url ) );
+    if ( data.type === 'load' || data.type === 'continuous-test-wrapper-load' ) {
+      currentTest && onSimLoad( simNameFromURL( data.url ) );
     }
-    else if ( data.type === 'error' ) {
-      onSimError( simNameFromURL( data.url ), data );
+    else if ( data.type === 'error' || data.type === 'continuous-test-wrapper-error' ) {
+      currentTest && onSimError( simNameFromURL( data.url ), data );
     }
   } );
 
@@ -338,6 +364,7 @@
         if ( options.testUnbuilt ) {
           testQueue.push( {
             simName: simName,
+            wrapperName: options.wrapperName,
             build: false
           } );
         }
