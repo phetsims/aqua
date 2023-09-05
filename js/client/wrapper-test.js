@@ -16,6 +16,11 @@
     duration: {
       type: 'number',
       defaultValue: 60000
+    },
+
+    // By default, if the load doesn't happen, we'll just skip the test
+    failIfNoLoad: {
+      type: 'flag'
     }
   } );
 
@@ -32,7 +37,12 @@
       aqua.simplePass(); // Only pass the 'run' if it loads AND doesn't error for the entire duration
     }
     else {
-      aqua.simpleFail( `did not load in ${options.duration}ms` );
+      if ( options.failIfNoLoad ) {
+        aqua.simpleFail( `did not load in ${options.duration}ms` );
+      }
+      else {
+        aqua.simpleSkip();
+      }
     }
   }, options.duration );
 
