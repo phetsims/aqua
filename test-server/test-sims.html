@@ -61,7 +61,7 @@
       padding-left: 10px;
     }
 
-    .status .dev, .status .grunt, .status .build {
+    .status .dev {
       color: #888;
     }
 
@@ -92,52 +92,18 @@
       color: #ff0000;
     }
 
-    /* complete (without error or loading) */
-    .status.complete-grunt .grunt {
-      color: #00dd00;
-    }
-
-    /* error (complete or not, specificity to override) */
-    .status.error-grunt .grunt, .status.complete-grunt.error .grunt {
-      color: #ff0000;
-    }
-
-    /* loading */
-    .status.loading-build .build {
-      color: #6666ff;
-    }
-
-    /* complete (without error or loading) */
-    .status.complete-build .build {
-      color: #00dd00;
-    }
-
-    /* complete but without finished loading (specificity to override) */
-    .status.complete-build.loading-build .build {
-      color: #ff8800;
-    }
-
-    /* error (complete or not, specificity to override) */
-    .status.error-build .build, .status.complete-build.error .build {
-      color: #ff0000;
-    }
-
-    .status.error-grunt .build {
-      color: transparent;
-    }
-
     /* have 'loading' text when it hasn't sent the 'load' postMessage yet */
     .status.loading::after {
       content: " (loading)";
     }
 
     /* complete (no errors, not important) */
-    .status.complete-dev.complete-build.complete-grunt {
+    .status.complete-dev {
       background-color: #ccffcc;
     }
 
     /* error (complete or not). uses specificity to override complete */
-    .status.error-dev, .status.loading-dev.complete-dev, .status.error-grunt, .status.error-build, .status.loading-build.complete-build {
+    .status.error-dev, .status.loading-dev.complete-dev {
       background-color: #ffcccc !important;
     }
   </style>

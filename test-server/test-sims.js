@@ -23,18 +23,6 @@
       defaultValue: true
     },
 
-    // Whether sims should be tested in unbuilt mode
-    testUnbuilt: {
-      type: 'boolean',
-      defaultValue: true
-    },
-
-    // Whether sims should be tested that are built. test-server.js should be launched to be able to build the sims.
-    testBuilt: {
-      type: 'boolean',
-      defaultValue: true
-    },
-
     // Will move to the next simulation after this number of milliseconds since launching the simulation.
     testDuration: {
       type: 'number',
@@ -56,19 +44,13 @@
       defaultValue: ''
     },
 
-    // How many simulations to built at once (if testBuilt is selected). Uses test-server.js (which should be launched with Node.js)
-    testConcurrentBuilds: {
-      type: 'number',
-      defaultValue: 1
-    },
     randomize: {
       type: 'flag'
     }
   } );
 
   let simNames; // {Array.<string>} - will be filled in below by an AJAX request
-  const testQueue = []; // {Array.<{ simName: {string}, isBuild: {boolean} }>} - Sim test target queue
-  const buildQueue = []; // {Array.<string>} - sim names that need to be built
+  const testQueue = []; // {Array.<{ simName: {string}, wrapperName: {string} }>} - Sim test target queue
 
   const failedSims = []; // {Array.<string>} - sim names that failed the tests
 
@@ -112,14 +94,10 @@
 
   const eventLog = document.createElement( 'div' );
   eventLog.id = 'eventLog';
-  eventLog.innerHTML = '<div id="dev-errors" style="display: none;"><h1>Sim errors (dev):</h1></div>' +
-                       '<div id="build-errors" style="display: none;"><h1>Sim errors (build):</h1></div>' +
-                       '<div id="grunt-errors" style="display: none;"><h1>Grunt errors:</h1></div>';
+  eventLog.innerHTML = '<div id="dev-errors" style="display: none;"><h1>Sim errors (dev):</h1></div>';
   eventLog.style.display = 'none';
   document.body.appendChild( eventLog );
   const devErrors = document.getElementById( 'dev-errors' );
-  const buildErrors = document.getElementById( 'build-errors' );
-  const gruntErrors = document.getElementById( 'grunt-errors' );
 
 // a borderless iframe
   const iframe = document.createElement( 'iframe' );
@@ -152,74 +130,25 @@
     devStatus.innerHTML = '■';
     simStatusElement.appendChild( devStatus );
 
-    const gruntStatus = document.createElement( 'span' );
-    gruntStatus.classList.add( 'grunt' );
-    gruntStatus.classList.add( 'unselectable' );
-    gruntStatus.innerHTML = '■';
-    simStatusElement.appendChild( gruntStatus );
-
-    const buildStatus = document.createElement( 'span' );
-    buildStatus.classList.add( 'build' );
-    buildStatus.classList.add( 'unselectable' );
-    buildStatus.innerHTML = '■';
-    simStatusElement.appendChild( buildStatus );
-
     const simNameStatus = document.createElement( 'span' );
     simNameStatus.classList.add( 'simName' );
     simNameStatus.innerHTML = simName;
     simStatusElement.appendChild( simNameStatus );
   }
 
-  function nextBuild() {
-    if ( buildQueue.length ) {
-      const simName = buildQueue.shift();
-
-      const req = new XMLHttpRequest();
-      req.onload = function() {
-        const data = JSON.parse( req.responseText );
-
-        if ( data.sim === simName && data.success ) {
-          console.log( `${simName} built successfully` );
-          simStatusElements[ simName ].classList.add( 'complete-grunt' );
-          testQueue.push( {
-            simName: simName,
-            isBuild: true
-          } );
-          if ( !currentTest ) {
-            nextSim();
-          }
-        }
-        else {
-          console.log( `error building ${simName}` );
-          simStatusElements[ simName ].classList.add( 'error-grunt' );
-
-          eventLog.style.display = 'block';
-          gruntErrors.style.display = 'block';
-          gruntErrors.innerHTML += `<strong>${simName}</strong>`;
-          gruntErrors.innerHTML += `<pre>${data.output}</pre>`;
-        }
-
-        nextBuild();
-      };
-      console.log( `building ${simName}` );
-      req.open( 'GET', `http://${window.location.hostname}:45361/${simName}`, true );
-      req.send();
-    }
-  }
-
 // loads a sim into the iframe
-  function loadSim( simName, isBuild ) {
-    iframe.src = `../../${simName}/${isBuild ? 'build/phet/' : ''}${simName}_en${isBuild ? '_phet' : ''}.html${simulationQueryString}`;
-    simStatusElements[ simName ].classList.add( `loading-${isBuild ? 'build' : 'dev'}` );
+  function loadSim( simName ) {
+    iframe.src = `../../${simName}/${simName}_en.html${simulationQueryString}`;
+    simStatusElements[ simName ].classList.add( 'loading-dev' );
   }
 
   // loads a wrapper into the iframe
-  function loadWrapper( simName, wrapperName, isBuild ) {
+  function loadWrapper( simName, wrapperName ) {
     wrapperName = wrapperName === 'studio' ? wrapperName : `phet-io-wrappers/${wrapperName}`;
     iframe.src = QueryStringMachine.appendQueryString(
       QueryStringMachine.appendQueryString( `../../${wrapperName}/`, `?sim=${simName}` ),
       simulationQueryString );
-    simStatusElements[ simName ].classList.add( `loading-${isBuild ? 'build' : 'dev'}` );
+    simStatusElements[ simName ].classList.add( 'loading-dev' );
   }
 
 // switches to the next sim (if there are any)
@@ -228,7 +157,7 @@
     currentSim = '';
 
     if ( currentTest ) {
-      simStatusElements[ currentTest.simName ].classList.add( `complete-${currentTest.isBuild ? 'build' : 'dev'}` );
+      simStatusElements[ currentTest.simName ].classList.add( 'complete-dev' );
       if ( !currentTest.loaded ) {
         addSimToRerunList( currentTest.simName );
       }
@@ -242,7 +171,7 @@
         loadWrapper( test.simName, test.wrapperName );
       }
       else {
-        loadSim( test.simName, test.isBuild );
+        loadSim( test.simName );
       }
       timeoutId = setTimeout( nextSim, options.testDuration );
     }
@@ -255,12 +184,10 @@
   function onSimLoad( simName ) {
     console.log( `loaded ${simName}` );
 
-    const isBuild = simName === currentTest.simName && currentTest.isBuild;
-
     currentTest.loaded = true;
 
     // not loading anymore
-    simStatusElements[ simName ].classList.remove( `loading-${isBuild ? 'build' : 'dev'}` );
+    simStatusElements[ simName ].classList.remove( 'loading-dev' );
 
     // window.open stub on child. otherwise we get tons of "Report Problem..." popups that stall
     iframe.contentWindow.open = function() {
@@ -278,8 +205,7 @@
   async function onSimError( simName, data ) {
     console.log( `error on ${simName}` );
 
-    const isBuild = simName === currentTest.simName && currentTest.isBuild;
-    const errorLog = isBuild ? buildErrors : devErrors;
+    const errorLog = devErrors;
 
     eventLog.style.display = 'block';
     errorLog.style.display = 'block';
@@ -296,7 +222,7 @@
       errorLog.innerHTML += `<pre>${transpiledStacktrace}</pre>`;
     }
 
-    simStatusElements[ simName ].classList.add( `error-${isBuild ? 'build' : 'dev'}` );
+    simStatusElements[ simName ].classList.add( 'error-dev' );
 
     // since we can have multiple errors for a single sim (due to being asynchronous),
     // we need to not move forward more than one sim
@@ -326,7 +252,6 @@
         return url.match( /sim=([\w-]+)/ )[ 1 ];
       }
       else if ( url.includes( 'phet-io.colorado.edu/sims' ) ) {
-        console.log( 'wooo!!', url.match( /phet-io.colorado.edu\/sims\/([\w-]+)\// )[ 1 ] );
         return url.match( /phet-io.colorado.edu\/sims\/([\w-]+)\// )[ 1 ];
       }
       else {
@@ -361,27 +286,14 @@
         createStatusElement( simName );
 
         // First, if enabled, put unbuilt testing on the queue
-        if ( options.testUnbuilt ) {
-          testQueue.push( {
-            simName: simName,
-            wrapperName: options.wrapperName,
-            build: false
-          } );
-        }
-
-        // On the build queue, if enabled, put all sims
-        if ( options.testBuilt ) {
-          buildQueue.push( simName );
-        }
+        testQueue.push( {
+          simName: simName,
+          wrapperName: options.wrapperName
+        } );
       } );
 
       // kick off the loops
       nextSim();
-
-      console.log( `starting builds: ${options.testConcurrentBuilds}` );
-      for ( let k = 0; k < options.testConcurrentBuilds; k++ ) {
-        nextBuild();
-      }
     };
     // location of active sims
     req.open( 'GET', '../../perennial/data/active-runnables', true );
