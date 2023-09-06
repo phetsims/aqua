@@ -17,13 +17,20 @@
 
   const options = QueryStringMachine.getAll( {
 
-    // Whether the sim should be left open for the testDuration. If false, once a sim loads, it will change to the next sim.
+    // Whether the sim should be left open for the testDuration after loading. If false, once a sim loads, it will
+    // change to the next sim.
     testTask: {
       type: 'boolean',
       defaultValue: true
     },
 
-    // Will move to the next simulation after this number of milliseconds since launching the simulation.
+    // The time the sim has to load before moving to the next test.
+    loadTimeout: {
+      type: 'number',
+      defaultValue: 30000 // ms
+    },
+
+    // Will move to the next simulation after this number of milliseconds since the simulation/wrapper loaded.
     testDuration: {
       type: 'number',
       defaultValue: 30000 // ms
@@ -116,7 +123,9 @@
 
   let currentTest;
   const simStatusElements = {}; // map simName {string} => {HTMLElement}, which holds the status w/ classes
-  let timeoutId; // we need to clear the timeout if we bail from a sim early
+
+  // we need to clear timeouts if we bail from a sim early. Note this reference is used both for the load and test timeouts.
+  let timeoutID;
 
   function createStatusElement( simName ) {
     const simStatusElement = document.createElement( 'div' );
@@ -153,7 +162,8 @@
 
 // switches to the next sim (if there are any)
   function nextSim() {
-    clearTimeout( timeoutId );
+    console.log( 'next sim' );
+    clearTimeout( timeoutID );
     currentSim = '';
 
     if ( currentTest ) {
@@ -173,7 +183,7 @@
       else {
         loadSim( test.simName );
       }
-      timeoutId = setTimeout( nextSim, options.testDuration );
+      timeoutID = setTimeout( nextSim, options.loadTimeout );
     }
     else {
       iframe.src = 'about:blank';
@@ -182,6 +192,7 @@
   }
 
   function onSimLoad( simName ) {
+    clearTimeout( timeoutID ); // Loaded, so clear the timeout
     console.log( `loaded ${simName}` );
 
     currentTest.loaded = true;
@@ -196,6 +207,8 @@
         blur: function() {}
       };
     };
+
+    timeoutID = setTimeout( nextSim, options.testDuration );
 
     if ( !options.testTask ) {
       nextSim();
