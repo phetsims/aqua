@@ -260,7 +260,9 @@
     }
 
     if ( data.type === 'load' || data.type === 'continuous-test-wrapper-load' ) {
-      currentTest && onSimLoad( simNameFromURL( data.url ) );
+
+      // Some wrappers like PhET-iO State have 2 sims in the same wrapper, so we may get multiple loaded events
+      currentTest && !currentTest.loaded && onSimLoad( simNameFromURL( data.url ) );
     }
     else if ( data.type === 'error' || data.type === 'continuous-test-wrapper-error' ) {
       currentTest && onSimError( simNameFromURL( data.url ), data );
