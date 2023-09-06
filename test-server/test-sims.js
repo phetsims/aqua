@@ -162,7 +162,6 @@
 
 // switches to the next sim (if there are any)
   function nextSim() {
-    console.log( 'next sim' );
     clearTimeout( timeoutID );
     currentSim = '';
 
