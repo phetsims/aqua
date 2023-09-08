@@ -1,6 +1,6 @@
 # To run:
 
-Open `aqua/test-server/test-sims.html` with the relevant query parameters in a browser.
+Open `aqua/fuzz-lightyear/` with the relevant query parameters in a browser.
 
 # Query parameters:
 
