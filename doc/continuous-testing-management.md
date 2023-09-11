@@ -1,8 +1,8 @@
 # How to manage Continuous Testing (CT) service
 
 _Everything in this document is intended to be run on sparky.colorado.edu while logged in as user phet (unless otherwise
-stated)._ The simplest way to accomplish this is to login to bayes with your CU Identikey, then
-run `sudo -i -u phet`. VPN may be required to reach sparky.colorado.edu if off campus.
+stated)._ The simplest way to accomplish this is to login to bayes with your CU Identikey, then run `sudo -i -u phet`.
+VPN may be required to reach sparky.colorado.edu if off campus.
 
 At a high level, there is:
 
@@ -14,8 +14,7 @@ At a high level, there is:
 # Tests, and changing what is tested
 
 `perennial/js/listContinuousTests.js` controls what tests are run. Simply commit/push to change what will be tested on
-the
-next CT snapshot. Run `node js/listContinuousTests.js` in perennial in order to test the output.
+the next CT snapshot. Run `node js/listContinuousTests.js` in perennial in order to test the output.
 
 There is no need to restart the CT server or other interfaces to change what is tested (unless a new test type is added,
 etc.)
@@ -51,8 +50,7 @@ Continuous testing on sparky.colorado.edu has all of our repositories checked ou
 at `/data/share/phet/continuous-testing`. Everything under this directory is served via HTTPS
 at https://sparky.colorado.edu/continuous-testing/. Requests to the server are made
 to https://sparky.colorado.edu/aquaserver/* (internal API) which is redirected to the port 45366 internally to our
-server
-process.
+server process.
 
 The server will have a certain number of locally running loops, doing build/lint tasks for tests. This is specified with
 a command-line flag when starting (currently we're using 8 concurrent builds/lints on sparky.colorado.edu).
@@ -66,9 +64,8 @@ with
 
 ## The Quick Server (ct-quick)
 
-The quick server is a side process that reports a basic and fast set of tests to see if anything large and important
-is wrong with the code base. This server is run separately, and can be viewed as part of the same report as the full
-CT.
+The quick server is a side process that reports a basic and fast set of tests to see if anything large and important is
+wrong with the code base. This server is run separately, and can be viewed as part of the same report as the full CT.
 
 ## Node Clients (ct-node-client)
 
@@ -83,8 +80,8 @@ NOTE: that this has replaced been replaced by ct-node-clients.
 
 ## pm2 on sparky.colorado.edu
 
-We've pm2 (https://github.com/Unitech/pm2) to handle running the server process (handling automatic
-restarting, logging, etc.).
+We've pm2 (https://github.com/Unitech/pm2) to handle running the server process (handling automatic restarting, logging,
+etc.).
 
 Typically, you can run `pm2 list` to display the running processes, and it will display something like:
 
@@ -165,8 +162,8 @@ browser clients (ct-browser-clients/)
 
 # Testing loop
 
-Browsers can be pointed to `aqua/html/continuous-loop.html` to test for any continuous server. For the main CT,
-this will be https://sparky.colorado.edu/continuous-testing/aqua/html/continuous-loop.html. It will continuously request
+Browsers can be pointed to `aqua/html/continuous-loop.html` to test for any continuous server. For the main CT, this
+will be https://sparky.colorado.edu/continuous-testing/aqua/html/continuous-loop.html. It will continuously request
 tests from the server, run them, and report back results in a loop. It should still work while the server is down, and
 will "reconnect" once the server comes back up. This will do things like fuzz sims, run unit tests, check page loads,
 etc.
@@ -190,9 +187,9 @@ called `ct-browser-clients`. This runs puppeteer instances in worker threads, po
 
 # Report interface
 
-The main interface is available at https://sparky.colorado.edu/. It
-will send API requests `https://sparky.colorado.edu/aquaserver/*` (which on the server will be mapped to the port 45366,
-to our running node server process).
+The main interface is available at https://sparky.colorado.edu/. It will send API
+requests `https://sparky.colorado.edu/aquaserver/*` (which on the server will be mapped to the port 45366, to our
+running node server process).
 
 The reports can also be directed to point to any server API with the `?server` query parameter,
 e.g. `?server=http%3A%2F%2Flocalhost%3A45366` to point to a CT server running locally with the default port.
@@ -234,9 +231,11 @@ parameter `?server=http%3A%2F%2Flocalhost%3A45366` to specify the server locatio
 local testing URL, the report interface then would
 be http://localhost/aqua/html/continuous-unbuilt-report.html?server=http%3A%2F%2Flocalhost%3A45366.
 
-Tests can be run in the browser via: http://localhost/aqua/html/continuous-loop.html?server=http%3A%2F%2Flocalhost%3A45366&id=local 
+Tests can be run in the browser
+via: http://localhost/aqua/html/continuous-loop.html?server=http%3A%2F%2Flocalhost%3A45366&id=local
 
-Tests can be run using the node process via `grunt ct-node-client --ctID=blargity --browser=puppeteer --serverURL=http://localhost:45366 --fileServerURL=http://localhost`
+Tests can be run using the node process
+via `grunt ct-node-client --ctID=blargity --browser=puppeteer --serverURL=http://localhost:45366 --fileServerURL=http://localhost`
 
 ## Running the report locally
 
@@ -259,12 +258,11 @@ The report is built as a "standalone" scenery-like repo with `grunt`;
 Usually, inspect `pm2 logs` to see if something is going on. If it's scrolled past an error, you can tail the actual
 file that the logs stream to. Typically it might be a missing repo, a private repo that it can't resolve, or sometimes
 you'll need to re-clone a repo if there was a history-changing operation. (Since sparky is constantly pulling, if
-someone
-pushes a history change and then reverts it or something like that, a `git pull` won't work and recloning will be
-necessary).
+someone pushes a history change and then reverts it or something like that, a `git pull` won't work and recloning will
+be necessary).
 
-Because pm2 stores logs under `/home/phet/.pm2/logs`, it's filled up the partition for `/home` before. We've
-increased the size for that, but it may be an issue in the future.
+Because pm2 stores logs under `/home/phet/.pm2/logs`, it's filled up the partition for `/home` before. We've increased
+the size for that, but it may be an issue in the future.
 
 We'll add any future ways of fixing things as we run across them here.
 
