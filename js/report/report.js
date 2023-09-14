@@ -45,6 +45,9 @@ const options = QueryStringMachine.getAll( {
   }
 } );
 
+// If the filter word starts with this character, then it is treated as a "should not contain this word" filter
+const NOT_PREFIX = '!';
+
 const rootNode = new Node();
 const display = new Display( rootNode, {
   passiveEvents: true
@@ -266,12 +269,21 @@ if ( options.full ) {
 
       if ( filterString.length ) {
         // Spaces separate multiple search terms
+
+        // Support filter terms that allow filtering out and  filtering in.
+        const shouldBeIncluded = ( filterPart, toFilter ) => {
+          if ( filterPart.startsWith( NOT_PREFIX ) ) {
+            return !toFilter.includes( filterPart.slice( NOT_PREFIX.length ) );
+          }
+          return toFilter.includes( filterPart );
+        };
+
         filterString.split( ' ' ).forEach( filterPart => {
           tests = tests.filter( test => {
-            const matchesTest = _.some( test.names, name => name.includes( filterPart ) );
+            const matchesTest = _.some( test.names, name => shouldBeIncluded( filterPart, name ) );
 
             const matchesErrorMessage = _.some( snapshots, snapshot => _.some( test.indices, index => {
-              return snapshot.tests[ index ].m && _.some( snapshot.tests[ index ].m, message => message.includes( filterPart ) );
+              return snapshot.tests[ index ].m && _.some( snapshot.tests[ index ].m, message => shouldBeIncluded( filterPart, message ) );
             } ) );
             return matchesTest || matchesErrorMessage;
           } );
