@@ -7,7 +7,7 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-// TODO: allow linting (it's not finding common definitions) https://github.com/phetsims/tasks/issues/1129
+//TODO https://github.com/phetsims/aqua/issues/193 allow linting (it's not finding common definitions)
 /* eslint-disable */
 
 import BooleanProperty from '../../axon/js/BooleanProperty.js';
