@@ -86,6 +86,9 @@ module.exports = async function( testInfo, options ) {
     browser = options.browser || await options.browserCreator.launch( options.launchOptions );
 
     page = await browser.newPage();
+
+    page.setCacheEnabled( false ); // For working on https://github.com/phetsims/aqua/issues/191
+
     await page.setDefaultNavigationTimeout( majorTimeout );
 
     // The API for playwright was much more complicated, so just support puppeteer
