@@ -33,9 +33,9 @@ https://phet-dev.colorado.edu/html/gameup/gameup-harness.html?sim=http://localho
 
   // When the button is pressed, request a capture from the simulation.
   document.getElementById( 'captureButton' ).addEventListener( 'click', () => {
-    simFrame.contentWindow.postMessage( "captureImage", '*' );
+    simFrame.contentWindow.postMessage( 'captureImage', '*' );
   } );
-  window.addEventListener( "message", event => {
+  window.addEventListener( 'message', event => {
 
     const isReportColorMessage = data => {
       let parsed = null;
@@ -53,7 +53,7 @@ https://phet-dev.colorado.edu/html/gameup/gameup-harness.html?sim=http://localho
 
     // When the simulation indicates it is ready, we tell it to stop broadcasting the ready messages
     if ( event.data === 'captureReady' ) {
-      simFrame.contentWindow.postMessage( "GameUpCaptureReady", '*' );
+      simFrame.contentWindow.postMessage( 'GameUpCaptureReady', '*' );
     }
     else if ( isReportColorMessage( event.data ) ) {
 
