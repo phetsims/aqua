@@ -97,7 +97,6 @@ module.exports = async function( testInfo, options ) {
       await page.authenticate( { username: process.env.BASIC_USERNAME, password: process.env.BASIC_PASSWORD } );
     }
 
-    // TODO: have pendingPassFail when the result isn't sent, https://github.com/phetsims/aqua/issues/178
     let receivedPassFail = false;
     let gotNextTest = false;
 
@@ -139,7 +138,7 @@ module.exports = async function( testInfo, options ) {
         resolveIfReady();
       }
       else if ( event.type === 'test-fail' ) {
-        receivedPassFail = false;
+        receivedPassFail = true;
         winston.info( 'Sending FAIL result' );
 
         currentSendingCount++;
@@ -197,11 +196,11 @@ module.exports = async function( testInfo, options ) {
     ( async () => {
       await sleep( bailTimout );
       if ( !gotNextTest ) {
-        if ( receivedPassFail ) {
+        if ( receivedPassFail && currentSendingCount === 0 ) {
           resolve();
         }
         else {
-          reject( new Error( `Did not get next-test message in ${bailTimout}ms: ${JSON.stringify( testInfo.test )}` ) );
+          reject( new Error( `Did not get next-test message in ${bailTimout}ms (currentSendingCount ${currentSendingCount}): ${JSON.stringify( testInfo.test )}` ) );
         }
       }
     } )();
