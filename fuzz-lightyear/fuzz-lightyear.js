@@ -50,6 +50,8 @@
       defaultValue: ''
     },
 
+    // Shuffle the order of the testsSims for a random order. Helpful if you want the test the same list, but don't
+    // want to wait for the end for better coverage.
     randomize: {
       type: 'flag'
     }

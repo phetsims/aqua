@@ -7,6 +7,8 @@
  */
 
 const options = QueryStringMachine.getAll( {
+
+  // The server that we want to make a CT request to.
   server: {
     type: 'string',
 

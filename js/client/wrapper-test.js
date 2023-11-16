@@ -9,10 +9,13 @@
 
 ( () => {
   const options = QueryStringMachine.getAll( {
+    // The URL to be loaded
     url: {
       type: 'string',
       defaultValue: ''
     },
+    // How long to wait until going to the next sim.
+    // If the page doesn't report back by this {number} of milliseconds, then report a failure.
     duration: {
       type: 'number',
       defaultValue: 60000

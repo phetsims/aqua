@@ -9,18 +9,26 @@
 
 
 const options = QueryStringMachine.getAll( {
+
+  // unique identifier for this frame
   id: {
     type: 'number',
     defaultValue: 0
   },
+
+  // url to test for the snapshot
   url: {
     type: 'string',
     defaultValue: '../../molecule-shapes/molecule-shapes_en.html'
   },
+
+  // sim seed
   simSeed: {
     type: 'number',
     defaultValue: 4 // Ideal constant taken from https://xkcd.com/221/, DO NOT CHANGE, it's random!
   },
+
+  // The dimension of the iframe the sim is loade din
   simWidth: {
     type: 'number',
     defaultValue: 1024 / 4
@@ -29,15 +37,21 @@ const options = QueryStringMachine.getAll( {
     type: 'number',
     defaultValue: 768 / 4
   },
+
+  // Added to each sim iframe source
   // Note: always assumed to be something?
   simQueryParameters: {
     type: 'string',
     defaultValue: 'brand=phet&ea'
   },
+
+  // How many snapshot "frames" should be captured for comparison. Fuzz occurs multiple times between frame capture.
   numFrames: {
     type: 'number',
     defaultValue: 100
   },
+
+  // Compare description-related features too (like the PDOM and aria-live output)
   compareDescription: {
     type: 'boolean',
     defaultValue: true

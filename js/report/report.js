@@ -28,6 +28,8 @@ import { default as statusProperty, lastErrorProperty, startupTimestampProperty 
 // window.assertions.enableAssert();
 
 const options = QueryStringMachine.getAll( {
+
+  // How many columns of report data to load (newest first)
   maxColumns: {
     type: 'number',
     defaultValue: -1 // when -1, will show all columns
@@ -39,6 +41,7 @@ const options = QueryStringMachine.getAll( {
     defaultValue: ''
   },
 
+  // If false, only load CTQ data.
   full: {
     type: 'boolean',
     defaultValue: true

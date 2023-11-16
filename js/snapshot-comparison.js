@@ -29,15 +29,21 @@ function setup( simNames ) {
   let currentSim;
 
   const options = QueryStringMachine.getAll( {
+
+    // comma separated list of sims to test snapshots for
     sims: {
       type: 'array',
       elementSchema: { type: 'string' },
       defaultValue: simNames
     },
+
+    // If you want to seed the sims
     simSeed: {
       type: 'number',
       defaultValue: 4 // Ideal constant taken from https://xkcd.com/221/, DO NOT CHANGE, it's random!
     },
+
+    // The size of the iframe the sims are loaded into
     simWidth: {
       type: 'number',
       defaultValue: 1024 / 4
@@ -46,19 +52,27 @@ function setup( simNames ) {
       type: 'number',
       defaultValue: 768 / 4
     },
+
+    // Added to each sim iframe source
     // Note: always assumed to be something?
     simQueryParameters: {
       type: 'string',
       defaultValue: 'brand=phet&ea'
     },
+
+    // How many snapshot "frames" should be captured for comparison. Fuzz occurs multiple times between frame capture.
     numFrames: {
       type: 'number',
       defaultValue: 10
     },
+
+    // Show the amount of time each snapshot fuzzed for
     showTime: {
       type: 'boolean',
       defaultValue: true
     },
+
+    // Compare description-related features too (like the PDOM and aria-live output)
     compareDescription: {
       type: 'boolean',
       defaultValue: true

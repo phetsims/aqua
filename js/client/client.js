@@ -9,10 +9,14 @@
 
 ( () => {
   const aquaOptions = QueryStringMachine.getAll( {
+
+    // Info about this test so that it can be async sent back to the server upon a test result
     testInfo: {
       type: 'string',
       defaultValue: '{}'
     },
+
+    // dimensions of the iframe
     width: {
       type: 'number',
       defaultValue: 512

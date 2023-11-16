@@ -11,18 +11,25 @@
 import Random from '../../dot/js/Random.js';
 
 const options = QueryStringMachine.getAll( {
+  // Unique ID for this frame
   id: {
     type: 'number',
     defaultValue: 0
   },
+
+  // The URl to test.
   url: {
     type: 'string',
     defaultValue: '../../molecule-shapes/molecule-shapes_en.html'
   },
+
+  // If you want to seed the sims
   simSeed: {
     type: 'number',
     defaultValue: 4 // Ideal constant taken from https://xkcd.com/221/, DO NOT CHANGE, it's random!
   },
+
+  // The size of the iframe the sims are loaded into
   simWidth: {
     type: 'number',
     defaultValue: 1024 / 4
@@ -31,6 +38,7 @@ const options = QueryStringMachine.getAll( {
     type: 'number',
     defaultValue: 768 / 4
   },
+
   // Note: always assumed to be something?
   simQueryParameters: {
     type: 'string',

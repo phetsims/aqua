@@ -14,12 +14,18 @@
 
 
 const options = QueryStringMachine.getAll( {
+
+  // The ID of the browser that is testing, shows up in any reported issues
   id: {
     type: 'string'
   },
+
+  // ?old=true or ?old=false, determines whether ES6 or other newer features can be run directly in the browser
   old: {
     type: 'flag'
   },
+
+  // What server do you want to hit with your testing. Defaults to the same server you are loading continuous-loop from.
   server: {
     type: 'string',
 

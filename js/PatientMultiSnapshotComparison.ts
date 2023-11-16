@@ -27,6 +27,7 @@ type Frame = {
 ( async () => {
   const options = QueryStringMachine.getAll( {
 
+    // the repo to run
     runnable: {
       type: 'string',
       defaultValue: 'collision-lab'
