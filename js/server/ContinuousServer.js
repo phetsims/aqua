@@ -657,7 +657,7 @@ class ContinuousServer {
         else if ( test.type === 'build' ) {
           test.complete = true;
           try {
-            const output = await execute( gruntCommand, [ `--brands=${test.brands.join( ',' )}`, '--lint=false' ], `${snapshot.directory}/${test.repo}` );
+            const output = await execute( gruntCommand, [ `--brands=${test.brands.join( ',' )}`, '--lint=false', '--noTranspile', '--noTSC' ], `${snapshot.directory}/${test.repo}` );
 
             ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
             test.success = true;
