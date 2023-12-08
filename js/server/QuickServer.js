@@ -42,8 +42,8 @@ const jsonHeaders = {
   'Access-Control-Allow-Origin': '*'
 };
 
-const FUZZ_SIM = 'natural-selection';
-const STUDIO_FUZZ_SIM = 'states-of-matter';
+const FUZZ_SIM = 'my-solar-system';
+const STUDIO_FUZZ_SIM = 'greenhouse-effect';
 const PHET_IO_COMPARE_SIM = 'density';
 const WAIT_BETWEEN_RUNS = 20000; // in ms
 const EXECUTE_OPTIONS = { errors: 'resolve' };
