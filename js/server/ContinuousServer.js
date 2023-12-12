@@ -396,7 +396,9 @@ class ContinuousServer {
       adjustPriority( 1.5, 1, 0.75, Date.now() - test.dependenciesCommitTimestamp );
     }
 
+
     if ( lastFailedIndex >= 0 ) {
+      // If it failed in the last 3 snapshots, test again eagerly
       if ( lastFailedIndex < 3 ) {
         weight *= 6;
       }
@@ -406,12 +408,15 @@ class ContinuousServer {
     }
     else {
       if ( lastTestedIndex === -1 ) {
+        // If there are currently no reported results for this test in all snapshots, increase priority
         weight *= 1.5;
       }
       else if ( lastTestedIndex === 0 ) {
+        // If it was last tested upon the previous snapshot
         weight *= 0.3;
       }
       else if ( lastTestedIndex === 1 ) {
+        // If it was last tested upon 2 snapshots ago
         weight *= 0.7;
       }
     }
