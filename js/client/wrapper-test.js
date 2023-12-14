@@ -27,6 +27,10 @@
     }
   } );
 
+  if ( QueryStringMachine.contains( 'queryParameters' ) ) {
+    aqua.simpleFail( `wrapper-test does not support ?queryParameters, just put them in the url directly.` );
+  }
+
   // Add those two to our query parameters, so we get load/error messages
   const iframe = aqua.createFrame();
   iframe.src = QueryStringMachine.appendQueryStringArray( options.url, [
