@@ -21,7 +21,7 @@ const winston = require( 'winston' );
  * @returns {Promise.<Object>} - Resolves with data
  */
 module.exports = async function( message, testInfo, passed, options ) {
-  options = _.extend( {
+  options = _.assignIn( {
     serverURL: 'https://sparky.colorado.edu', // {string} - The server to use
     ctID: 'Sparky Node Puppeteer' // {string} - The ID of the client
   }, options );

@@ -17,7 +17,7 @@ const axios = require( 'axios' );
  * @returns {Promise.<Object>} - Resolves with data
  */
 module.exports = async function( options ) {
-  options = _.extend( {
+  options = _.assignIn( {
     serverURL: 'https://sparky.colorado.edu', // {string} - The server to use
     old: false // {boolean} - Provided for compatibility/testing, anything using this should be new enough
 
