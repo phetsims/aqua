@@ -206,10 +206,13 @@ module.exports = async function( testInfo, options ) {
     } )();
 
     logResult( `[URL] ${url}` );
-    await page.goto( url, {
-      timeout: majorTimeout
-    } );
-    await promise;
+
+    await Promise.all( [
+      page.goto( url, {
+        timeout: majorTimeout
+      } ),
+      promise
+    ] );
     winston.debug( 'promise resolved' );
 
     !page.isClosed() && await page.close();
