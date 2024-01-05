@@ -1,4 +1,5 @@
 // Copyright 2022, University of Colorado Boulder
+// @author Sam Reid (PhET Interactive Simulations)
 
 let sourceMapConsumerInitialized = false;
 

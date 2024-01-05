@@ -1,9 +1,13 @@
 // Copyright 2016-2023, University of Colorado Boulder
 
-// See the README.md for documentation about query parameters
+/**
+ * See the README.md for documentation about query parameters
+ * @author Michael Kauzmann (PhET Interactive Simulations)
+ */
 
-// Grab all query parameters to pass to the simulation, and add additional ones for receiving messages.
 ( function() {
+
+  // Grab all query parameters to pass to the simulation, and add additional ones for receiving messages.
   let simulationQueryString = window.location.search;
 
   if ( simulationQueryString.indexOf( '?' ) >= 0 ) {
