@@ -1,4 +1,4 @@
-// Copyright 2018-2022, University of Colorado Boulder
+// Copyright 2018-2024, University of Colorado Boulder
 // @author Michael Kauzmann (PhET Interactive Simulations)
 
 const puppeteerLoad = require( '../../../perennial-alias/js/common/puppeteerLoad' );
