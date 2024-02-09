@@ -311,6 +311,9 @@
         } );
       } );
 
+      // This can help you reproduce states instead of needing to get this yourself from active-repos
+      console.log( 'testing:', simNames.join( ',' ) );
+
       // kick off the loops
       nextSim();
     };
