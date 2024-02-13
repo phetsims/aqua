@@ -58,6 +58,11 @@
     // want to wait for the end for better coverage.
     randomize: {
       type: 'flag'
+    },
+
+    // Reverse the list of sims to the opposite order (no-op if provided with ?randomize).
+    reverse: {
+      type: 'flag'
     }
   } );
 
@@ -299,6 +304,9 @@
       }
       if ( options.randomize ) {
         simNames = _.shuffle( simNames );
+      }
+      if ( options.reverse ) {
+        simNames = simNames.reverse();
       }
 
       simNames.forEach( simName => {
