@@ -48,7 +48,7 @@
       }
     },
 
-    // To load a PhET-iO wrapper for testing instead of a sim. Currently on 'studio' and 'migration' are supported
+    // To load a PhET-iO wrapper for testing instead of a sim. Currently on 'studio', 'state', and 'migration' are supported
     wrapperName: {
       type: 'string',
       defaultValue: ''
