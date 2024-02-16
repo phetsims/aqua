@@ -34,7 +34,14 @@ function setup( simNames ) {
     sims: {
       type: 'array',
       elementSchema: { type: 'string' },
-      defaultValue: simNames
+      defaultValue: null
+    },
+
+    // comma separated list of sims to test snapshots for
+    testSims: {
+      type: 'array',
+      elementSchema: { type: 'string' },
+      defaultValue: null
     },
 
     // If you want to seed the sims
@@ -78,6 +85,10 @@ function setup( simNames ) {
       defaultValue: true
     }
   } );
+
+  assert && assert( !( options.sims && options.testSims ), 'specify testSims OR sims, not both' );
+
+  options.sims = options.sims || options.testSims || simNames;
 
   const addBR = string => string + '<br/>';
 
