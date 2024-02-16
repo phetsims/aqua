@@ -82,7 +82,7 @@ function setup( simNames ) {
     // Compare description-related features too (like the PDOM and aria-live output)
     compareDescription: {
       type: 'boolean',
-      defaultValue: true
+      defaultValue: false
     }
   } );
 
