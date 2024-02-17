@@ -44,6 +44,11 @@ function setup( simNames ) {
       defaultValue: null
     },
 
+    randomSims: {
+      type: 'number',
+      defaultValue: -1
+    },
+
     // If you want to seed the sims
     simSeed: {
       type: 'number',
@@ -86,9 +91,15 @@ function setup( simNames ) {
     }
   } );
 
-  assert && assert( !( options.sims && options.testSims ), 'specify testSims OR sims, not both' );
+  if ( options.randomSims === -1 ) {
+    assert && assert( !( options.sims && options.testSims ), 'specify testSims OR sims, not both' );
+    options.sims = options.sims || options.testSims || simNames;
+  }
+  else {
+    assert && assert( !( options.sims || options.testSims ), 'specify testSims OR sims, not both' );
+    options.sims = _.sampleSize( simNames, options.randomSims );
+  }
 
-  options.sims = options.sims || options.testSims || simNames;
 
   const addBR = string => string + '<br/>';
 
