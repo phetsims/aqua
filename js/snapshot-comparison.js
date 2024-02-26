@@ -88,12 +88,6 @@ function setup( simNames ) {
     compareDescription: {
       type: 'boolean',
       defaultValue: false
-    },
-
-    // Number of ms per simulation to receive the all snapshots before giving up and going to the next sim.
-    timeout: {
-      type: 'number',
-      defaultValue: 30000
     }
   } );
 
@@ -199,44 +193,29 @@ function setup( simNames ) {
     }&numFrames=${encodeURIComponent( options.numFrames )
     }&compareDescription=${encodeURIComponent( options.compareDescription )}`;
 
-  let timeout;
-
-  const loadSim = sim => {
-    clearTimeout( timeout );
+  function loadSim( sim ) {
     currentSim = sim;
     currentSnapshot[ currentSim ] = {
       frames: []
     };
     iframe.src = `take-snapshot.html?${childQueryParams}&url=${encodeURIComponent( `../../${sim}/${sim}_en.html` )}`;
+  }
 
-    timeout = setTimeout( () => {
-      iframe.src = '';
-      onError( sim, 'timeout' );
-    }, options.timeout );
-  };
-
-  const nextSim = () => {
+  function nextSim() {
     if ( queue.length ) {
       loadSim( queue.shift() );
     }
-  };
-
-  const onError = ( sim, error = 'err' ) => {
-    const errorTd = document.createElement( 'td' );
-    errorTd.textContent = error;
-    rowMap[ sim ].appendChild( errorTd );
-    nextSim();
-  };
+  }
 
   let globalStartTime;
 
-  const snapshot = () => {
+  function snapshot() {
     globalStartTime = Date.now();
     currentSnapshot = {};
     snapshots.push( currentSnapshot );
     queue = queue.concat( options.sims ); // TODO: this should likely clear and reset, but since currentSnapshot is reset, everything left in the queue will be appended to the new snapshot. https://github.com/phetsims/aqua/issues/126
     nextSim();
-  };
+  }
 
   snapshotButton.addEventListener( 'click', snapshot );
 
@@ -316,7 +295,10 @@ function setup( simNames ) {
       nextSim();
     }
     else if ( data.type === 'error' ) {
-      onError( currentSim );
+      const errorTd = document.createElement( 'td' );
+      errorTd.textContent = 'err';
+      rowMap[ currentSim ].appendChild( errorTd );
+      nextSim();
     }
   } );
 
