@@ -2,7 +2,9 @@
 
 /**
  * Capable of running through sims in multiple passes (in-between code changes) to see if there is any behavioral change
- * in the sim resulting from that change.
+ * in the sim resulting from that change. See take-snapshot.js for the data collected for comparison
+ *
+ * NOTE: Chrome can yield unexpected image differences, it is recommended to use Firefox.
  *
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
