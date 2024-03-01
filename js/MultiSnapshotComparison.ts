@@ -75,7 +75,7 @@ type Frame = {
     // Passed to the simulation in addition to brand/ea
     additionalSimQueryParameters: {
       type: 'string',
-      defaultValue: ''
+      defaultValue: 'ea'
     },
 
     // How many frames should be snapshot per runnable
@@ -219,7 +219,7 @@ type Frame = {
       this.brand = brand;
       this.column = column;
       this.frameCountProperty = new NumberProperty( 0 );
-      this.hashProperty = new Property<string | null >( null );
+      this.hashProperty = new Property<string | null>( null );
       this.hasErroredProperty = new BooleanProperty( false );
       this.isCompleteProperty = new BooleanProperty( false );
     }
@@ -282,7 +282,7 @@ type Frame = {
     load( snapshot: Snapshot ): void {
       this.currentSnapshot = snapshot;
 
-      const simQueryParameters = encodeURIComponent( ( snapshot.brand === 'phet-io' ? 'brand=phet-io&ea&phetioStandalone' : 'brand=phet&ea' ) + options.additionalSimQueryParameters );
+      const simQueryParameters = encodeURIComponent( ( snapshot.brand === 'phet-io' ? 'brand=phet-io&phetioStandalone' : 'brand=phet' ) + '&' + options.additionalSimQueryParameters );
       const url = encodeURIComponent( `../../${snapshot.runnable}/${snapshot.runnable}_en.html` );
       this.iframe.src = `${this.url}/aqua/html/take-snapshot.html?id=${this.index}&${childQueryParams}&url=${url}&simQueryParameters=${simQueryParameters}`;
     }
