@@ -303,8 +303,8 @@ type Frame = {
       this.snapshotters = _.range( 0, options.copies ).map( i => new Snapshotter( url, index + i * 100, this.nextRunnable.bind( this ) ) );
     }
 
-    getSnapshot( runnable: string ): Snapshot {
-      return _.find( this.snapshots, snapshot => snapshot.runnable === runnable && snapshot.brand === 'phet' )!;
+    getSnapshot( runnable: string, brand: string ): Snapshot {
+      return _.find( this.snapshots, snapshot => snapshot.runnable === runnable && snapshot.brand === brand )!;
     }
 
     nextRunnable( snapshotter: Snapshotter ): void {
@@ -369,7 +369,8 @@ type Frame = {
   rows.forEach( ( row, i ) => {
     const runnable = row.runnable;
     const brand = row.brand;
-    runnableYMap[ runnable ] = y;
+    const yMapKey = `${runnable}${brand}`;
+    runnableYMap[ yMapKey ] = y;
 
     const runnableText = new Text( runnable + ( brand !== 'phet' ? ` (${brand})` : '' ), {
       font: new Font( { size: 12 } ),
@@ -419,7 +420,6 @@ type Frame = {
 
                     const data = await compareImages( frame.screenshot.url, otherFrame.screenshot.url, options.simWidth, options.simHeight );
 
-                    console.log( data );
                     if ( data ) {
                       if ( diffImages.length === 0 ) {
                         diffImages.push( createImageNode( data.a ) );
@@ -433,7 +433,7 @@ type Frame = {
                     orientation: 'horizontal',
                     children: diffImages,
                     spacing: 5,
-                    layoutOptions: { column: snapshots.length + 1 + index++, row: runnableYMap[ runnable ], xAlign: 'left' }
+                    layoutOptions: { column: snapshots.length + 1 + index++, row: runnableYMap[ yMapKey ], xAlign: 'left' }
                   } ) );
                 }
                 gridBox.children = gridChildren;
