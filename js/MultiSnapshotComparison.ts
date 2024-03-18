@@ -72,8 +72,8 @@ type Frame = {
       defaultValue: 768 / 4
     },
 
-    // Passed to the simulation in addition to brand/ea
-    additionalSimQueryParameters: {
+    // Passed to the simulation in addition to brand
+    simQueryParameters: {
       type: 'string',
       defaultValue: 'ea'
     },
@@ -282,7 +282,7 @@ type Frame = {
     load( snapshot: Snapshot ): void {
       this.currentSnapshot = snapshot;
 
-      const simQueryParameters = encodeURIComponent( ( snapshot.brand === 'phet-io' ? 'brand=phet-io&phetioStandalone' : 'brand=phet' ) + '&' + options.additionalSimQueryParameters );
+      const simQueryParameters = encodeURIComponent( ( snapshot.brand === 'phet-io' ? 'brand=phet-io&phetioStandalone' : 'brand=phet' ) + '&' + options.simQueryParameters );
       const url = encodeURIComponent( `../../${snapshot.runnable}/${snapshot.runnable}_en.html` );
       this.iframe.src = `${this.url}/aqua/html/take-snapshot.html?id=${this.index}&${childQueryParams}&url=${url}&simQueryParameters=${simQueryParameters}`;
     }
