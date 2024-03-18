@@ -304,7 +304,7 @@ type Frame = {
     }
 
     getSnapshot( runnable: string ): Snapshot {
-      return _.find( this.snapshots, snapshot => snapshot.runnable === runnable )!;
+      return _.find( this.snapshots, snapshot => snapshot.runnable === runnable && snapshot.brand === 'phet' )!;
     }
 
     nextRunnable( snapshotter: Snapshotter ): void {
@@ -379,10 +379,10 @@ type Frame = {
     gridChildren.push( runnableText );
 
     Multilink.multilink( _.flatten( columns.map( column => {
-      const snapshot = column.getSnapshot( runnable );
+      const snapshot = column.getSnapshot( runnable, brand );
       return [ snapshot.hasErroredProperty, snapshot.hashProperty, snapshot.isCompleteProperty ];
     } ) ), () => {
-      const snapshots = columns.map( column => column.getSnapshot( runnable ) );
+      const snapshots = columns.map( column => column.getSnapshot( runnable, brand ) );
       if ( _.every( snapshots, snapshot => snapshot.isCompleteProperty.value ) ) {
         if ( _.some( snapshots, snapshot => snapshot.hasErroredProperty.value ) ) {
           runnableText.fill = 'magenta';
