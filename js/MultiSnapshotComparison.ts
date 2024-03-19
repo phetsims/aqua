@@ -339,6 +339,7 @@ type Row = {
             runnableText.cursor = 'pointer';
             runnableText.addInputListener( new FireListener( {
               fire: async () => {
+                runnableText.cursor = 'wait';
                 const firstFrames = snapshots[ 0 ].frames;
 
                 const createImageNode = ( canvas: HTMLCanvasElement ): Node => {
@@ -376,6 +377,7 @@ type Row = {
                   } ) );
                 }
                 gridBox.children = gridChildren;
+                runnableText.cursor = 'pointer';
               }
             } ) );
           }
