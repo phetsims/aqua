@@ -160,91 +160,105 @@ let frameHashes = '';
 let loaded = false;
 let received = true;
 
-function handleFrame() {
-  setTimeout( handleFrame, 0 );
+const waitForAnimationFrame = () => {
+  return new Promise( resolve => {
+    iframe.contentWindow.phet.axon.animationFrameTimer.runOnNextTick( () => {
+      resolve();
+    } );
+  } );
+};
 
-  if ( loaded && received && count < options.numFrames ) {
-    count++;
-    received = false;
+// Fuzz, step, allow for redraw, and then capture a snapshot of the simulation. Then send that data to the parent frame.
+async function handleFrame() {
+  if ( loaded && received ) {
+    while ( count < options.numFrames ) {
+      count++;
+      received = false;
 
-    for ( let i = 0; i < 10; i++ ) {
-      sendFuzz( 100 );
-      sendStep( random.nextDouble() * 0.5 + 0.016 );
-    }
-
-    getScreenshot( screenshotURL => {
-      const hashedScreenshotURL = hash( screenshotURL );
-      console.log( count, hashedScreenshotURL );
-
-      let concatHash = hashedScreenshotURL;
-
-      const pdomData = {
-        html: null,
-        hash: null
-      };
-      const descriptionAlertData = {
-        utterances: null,
-        hash: null
-      };
-      const voicingResponseData = {
-        utterances: null,
-        hash: null
-      };
-      if ( options.compareDescription && iframe.contentWindow.phet.joist.display.isAccessible() ) {
-
-        const pdomRoot = iframe.contentWindow.phet.joist.display.pdomRootElement;
-        const pdomHTML = pdomRoot.outerHTML;
-        pdomData.html = pdomHTML;
-        const hashedPDOMHTML = hash( pdomHTML );
-        pdomData.hash = hashedPDOMHTML;
-        concatHash += hashedPDOMHTML;
-
-        const descriptionUtteranceQueue = iframe.contentWindow.phet.joist.display.descriptionUtteranceQueue.queue;
-        const utteranceTexts = descriptionUtteranceQueue.map( utteranceWrapper => utteranceWrapper.utterance.toString() );
-        descriptionAlertData.utterances = utteranceTexts;
-        const utterancesHash = hash( utteranceTexts + '' );
-        descriptionAlertData.hash = utterancesHash;
-        concatHash += utterancesHash;
-
-        if ( iframe.contentWindow.phet.scenery.voicingUtteranceQueue ) {
-          const voicingUtteranceQueue = iframe.contentWindow.phet.scenery.voicingUtteranceQueue.queue;
-          const voicingUtteranceTexts = voicingUtteranceQueue.map( voicingUtteranceWrapper => voicingUtteranceWrapper.utterance.toString() );
-          voicingResponseData.utterances = voicingUtteranceTexts;
-          const voicingUtterancesHash = hash( voicingUtteranceTexts + '' );
-          voicingResponseData.hash = voicingUtterancesHash;
-          concatHash += voicingUtterancesHash;
-        }
+      for ( let i = 0; i < 10; i++ ) {
+        sendFuzz( 100 );
+        sendStep( random.nextDouble() * 0.5 + 0.016 );
       }
 
+      await waitForAnimationFrame();
 
-      ( window.parent !== window ) && window.parent.postMessage( JSON.stringify( {
-        id: options.id,
-        type: 'frameEmitted',
-        number: count - 1,
-        screenshot: {
-          url: screenshotURL,
-          hash: hashedScreenshotURL
-        },
-        pdom: pdomData,
-        descriptionAlert: descriptionAlertData,
-        voicing: voicingResponseData
-      } ), '*' );
+      getScreenshot( screenshotURL => {
+        const hashedScreenshotURL = hash( screenshotURL );
+        console.log( count, hashedScreenshotURL );
 
-      received = true;
-      frameHashes += concatHash;
-      if ( count === options.numFrames ) {
-        const fullHash = hash( frameHashes );
+        let concatHash = hashedScreenshotURL;
+
+        const pdomData = {
+          html: null,
+          hash: null
+        };
+        const descriptionAlertData = {
+          utterances: null,
+          hash: null
+        };
+        const voicingResponseData = {
+          utterances: null,
+          hash: null
+        };
+        if ( options.compareDescription && iframe.contentWindow.phet.joist.display.isAccessible() ) {
+
+          const pdomRoot = iframe.contentWindow.phet.joist.display.pdomRootElement;
+          const pdomHTML = pdomRoot.outerHTML;
+          pdomData.html = pdomHTML;
+          const hashedPDOMHTML = hash( pdomHTML );
+          pdomData.hash = hashedPDOMHTML;
+          concatHash += hashedPDOMHTML;
+
+          const descriptionUtteranceQueue = iframe.contentWindow.phet.joist.display.descriptionUtteranceQueue.queue;
+          const utteranceTexts = descriptionUtteranceQueue.map( utteranceWrapper => utteranceWrapper.utterance.toString() );
+          descriptionAlertData.utterances = utteranceTexts;
+          const utterancesHash = hash( utteranceTexts + '' );
+          descriptionAlertData.hash = utterancesHash;
+          concatHash += utterancesHash;
+
+          if ( iframe.contentWindow.phet.scenery.voicingUtteranceQueue ) {
+            const voicingUtteranceQueue = iframe.contentWindow.phet.scenery.voicingUtteranceQueue.queue;
+            const voicingUtteranceTexts = voicingUtteranceQueue.map( voicingUtteranceWrapper => voicingUtteranceWrapper.utterance.toString() );
+            voicingResponseData.utterances = voicingUtteranceTexts;
+            const voicingUtterancesHash = hash( voicingUtteranceTexts + '' );
+            voicingResponseData.hash = voicingUtterancesHash;
+            concatHash += voicingUtterancesHash;
+          }
+        }
+
 
         ( window.parent !== window ) && window.parent.postMessage( JSON.stringify( {
           id: options.id,
-          type: 'snapshot',
-          hash: fullHash,
-          url: window.location.href
+          type: 'frameEmitted',
+          number: count - 1,
+          screenshot: {
+            url: screenshotURL,
+            hash: hashedScreenshotURL
+          },
+          pdom: pdomData,
+          descriptionAlert: descriptionAlertData,
+          voicing: voicingResponseData
         } ), '*' );
 
-        console.log( fullHash );
-      }
-    } );
+        received = true;
+        frameHashes += concatHash;
+        if ( count === options.numFrames ) {
+          const fullHash = hash( frameHashes );
+
+          ( window.parent !== window ) && window.parent.postMessage( JSON.stringify( {
+            id: options.id,
+            type: 'snapshot',
+            hash: fullHash,
+            url: window.location.href
+          } ), '*' );
+
+          console.log( fullHash );
+        }
+      } );
+    }
+  }
+  else {
+    setTimeout( handleFrame, 0 );
   }
 }
 
