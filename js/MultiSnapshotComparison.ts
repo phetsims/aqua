@@ -7,9 +7,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-//TODO https://github.com/phetsims/aqua/issues/193 allow linting (it's not finding common definitions)
-/* eslint-disable */
-
 import BooleanProperty from '../../axon/js/BooleanProperty.js';
 import Multilink from '../../axon/js/Multilink.js';
 import NumberProperty from '../../axon/js/NumberProperty.js';
@@ -24,7 +21,12 @@ type Frame = {
   };
 };
 
-( async () => {
+type Row = {
+  runnable: string;
+  brand: string;
+};
+
+( async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
 
   window.assertions.enableAssert();
 
@@ -34,7 +36,8 @@ type Frame = {
   const activePhetIOResponse = await fetch( '../../perennial/data/phet-io' );
   const activePhetIO = ( await activePhetIOResponse.text() ).trim().replace( /\r/g, '' ).split( '\n' );
 
-  const unreliableSims = [
+  type Sim = string;
+  const unreliableSims: Sim[] = [
     // NOTE: add sims here that are constantly failing
   ];
 
@@ -118,7 +121,7 @@ type Frame = {
     }&numFrames=${encodeURIComponent( options.numFrames )
     }`;
 
-  const rows: { runnable: string, brand: string }[] = _.flatten( options.runnables.map( ( runnable: string ) => {
+  const rows: Row[] = _.flatten( options.runnables.map( ( runnable: string ) => {
     return [
       { runnable: runnable, brand: 'phet' },
       ...( options.testPhetio && activePhetIO.includes( runnable ) ? [ { runnable: runnable, brand: 'phet-io' } ] : [] )
@@ -126,7 +129,7 @@ type Frame = {
   } ) ).filter( ( item, i ) => i % options.stride === options.offset );
 
   const loadImage = ( url: string ): Promise<HTMLImageElement> => {
-    return new Promise<HTMLImageElement>( ( resolve, reject ) => {
+    return new Promise<HTMLImageElement>( resolve => {
       const image = document.createElement( 'img' );
       image.addEventListener( 'load', () => {
         resolve( image );
@@ -135,7 +138,7 @@ type Frame = {
     } );
   };
 
-  // TODO: factor out somewhere
+  // eslint-disable-next-line explicit-method-return-type
   function imageToContext( image, width, height ) {
     const canvas = document.createElement( 'canvas' );
     const context = canvas.getContext( '2d' );
@@ -145,12 +148,12 @@ type Frame = {
     return context;
   }
 
-  // TODO: factor out somewhere
+  // eslint-disable-next-line explicit-method-return-type
   function contextToData( context, width, height ) {
     return context.getImageData( 0, 0, width, height );
   }
 
-  // TODO: factor out somewhere
+  // eslint-disable-next-line explicit-method-return-type
   function dataToCanvas( data, width, height ) {
     const canvas = document.createElement( 'canvas' );
     const context = canvas.getContext( '2d' );
@@ -213,16 +216,16 @@ type Frame = {
 
   class Snapshot {
 
-    readonly runnable: string;
-    readonly brand: string;
-    readonly frames: Frame[] = [];
-    readonly frameCountProperty: Property<number>;
-    readonly hashProperty: Property<string | null>;
-    readonly hasErroredProperty: Property<boolean>;
-    readonly isCompleteProperty: Property<boolean>;
-    readonly column: Column;
+    public readonly runnable: string;
+    public readonly brand: string;
+    public readonly frames: Frame[] = [];
+    public readonly frameCountProperty: Property<number>;
+    public readonly hashProperty: Property<string | null>;
+    public readonly hasErroredProperty: Property<boolean>;
+    public readonly isCompleteProperty: Property<boolean>;
+    private readonly column: Column;
 
-    constructor( runnable: string, brand: string, column: Column ) {
+    public constructor( runnable: string, brand: string, column: Column ) {
       this.runnable = runnable;
       this.brand = brand;
       this.column = column;
@@ -232,17 +235,17 @@ type Frame = {
       this.isCompleteProperty = new BooleanProperty( false );
     }
 
-    addFrame( frame: Frame ): void {
+    public addFrame( frame: Frame ): void {
       this.frames.push( frame );
       this.frameCountProperty.value++;
     }
 
-    addHash( hash: string ): void {
+    public addHash( hash: string ): void {
       this.hashProperty.value = hash;
       this.isCompleteProperty.value = true;
     }
 
-    addError(): void {
+    public addError(): void {
       this.hasErroredProperty.value = true;
       this.isCompleteProperty.value = true;
     }
@@ -251,16 +254,16 @@ type Frame = {
   const snapshotterMap = new Map<number, Snapshotter>();
 
   class Snapshotter {
-    readonly url: string;
-    readonly index: number;
-    readonly iframe: HTMLIFrameElement;
-    currentSnapshot: Snapshot | null;
-    readonly nextRunnable: ( snapshotter: Snapshotter ) => void;
+    private readonly url: string;
+    private readonly index: number;
+    public readonly iframe: HTMLIFrameElement;
+    private currentSnapshot: Snapshot | null;
+    private readonly nextRunnable: ( snapshotter: Snapshotter ) => void;
 
     private receivedHash: string | null = null;
 
 
-    constructor( url: string, index: number, private readonly numFrames: number, nextRunnable: ( snapshotter: Snapshotter ) => void ) {
+    public constructor( url: string, index: number, private readonly numFrames: number, nextRunnable: ( snapshotter: Snapshotter ) => void ) {
       this.url = url;
       this.index = index;
       this.currentSnapshot = null;
@@ -269,39 +272,39 @@ type Frame = {
       this.iframe = document.createElement( 'iframe' );
       this.iframe.setAttribute( 'frameborder', '0' );
       this.iframe.setAttribute( 'seamless', '1' );
-      this.iframe.setAttribute( 'width', options.simWidth );
-      this.iframe.setAttribute( 'height', options.simHeight );
+      this.iframe.setAttribute( 'width', `${options.simWidth}` );
+      this.iframe.setAttribute( 'height', `${options.simHeight}` );
       this.iframe.style.position = 'absolute';
 
       snapshotterMap.set( index, this );
     }
 
     // Add a single frame of the snapshot.
-    addFrame( frame: Frame ): void {
+    public addFrame( frame: Frame ): void {
       this.currentSnapshot!.addFrame( frame );
       this.finishIfReady();
     }
 
     // Final hash of the whole snapshot.
-    addHash( hash: string ): void {
+    public addHash( hash: string ): void {
       this.receivedHash = hash;
       this.finishIfReady();
     }
 
     // We can't control the order of postMessage messages, so support either order for finishing.
-    finishIfReady() {
+    private finishIfReady(): void {
       if ( this.currentSnapshot?.frameCountProperty.value === this.numFrames && this.receivedHash ) {
-        this.currentSnapshot!.addHash( this.receivedHash );
+        this.currentSnapshot.addHash( this.receivedHash );
         this.nextRunnable( this );
       }
     }
 
-    addError(): void {
+    public addError(): void {
       this.currentSnapshot!.addError();
       this.nextRunnable( this );
     }
 
-    load( snapshot: Snapshot ): void {
+    public load( snapshot: Snapshot ): void {
       this.currentSnapshot = snapshot;
       this.receivedHash = null;
 
@@ -312,13 +315,13 @@ type Frame = {
   }
 
   class Column {
-    readonly url: string;
-    readonly index: number;
-    readonly snapshots: Snapshot[];
-    queue: Snapshot[];
-    readonly snapshotters: Snapshotter[];
+    public readonly url: string;
+    public readonly index: number;
+    public readonly snapshots: Snapshot[];
+    private queue: Snapshot[];
+    public readonly snapshotters: Snapshotter[];
 
-    constructor( url: string, index: number ) {
+    public constructor( url: string, index: number ) {
       this.url = url;
       this.index = index;
       this.snapshots = rows.map( row => new Snapshot( row.runnable, row.brand, this ) );
@@ -326,11 +329,11 @@ type Frame = {
       this.snapshotters = _.range( 0, options.copies ).map( i => new Snapshotter( url, index + i * 100, options.numFrames, this.nextRunnable.bind( this ) ) );
     }
 
-    getSnapshot( runnable: string, brand: string ): Snapshot {
+    public getSnapshot( runnable: string, brand: string ): Snapshot {
       return _.find( this.snapshots, snapshot => snapshot.runnable === runnable && snapshot.brand === brand )!;
     }
 
-    nextRunnable( snapshotter: Snapshotter ): void {
+    public nextRunnable( snapshotter: Snapshotter ): void {
       if ( this.queue.length ) {
         const snapshot = this.queue.shift()!;
 
@@ -338,7 +341,7 @@ type Frame = {
       }
     }
 
-    start(): void {
+    public start(): void {
       this.snapshotters.forEach( snapshotter => this.nextRunnable( snapshotter ) );
     }
   }
@@ -388,7 +391,7 @@ type Frame = {
   } );
   y += options.copies;
 
-  const runnableYMap = {};
+  const runnableYMap: Record<string, number> = {};
   rows.forEach( ( row, i ) => {
     const runnable = row.runnable;
     const brand = row.brand;
@@ -402,7 +405,7 @@ type Frame = {
     } );
     gridChildren.push( runnableText );
 
-    Multilink.multilink( _.flatten( columns.map( column => {
+    Multilink.multilinkAny( _.flatten( columns.map( column => {
       const snapshot = column.getSnapshot( runnable, brand );
       return [ snapshot.hasErroredProperty, snapshot.hashProperty, snapshot.isCompleteProperty ];
     } ) ), () => {
@@ -428,7 +431,7 @@ type Frame = {
                   const image = new Image( canvas );
                   image.cursor = 'pointer';
                   image.addInputListener( new FireListener( {
-                    fire: () => navigator.clipboard?.writeText( canvas.toDataURL() )
+                    fire: () => window.navigator.clipboard?.writeText( canvas.toDataURL() )
                   } ) );
                   return image;
                 };
