@@ -433,7 +433,6 @@ type Frame = {
                   return image;
                 };
 
-                let index = 0;
                 for ( let i = 0; i < firstFrames.length; i++ ) {
                   const frame = snapshots[ 0 ].frames[ i ];
                   const diffImages = [];
@@ -456,7 +455,7 @@ type Frame = {
                     orientation: 'horizontal',
                     children: diffImages,
                     spacing: 5,
-                    layoutOptions: { column: snapshots.length + 1 + index++, row: runnableYMap[ yMapKey ], xAlign: 'left' }
+                    layoutOptions: { column: snapshots.length + 1, row: runnableYMap[ yMapKey ], xAlign: 'left' }
                   } ) );
                 }
                 gridBox.children = gridChildren;
