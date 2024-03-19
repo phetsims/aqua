@@ -30,6 +30,9 @@ function setup( simNames ) {
   let currentSnapshot;
   let currentSim;
 
+  // Keep track of the final hash we get from the snapshot-taker, as it may come before the last frame comes.
+  let currentHash = null;
+
   const options = QueryStringMachine.getAll( {
 
     // comma separated list of sims to test snapshots for
@@ -197,6 +200,7 @@ function setup( simNames ) {
 
   function loadSim( sim ) {
     currentSim = sim;
+    currentHash = null;
     currentSnapshot[ currentSim ] = {
       frames: []
     };
@@ -221,6 +225,77 @@ function setup( simNames ) {
 
   snapshotButton.addEventListener( 'click', snapshot );
 
+  const finish = hash => {
+    // basically hash
+    const sim = currentSim;
+    const snapshot = currentSnapshot;
+
+    snapshot[ sim ].hash = hash;
+    const td = document.createElement( 'td' );
+    td.textContent = hash.slice( 0, 6 ) + ( options.showTime ? ` ${Date.now() - globalStartTime}` : '' );
+    if ( snapshots.length > 1 && hash !== snapshots[ snapshots.length - 2 ][ sim ].hash ) {
+      td.style.fontWeight = 'bold';
+      td.style.cursor = 'pointer';
+      td.addEventListener( 'click', () => {
+        const newFrames = snapshot[ sim ].frames;
+        const oldFrames = snapshots[ snapshots.indexOf( snapshot ) - 1 ][ sim ].frames;
+
+        let nextIndex = 0;
+
+        function compareNextFrame() {
+          const index = nextIndex++;
+          if ( index < newFrames.length && index < oldFrames.length ) {
+            const oldFrame = oldFrames[ index ];
+            const newFrame = newFrames[ index ];
+
+            const dataFrameIndex = `Data Frame ${index}`;
+
+            // support comparing the next data frame after this frame's screenshots have loaded (only when different)
+            let compareNextFrameCalledFromScreenshot = false;
+
+            // If this screenshot hash is different, then compare and display the difference in screenshots.
+            if ( oldFrame.screenshot.hash !== newFrame.screenshot.hash ) {
+              compareNextFrameCalledFromScreenshot = true;
+              window.compareImages( oldFrames[ index ].screenshot.url, newFrames[ index ].screenshot.url,
+                options.simWidth, options.simHeight, comparisonDataDiv => {
+                  comparisonDataDiv && comparisonDiv.appendChild( comparisonDataDiv );
+                  compareNextFrame();
+                }, dataFrameIndex );
+            }
+
+            // Compare description via PDOM html
+            if ( options.compareDescription && oldFrame.pdom.hash !== newFrame.pdom.hash ) {
+              comparePDOM( oldFrame.pdom.html, newFrame.pdom.html, dataFrameIndex );
+
+            }
+            // Compare description utterances
+            if ( options.compareDescription && oldFrame.descriptionAlert.hash !== newFrame.descriptionAlert.hash ) {
+              compareDescriptionAlerts( oldFrame.descriptionAlert.utterances, newFrame.descriptionAlert.utterances, `${dataFrameIndex}, Description` );
+            }
+
+            // Compare voicing utterances
+            if ( options.compareDescription && oldFrame.voicing.hash !== newFrame.voicing.hash ) {
+              compareDescriptionAlerts( oldFrame.voicing.utterances, newFrame.voicing.utterances, `${dataFrameIndex}, Voicing` );
+            }
+
+            // Kick off the next iteration if we aren't waiting for images to load
+            !compareNextFrameCalledFromScreenshot && compareNextFrame();
+          }
+        }
+
+        compareNextFrame();
+      } );
+    }
+    rowMap[ sim ].appendChild( td );
+  };
+
+  const tryToFinish = () => {
+    if ( currentSnapshot[ currentSim ].frames.length === options.numFrames && currentHash ) {
+      finish( currentHash );
+      nextSim();
+    }
+  };
+
   window.addEventListener( 'message', evt => {
     if ( typeof evt.data !== 'string' ) {
       return;
@@ -231,70 +306,11 @@ function setup( simNames ) {
     if ( data.type === 'frameEmitted' ) {
       // number, screenshot: { url, hash }
       currentSnapshot[ currentSim ].frames.push( data );
+      tryToFinish();
     }
     else if ( data.type === 'snapshot' ) {
-      // basically hash
-      const sim = currentSim;
-      const snapshot = currentSnapshot;
-
-      snapshot[ sim ].hash = data.hash;
-      const td = document.createElement( 'td' );
-      td.textContent = data.hash.slice( 0, 6 ) + ( options.showTime ? ` ${Date.now() - globalStartTime}` : '' );
-      if ( snapshots.length > 1 && data.hash !== snapshots[ snapshots.length - 2 ][ sim ].hash ) {
-        td.style.fontWeight = 'bold';
-        td.style.cursor = 'pointer';
-        td.addEventListener( 'click', () => {
-          const newFrames = snapshot[ sim ].frames;
-          const oldFrames = snapshots[ snapshots.indexOf( snapshot ) - 1 ][ sim ].frames;
-
-          let nextIndex = 0;
-
-          function compareNextFrame() {
-            const index = nextIndex++;
-            if ( index < newFrames.length && index < oldFrames.length ) {
-              const oldFrame = oldFrames[ index ];
-              const newFrame = newFrames[ index ];
-
-              const dataFrameIndex = `Data Frame ${index}`;
-
-              // support comparing the next data frame after this frame's screenshots have loaded (only when different)
-              let compareNextFrameCalledFromScreenshot = false;
-
-              // If this screenshot hash is different, then compare and display the difference in screenshots.
-              if ( oldFrame.screenshot.hash !== newFrame.screenshot.hash ) {
-                compareNextFrameCalledFromScreenshot = true;
-                window.compareImages( oldFrames[ index ].screenshot.url, newFrames[ index ].screenshot.url,
-                  options.simWidth, options.simHeight, comparisonDataDiv => {
-                    comparisonDataDiv && comparisonDiv.appendChild( comparisonDataDiv );
-                    compareNextFrame();
-                  }, dataFrameIndex );
-              }
-
-              // Compare description via PDOM html
-              if ( options.compareDescription && oldFrame.pdom.hash !== newFrame.pdom.hash ) {
-                comparePDOM( oldFrame.pdom.html, newFrame.pdom.html, dataFrameIndex );
-
-              }
-              // Compare description utterances
-              if ( options.compareDescription && oldFrame.descriptionAlert.hash !== newFrame.descriptionAlert.hash ) {
-                compareDescriptionAlerts( oldFrame.descriptionAlert.utterances, newFrame.descriptionAlert.utterances, `${dataFrameIndex}, Description` );
-              }
-
-              // Compare voicing utterances
-              if ( options.compareDescription && oldFrame.voicing.hash !== newFrame.voicing.hash ) {
-                compareDescriptionAlerts( oldFrame.voicing.utterances, newFrame.voicing.utterances, `${dataFrameIndex}, Voicing` );
-              }
-
-              // Kick off the next iteration if we aren't waiting for images to load
-              !compareNextFrameCalledFromScreenshot && compareNextFrame();
-            }
-          }
-
-          compareNextFrame();
-        } );
-      }
-      rowMap[ sim ].appendChild( td );
-      nextSim();
+      currentHash = data.hash;
+      tryToFinish();
     }
     else if ( data.type === 'error' ) {
       const errorTd = document.createElement( 'td' );
