@@ -264,10 +264,10 @@ function setup( simNames ) {
               if ( oldFrame.screenshot.hash !== newFrame.screenshot.hash ) {
                 compareNextFrameCalledFromScreenshot = true;
                 window.compareImages( oldFrames[ index ].screenshot.url, newFrames[ index ].screenshot.url,
-                  dataFrameIndex, options.simWidth, options.simHeight, comparisonDataDiv => {
+                  options.simWidth, options.simHeight, comparisonDataDiv => {
                     comparisonDataDiv && comparisonDiv.appendChild( comparisonDataDiv );
                     compareNextFrame();
-                  } );
+                  }, dataFrameIndex );
               }
 
               // Compare description via PDOM html

@@ -9,6 +9,16 @@
 
 ( () => {
 
+  const loadImage = url => {
+    return new Promise( resolve => {
+      const image = document.createElement( 'img' );
+      image.addEventListener( 'load', () => {
+        resolve( image );
+      } );
+      image.src = url;
+    } );
+  };
+
   function imageToContext( image, width, height ) {
     const canvas = document.createElement( 'canvas' );
     const context = canvas.getContext( '2d' );
@@ -31,7 +41,7 @@
     return canvas;
   }
 
-  function compareImageElements( imageA, imageB, msg, width, height ) {
+  function compareImageElements( imageA, imageB, width, height, msg = '' ) {
     const threshold = 0;
     const a = contextToData( imageToContext( imageA, width, height ), width, height );
     const b = contextToData( imageToContext( imageB, width, height ), width, height );
@@ -69,31 +79,34 @@
 
     if ( averageDifference > threshold ) {
       const container = document.createElement( 'div' );
+      const comparisonData = {
+        a: dataToCanvas( a, width, height ),
+        b: dataToCanvas( b, width, height ),
+        diff: dataToCanvas( colorDiffData, width, height ),
+        container: container,
+        largestDifference: largestDifference,
+        averageDifference: averageDifference
+      };
 
       container.appendChild( document.createTextNode( `${msg}, largest: ${largestDifference}, average: ${averageDifference}` ) );
       container.appendChild( document.createElement( 'br' ) );
 
-      container.appendChild( dataToCanvas( a, width, height ) );
-      container.appendChild( dataToCanvas( b, width, height ) );
-      container.appendChild( dataToCanvas( colorDiffData, width, height ) );
-      // container.appendChild( dataToCanvas( alphaDiffData ) );
-      return container;
+      container.appendChild( comparisonData.a );
+      container.appendChild( comparisonData.b );
+      container.appendChild( comparisonData.diff );
+
+      return comparisonData;
     }
     return null;
   }
 
   // callback returns either null or the div that contains the comparison of images showing the difference.
-  function compareImages( imageA_URL, imageB_URL, msg, width, height, callback ) {
-    const newImage = document.createElement( 'img' );
-    newImage.addEventListener( 'load', () => {
-      const oldImage = document.createElement( 'img' );
-      oldImage.addEventListener( 'load', () => {
-        const comparisonContent = compareImageElements( oldImage, newImage, msg, width, height );
-        callback( comparisonContent );
-      } );
-      oldImage.src = imageA_URL;
-    } );
-    newImage.src = imageB_URL;
+  async function compareImages( imageA_URL, imageB_URL, width, height, callback = _.noop, msg = '' ) {
+    const newImage = await loadImage( imageB_URL );
+    const oldImage = await loadImage( imageA_URL );
+    const comparisonContent = compareImageElements( oldImage, newImage, width, height, msg );
+    callback( comparisonContent?.container || null );
+    return comparisonContent;
   }
 
   window.compareImages = compareImages;

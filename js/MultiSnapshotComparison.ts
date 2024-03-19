@@ -128,92 +128,6 @@ type Row = {
     ];
   } ) ).filter( ( item, i ) => i % options.stride === options.offset );
 
-  const loadImage = ( url: string ): Promise<HTMLImageElement> => {
-    return new Promise<HTMLImageElement>( resolve => {
-      const image = document.createElement( 'img' );
-      image.addEventListener( 'load', () => {
-        resolve( image );
-      } );
-      image.src = url;
-    } );
-  };
-
-  // eslint-disable-next-line explicit-method-return-type
-  function imageToContext( image, width, height ) {
-    const canvas = document.createElement( 'canvas' );
-    const context = canvas.getContext( '2d' );
-    canvas.width = width;
-    canvas.height = height;
-    context.drawImage( image, 0, 0 );
-    return context;
-  }
-
-  // eslint-disable-next-line explicit-method-return-type
-  function contextToData( context, width, height ) {
-    return context.getImageData( 0, 0, width, height );
-  }
-
-  // eslint-disable-next-line explicit-method-return-type
-  function dataToCanvas( data, width, height ) {
-    const canvas = document.createElement( 'canvas' );
-    const context = canvas.getContext( '2d' );
-    canvas.width = width;
-    canvas.height = height;
-    context.putImageData( data, 0, 0 );
-    return canvas;
-  }
-
-  const compareImages = async ( urlA, urlB, width, height ): Promise<{ a: HTMLCanvasElement; b: HTMLCanvasElement; diff: HTMLCanvasElement; largestDifference: number; averageDifference: number } | null> => {
-    const imageA = await loadImage( urlA );
-    const imageB = await loadImage( urlB );
-
-    const threshold = 0;
-    const a = contextToData( imageToContext( imageA, width, height ), width, height );
-    const b = contextToData( imageToContext( imageB, width, height ), width, height );
-
-    let largestDifference = 0;
-    let totalDifference = 0;
-    const colorDiffData = document.createElement( 'canvas' ).getContext( '2d' ).createImageData( a.width, a.height );
-    const alphaDiffData = document.createElement( 'canvas' ).getContext( '2d' ).createImageData( a.width, a.height );
-    for ( let i = 0; i < a.data.length; i++ ) {
-      const diff = Math.abs( a.data[ i ] - b.data[ i ] );
-      if ( i % 4 === 3 ) {
-        colorDiffData.data[ i ] = 255;
-        alphaDiffData.data[ i ] = 255;
-        alphaDiffData.data[ i - 3 ] = diff; // red
-        alphaDiffData.data[ i - 2 ] = diff; // green
-        alphaDiffData.data[ i - 1 ] = diff; // blue
-      }
-      else {
-        colorDiffData.data[ i ] = diff;
-      }
-      const alphaIndex = ( i - ( i % 4 ) + 3 );
-      // grab the associated alpha channel and multiply it times the diff
-      const alphaMultipliedDiff = ( i % 4 === 3 ) ? diff : diff * ( a.data[ alphaIndex ] / 255 ) * ( b.data[ alphaIndex ] / 255 );
-
-      totalDifference += alphaMultipliedDiff;
-      // if ( alphaMultipliedDiff > threshold ) {
-      // console.log( message + ': ' + Math.abs( a.data[i] - b.data[i] ) );
-      largestDifference = Math.max( largestDifference, alphaMultipliedDiff );
-      // isEqual = false;
-      // break;
-      // }
-    }
-
-    const averageDifference = totalDifference / ( 4 * a.width * a.height );
-
-    if ( averageDifference > threshold ) {
-      return {
-        a: dataToCanvas( a, width, height ),
-        b: dataToCanvas( b, width, height ),
-        diff: dataToCanvas( colorDiffData, width, height ),
-        largestDifference: largestDifference,
-        averageDifference: averageDifference
-      };
-    }
-    return null;
-  };
-
   class Snapshot {
 
     public readonly runnable: string;
@@ -443,7 +357,7 @@ type Row = {
                   for ( let j = 1; j < snapshots.length; j++ ) {
                     const otherFrame = snapshots[ j ].frames[ i ];
 
-                    const data = await compareImages( frame.screenshot.url, otherFrame.screenshot.url, options.simWidth, options.simHeight );
+                    const data = await window.compareImages( frame.screenshot.url, otherFrame.screenshot.url, options.simWidth, options.simHeight );
 
                     if ( data ) {
                       if ( diffImages.length === 0 ) {
