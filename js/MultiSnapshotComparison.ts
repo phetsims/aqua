@@ -254,7 +254,10 @@ type Frame = {
     currentSnapshot: Snapshot | null;
     readonly nextRunnable: ( snapshotter: Snapshotter ) => void;
 
-    constructor( url: string, index: number, nextRunnable: ( snapshotter: Snapshotter ) => void ) {
+    private receivedHash: string | null = null;
+
+
+    constructor( url: string, index: number, private readonly numFrames: number, nextRunnable: ( snapshotter: Snapshotter ) => void ) {
       this.url = url;
       this.index = index;
       this.currentSnapshot = null;
@@ -270,13 +273,24 @@ type Frame = {
       snapshotterMap.set( index, this );
     }
 
+    // Add a single frame of the snapshot.
     addFrame( frame: Frame ): void {
       this.currentSnapshot!.addFrame( frame );
+      this.finishIfReady();
     }
 
+    // Final hash of the whole snapshot.
     addHash( hash: string ): void {
-      this.currentSnapshot!.addHash( hash );
-      this.nextRunnable( this );
+      this.receivedHash = hash;
+      this.finishIfReady();
+    }
+
+    // We can't control the order of postMessage messages, so support either order for finishing.
+    finishIfReady() {
+      if ( this.currentSnapshot?.frameCountProperty.value === this.numFrames && this.receivedHash ) {
+        this.currentSnapshot!.addHash( this.receivedHash );
+        this.nextRunnable( this );
+      }
     }
 
     addError(): void {
@@ -286,6 +300,7 @@ type Frame = {
 
     load( snapshot: Snapshot ): void {
       this.currentSnapshot = snapshot;
+      this.receivedHash = null;
 
       const simQueryParameters = encodeURIComponent( ( snapshot.brand === 'phet-io' ? 'brand=phet-io&phetioStandalone' : 'brand=phet' ) + '&' + options.simQueryParameters );
       const url = encodeURIComponent( `../../${snapshot.runnable}/${snapshot.runnable}_en.html` );
@@ -305,7 +320,7 @@ type Frame = {
       this.index = index;
       this.snapshots = rows.map( row => new Snapshot( row.runnable, row.brand, this ) );
       this.queue = this.snapshots.slice();
-      this.snapshotters = _.range( 0, options.copies ).map( i => new Snapshotter( url, index + i * 100, this.nextRunnable.bind( this ) ) );
+      this.snapshotters = _.range( 0, options.copies ).map( i => new Snapshotter( url, index + i * 100, options.numFrames, this.nextRunnable.bind( this ) ) );
     }
 
     getSnapshot( runnable: string, brand: string ): Snapshot {
