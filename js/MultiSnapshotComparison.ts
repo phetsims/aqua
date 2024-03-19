@@ -25,6 +25,9 @@ type Frame = {
 };
 
 ( async () => {
+
+  window.assertions.enableAssert();
+
   const activeRunnablesResponse = await fetch( '../../perennial/data/active-runnables' );
   const activeRunnables = ( await activeRunnablesResponse.text() ).trim().replace( /\r/g, '' ).split( '\n' );
 
