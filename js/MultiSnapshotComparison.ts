@@ -84,6 +84,11 @@ type Frame = {
       defaultValue: 10
     },
 
+    testPhetio: {
+      type: 'boolean',
+      defaultValue: true
+    },
+
     // How many iframes to devote per each column
     copies: {
       type: 'number',
@@ -113,7 +118,7 @@ type Frame = {
   const rows: { runnable: string, brand: string }[] = _.flatten( options.runnables.map( ( runnable: string ) => {
     return [
       { runnable: runnable, brand: 'phet' },
-      ...( activePhetIO.includes( runnable ) ? [ { runnable: runnable, brand: 'phet-io' } ] : [] )
+      ...( options.testPhetio && activePhetIO.includes( runnable ) ? [ { runnable: runnable, brand: 'phet-io' } ] : [] )
     ];
   } ) ).filter( ( item, i ) => i % options.stride === options.offset );
 
