@@ -335,49 +335,59 @@ type Row = {
           }
           else {
             runnableText.fill = '#b00';
-
             runnableText.cursor = 'pointer';
+
+            const resultsNode = new FlowBox( {
+              orientation: 'horizontal',
+              spacing: 5,
+              layoutOptions: { column: snapshots.length + 1, row: runnableYMap[ yMapKey ], xAlign: 'left' }
+            } );
+            gridChildren.push( resultsNode );
+            gridBox.children = gridChildren;
+
+            let expanded = false;
+            let diffImages: Node[] = null;
             runnableText.addInputListener( new FireListener( {
               fire: async () => {
-                runnableText.cursor = 'wait';
-                const firstFrames = snapshots[ 0 ].frames;
-
-                const createImageNode = ( canvas: HTMLCanvasElement ): Node => {
-                  const image = new Image( canvas );
-                  image.cursor = 'pointer';
-                  image.addInputListener( new FireListener( {
-                    fire: () => window.navigator.clipboard?.writeText( canvas.toDataURL() )
-                  } ) );
-                  return image;
-                };
-
-                for ( let i = 0; i < firstFrames.length; i++ ) {
-                  const frame = snapshots[ 0 ].frames[ i ];
-                  const diffImages = [];
-
-                  for ( let j = 1; j < snapshots.length; j++ ) {
-                    const otherFrame = snapshots[ j ].frames[ i ];
-
-                    const data = await window.compareImages( frame.screenshot.url, otherFrame.screenshot.url, options.simWidth, options.simHeight );
-
-                    if ( data ) {
-                      if ( diffImages.length === 0 ) {
-                        diffImages.push( createImageNode( data.a ) );
-                      }
-                      diffImages.push( createImageNode( data.b ) );
-                      diffImages.push( createImageNode( data.diff ) );
-                    }
-                  }
-
-                  gridChildren.push( new FlowBox( {
-                    orientation: 'horizontal',
-                    children: diffImages,
-                    spacing: 5,
-                    layoutOptions: { column: snapshots.length + 1, row: runnableYMap[ yMapKey ], xAlign: 'left' }
-                  } ) );
+                if ( expanded ) {
+                  resultsNode.children = [];
                 }
-                gridBox.children = gridChildren;
-                runnableText.cursor = 'pointer';
+                else {
+                  if ( !diffImages ) {
+                    runnableText.cursor = 'wait';
+                    const firstFrames = snapshots[ 0 ].frames;
+
+                    const createImageNode = ( canvas: HTMLCanvasElement ): Node => {
+                      const image = new Image( canvas );
+                      image.cursor = 'pointer';
+                      image.addInputListener( new FireListener( {
+                        fire: () => window.navigator.clipboard?.writeText( canvas.toDataURL() )
+                      } ) );
+                      return image;
+                    };
+
+                    for ( let i = 0; i < firstFrames.length; i++ ) {
+                      const frame = snapshots[ 0 ].frames[ i ];
+                      diffImages = [];
+
+                      for ( let j = 1; j < snapshots.length; j++ ) {
+                        const otherFrame = snapshots[ j ].frames[ i ];
+
+                        const data = await window.compareImages( frame.screenshot.url, otherFrame.screenshot.url, options.simWidth, options.simHeight );
+                        if ( data ) {
+                          if ( diffImages.length === 0 ) {
+                            diffImages.push( createImageNode( data.a ) );
+                          }
+                          diffImages.push( createImageNode( data.b ) );
+                          diffImages.push( createImageNode( data.diff ) );
+                        }
+                      }
+                    }
+                    runnableText.cursor = 'pointer';
+                  }
+                  resultsNode.children = diffImages;
+                }
+                expanded = !expanded;
               }
             } ) );
           }
