@@ -145,9 +145,11 @@ function sendFuzz( averageEventQuantity ) {
   }
 }
 
-function getScreenshot( callback ) {
-  iframe.contentWindow.phet.joist.display.foreignObjectRasterization( url => {
-    callback( url );
+function getScreenshot() {
+  return new Promise( resolve => {
+    iframe.contentWindow.phet.joist.display.foreignObjectRasterization( url => {
+      resolve( url );
+    } );
   } );
 }
 
@@ -182,79 +184,76 @@ async function handleFrame() {
 
       await waitForAnimationFrame();
 
-      getScreenshot( screenshotURL => {
-        const hashedScreenshotURL = hash( screenshotURL );
-        console.log( count, hashedScreenshotURL );
+      const screenshotURL = await getScreenshot();
+      const hashedScreenshotURL = hash( screenshotURL );
+      console.log( count, hashedScreenshotURL );
 
-        let concatHash = hashedScreenshotURL;
+      let concatHash = hashedScreenshotURL;
 
-        const pdomData = {
-          html: null,
-          hash: null
-        };
-        const descriptionAlertData = {
-          utterances: null,
-          hash: null
-        };
-        const voicingResponseData = {
-          utterances: null,
-          hash: null
-        };
-        if ( options.compareDescription && iframe.contentWindow.phet.joist.display.isAccessible() ) {
+      const pdomData = {
+        html: null,
+        hash: null
+      };
+      const descriptionAlertData = {
+        utterances: null,
+        hash: null
+      };
+      const voicingResponseData = {
+        utterances: null,
+        hash: null
+      };
+      if ( options.compareDescription && iframe.contentWindow.phet.joist.display.isAccessible() ) {
 
-          const pdomRoot = iframe.contentWindow.phet.joist.display.pdomRootElement;
-          const pdomHTML = pdomRoot.outerHTML;
-          pdomData.html = pdomHTML;
-          const hashedPDOMHTML = hash( pdomHTML );
-          pdomData.hash = hashedPDOMHTML;
-          concatHash += hashedPDOMHTML;
+        const pdomRoot = iframe.contentWindow.phet.joist.display.pdomRootElement;
+        const pdomHTML = pdomRoot.outerHTML;
+        pdomData.html = pdomHTML;
+        const hashedPDOMHTML = hash( pdomHTML );
+        pdomData.hash = hashedPDOMHTML;
+        concatHash += hashedPDOMHTML;
 
-          const descriptionUtteranceQueue = iframe.contentWindow.phet.joist.display.descriptionUtteranceQueue.queue;
-          const utteranceTexts = descriptionUtteranceQueue.map( utteranceWrapper => utteranceWrapper.utterance.toString() );
-          descriptionAlertData.utterances = utteranceTexts;
-          const utterancesHash = hash( utteranceTexts + '' );
-          descriptionAlertData.hash = utterancesHash;
-          concatHash += utterancesHash;
+        const descriptionUtteranceQueue = iframe.contentWindow.phet.joist.display.descriptionUtteranceQueue.queue;
+        const utteranceTexts = descriptionUtteranceQueue.map( utteranceWrapper => utteranceWrapper.utterance.toString() );
+        descriptionAlertData.utterances = utteranceTexts;
+        const utterancesHash = hash( utteranceTexts + '' );
+        descriptionAlertData.hash = utterancesHash;
+        concatHash += utterancesHash;
 
-          if ( iframe.contentWindow.phet.scenery.voicingUtteranceQueue ) {
-            const voicingUtteranceQueue = iframe.contentWindow.phet.scenery.voicingUtteranceQueue.queue;
-            const voicingUtteranceTexts = voicingUtteranceQueue.map( voicingUtteranceWrapper => voicingUtteranceWrapper.utterance.toString() );
-            voicingResponseData.utterances = voicingUtteranceTexts;
-            const voicingUtterancesHash = hash( voicingUtteranceTexts + '' );
-            voicingResponseData.hash = voicingUtterancesHash;
-            concatHash += voicingUtterancesHash;
-          }
+        if ( iframe.contentWindow.phet.scenery.voicingUtteranceQueue ) {
+          const voicingUtteranceQueue = iframe.contentWindow.phet.scenery.voicingUtteranceQueue.queue;
+          const voicingUtteranceTexts = voicingUtteranceQueue.map( voicingUtteranceWrapper => voicingUtteranceWrapper.utterance.toString() );
+          voicingResponseData.utterances = voicingUtteranceTexts;
+          const voicingUtterancesHash = hash( voicingUtteranceTexts + '' );
+          voicingResponseData.hash = voicingUtterancesHash;
+          concatHash += voicingUtterancesHash;
         }
+      }
 
+
+      ( window.parent !== window ) && window.parent.postMessage( JSON.stringify( {
+        id: options.id,
+        type: 'frameEmitted',
+        number: count - 1,
+        screenshot: {
+          url: screenshotURL,
+          hash: hashedScreenshotURL
+        },
+        pdom: pdomData,
+        descriptionAlert: descriptionAlertData,
+        voicing: voicingResponseData
+      } ), '*' );
+
+      received = true;
+      frameHashes += concatHash;
+      if ( count === options.numFrames ) {
+        const fullHash = hash( frameHashes );
 
         ( window.parent !== window ) && window.parent.postMessage( JSON.stringify( {
           id: options.id,
-          type: 'frameEmitted',
-          number: count - 1,
-          screenshot: {
-            url: screenshotURL,
-            hash: hashedScreenshotURL
-          },
-          pdom: pdomData,
-          descriptionAlert: descriptionAlertData,
-          voicing: voicingResponseData
+          type: 'snapshot',
+          hash: fullHash,
+          url: window.location.href
         } ), '*' );
-
-        received = true;
-        frameHashes += concatHash;
-        if ( count === options.numFrames ) {
-          const fullHash = hash( frameHashes );
-
-          ( window.parent !== window ) && window.parent.postMessage( JSON.stringify( {
-            id: options.id,
-            type: 'snapshot',
-            hash: fullHash,
-            url: window.location.href
-          } ), '*' );
-
-          console.log( fullHash );
-        }
-      } );
+      }
     }
   }
   else {
