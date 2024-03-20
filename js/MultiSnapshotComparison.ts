@@ -11,7 +11,8 @@ import BooleanProperty from '../../axon/js/BooleanProperty.js';
 import Multilink from '../../axon/js/Multilink.js';
 import NumberProperty from '../../axon/js/NumberProperty.js';
 import Property from '../../axon/js/Property.js';
-import { Color, Display, DOM, FireListener, FlowBox, Font, GridBackgroundNode, GridBox, GridCell, Image, Node, Rectangle, Text } from '../../scenery/js/imports.js';
+import { Color, Display, DOM, FireListener, FlowBox, Font, GridBackgroundNode, GridBox, GridCell, HBox, Image, Node, Rectangle, Text } from '../../scenery/js/imports.js';
+import Emitter from '../../axon/js/Emitter.js';
 
 type Frame = {
   number: number;
@@ -127,6 +128,9 @@ type Row = {
       ...( options.testPhetio && activePhetIO.includes( runnable ) ? [ { runnable: runnable, brand: 'phet-io' } ] : [] )
     ];
   } ) ).filter( ( item, i ) => i % options.stride === options.offset );
+
+  const resetEmitter = new Emitter();
+  window.resetEmitter = resetEmitter;
 
   class Snapshot {
 
@@ -276,6 +280,8 @@ type Row = {
     xAlign: 'left',
     margin: 2
   } );
+
+  // Just to optimize startup conditions (just set children once)
   const gridChildren: Node[] = [];
   scene.addChild( new GridBackgroundNode( gridBox.constraint, {
     createCellBackground: ( cell: GridCell ) => {
@@ -337,8 +343,7 @@ type Row = {
             runnableText.fill = '#b00';
             runnableText.cursor = 'pointer';
 
-            const resultsNode = new FlowBox( {
-              orientation: 'horizontal',
+            const resultsNode = new HBox( {
               spacing: 5,
               layoutOptions: { column: snapshots.length + 1, row: runnableYMap[ yMapKey ], xAlign: 'left' }
             } );
@@ -346,14 +351,19 @@ type Row = {
             gridBox.children = gridChildren;
 
             let expanded = false;
-            let diffImages: Node[] = null;
+            let allDiffImages: Node[] = null;
+            resetEmitter.addListener( () => {
+              allDiffImages = null;
+              resultsNode.children = [];
+            } );
+
             runnableText.addInputListener( new FireListener( {
               fire: async () => {
                 if ( expanded ) {
-                  resultsNode.children = [];
+                  resultsNode.visible = false;
                 }
                 else {
-                  if ( !diffImages ) {
+                  if ( !allDiffImages ) {
                     runnableText.cursor = 'wait';
                     const firstFrames = snapshots[ 0 ].frames;
 
@@ -366,26 +376,28 @@ type Row = {
                       return image;
                     };
 
+                    allDiffImages = [];
+
                     for ( let i = 0; i < firstFrames.length; i++ ) {
                       const frame = snapshots[ 0 ].frames[ i ];
-                      diffImages = [];
 
                       for ( let j = 1; j < snapshots.length; j++ ) {
                         const otherFrame = snapshots[ j ].frames[ i ];
 
                         const data = await window.compareImages( frame.screenshot.url, otherFrame.screenshot.url, options.simWidth, options.simHeight );
                         if ( data ) {
-                          if ( diffImages.length === 0 ) {
-                            diffImages.push( createImageNode( data.a ) );
+                          if ( allDiffImages.length === 0 ) {
+                            allDiffImages.push( createImageNode( data.a ) );
                           }
-                          diffImages.push( createImageNode( data.b ) );
-                          diffImages.push( createImageNode( data.diff ) );
+                          allDiffImages.push( createImageNode( data.b ) );
+                          allDiffImages.push( createImageNode( data.diff ) );
                         }
                       }
                     }
+                    resultsNode.addChild( new HBox( { children: allDiffImages } ) );
                     runnableText.cursor = 'pointer';
                   }
-                  resultsNode.children = diffImages;
+                  resultsNode.visible = true;
                 }
                 expanded = !expanded;
               }
@@ -448,7 +460,6 @@ type Row = {
       snapshotterMap.get( data.id )!.addHash( data.hash );
     }
     else if ( data.type === 'error' ) {
-      console.log( 'data' );
       snapshotterMap.get( data.id )!.addError();
     }
   } );
