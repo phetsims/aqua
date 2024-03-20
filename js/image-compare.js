@@ -1,4 +1,4 @@
-// Copyright 2022, University of Colorado Boulder
+// Copyright 2022-2024, University of Colorado Boulder
 
 /**
  * Functions supporting taking two image data URLs and comparing them, and providing a "comparison" image that shows

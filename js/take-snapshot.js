@@ -1,4 +1,4 @@
-// Copyright 2017-2023, University of Colorado Boulder
+// Copyright 2017-2024, University of Colorado Boulder
 
 /**
  * Runs a snapshot for a specific sim (url) with a given seed. It will send a number of events, and will record
