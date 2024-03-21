@@ -55,6 +55,11 @@ const options = QueryStringMachine.getAll( {
   compareDescription: {
     type: 'boolean',
     defaultValue: false
+  },
+
+  logFrameInfo: {
+    type: 'boolean',
+    defaultValue: true
   }
 } );
 
@@ -83,6 +88,7 @@ function sendMouseToggleEvent() {
   const domEvent = iframe.contentWindow.document.createEvent( 'MouseEvent' );
 
   // technically deprecated, but DOM4 event constructors not out yet. people on #whatwg said to use it
+  // TODO: Firefox warning: initMouseEvent() is deprecated. Use the MouseEvent() constructor instead. https://github.com/phetsims/aqua/issues/205
   domEvent.initMouseEvent( isMouseDown ? 'mouseup' : 'mousedown', true, true, iframe.contentWindow, 1, // click count
     mouseX, mouseY, mouseX, mouseY,
     false, false, false, false,
@@ -186,7 +192,7 @@ async function handleFrame() {
 
       const screenshotURL = await getScreenshot();
       const hashedScreenshotURL = hash( screenshotURL );
-      console.log( count, hashedScreenshotURL );
+      options.logFrameInfo && console.log( count, hashedScreenshotURL );
 
       let concatHash = hashedScreenshotURL;
 
@@ -291,7 +297,7 @@ window.addEventListener( 'message', evt => {
 
   // Sent by Joist due to the postMessage* query parameters
   if ( data.type === 'ready' ) {
-    console.log( 'ready' );
+    options.logFrameInfo && console.log( 'ready' );
 
     // Don't allow popups
     iframe.contentWindow.open = function() {
@@ -304,20 +310,20 @@ window.addEventListener( 'message', evt => {
     iframe.contentWindow.saveAs = function() {};
 
     // We need to create an object with the iframe's Object.prototype as its prototype to pass our assertion checks
-    const options = iframe.contentWindow.Object.create( iframe.contentWindow.Object.prototype, {
+    const randomOptions = iframe.contentWindow.Object.create( iframe.contentWindow.Object.prototype, {
       seed: {
         value: 2.3,
         enumerable: true
       }
     } );
-    console.log( options );
-    random = new iframe.contentWindow.phet.dot.Random( options );
+    options.logFrameInfo && console.log( randomOptions );
+    random = new iframe.contentWindow.phet.dot.Random( randomOptions );
 
     iframe.contentWindow.phet.joist.launchSimulation();
     iframe.contentWindow.phet.joist.display.interactive = false;
   }
   else if ( data.type === 'load' ) {
-    console.log( 'loaded' );
+    options.logFrameInfo && console.log( 'loaded' );
     sendStep( 0.016 );
     loaded = true;
   }

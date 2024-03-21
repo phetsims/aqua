@@ -112,6 +112,12 @@ type Row = {
     offset: {
       type: 'number',
       defaultValue: 0
+    },
+
+    // Console logs about frame snapshot info, see take-snapshot.js
+    logFrameInfo: {
+      type: 'boolean',
+      defaultValue: true
     }
   } );
 
@@ -120,6 +126,7 @@ type Row = {
     }&simWidth=${encodeURIComponent( options.simWidth )
     }&simHeight=${encodeURIComponent( options.simHeight )
     }&numFrames=${encodeURIComponent( options.numFrames )
+    }&logFrameInfo=${encodeURIComponent( options.logFrameInfo )
     }`;
 
   const rows: Row[] = _.flatten( options.runnables.map( ( runnable: string ) => {
