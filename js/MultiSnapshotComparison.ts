@@ -179,7 +179,7 @@ type Row = {
   const snapshotterMap = new Map<number, Snapshotter>();
 
   class Snapshotter {
-    private readonly url: string;
+    private readonly url: URL;
     private readonly index: number;
     public readonly iframe: HTMLIFrameElement;
     private currentSnapshot: Snapshot | null;
@@ -189,7 +189,7 @@ type Row = {
 
 
     public constructor( url: string, index: number, private readonly numFrames: number, nextRunnable: ( snapshotter: Snapshotter ) => void ) {
-      this.url = url;
+      this.url = new URL( url );
       this.index = index;
       this.currentSnapshot = null;
       this.nextRunnable = nextRunnable;
@@ -230,12 +230,13 @@ type Row = {
     }
 
     public load( snapshot: Snapshot ): void {
+      console.log( 'loading:', snapshot.runnable, snapshot.brand, this.url.origin );
       this.currentSnapshot = snapshot;
       this.receivedHash = null;
 
       const simQueryParameters = encodeURIComponent( ( snapshot.brand === 'phet-io' ? 'brand=phet-io&phetioStandalone' : 'brand=phet' ) + '&' + options.simQueryParameters );
       const url = encodeURIComponent( `../../${snapshot.runnable}/${snapshot.runnable}_en.html` );
-      this.iframe.src = `${this.url}/aqua/html/take-snapshot.html?id=${this.index}&${childQueryParams}&url=${url}&simQueryParameters=${simQueryParameters}`;
+      this.iframe.src = `${this.url.href}aqua/html/take-snapshot.html?id=${this.index}&${childQueryParams}&url=${url}&simQueryParameters=${simQueryParameters}`;
     }
   }
 
