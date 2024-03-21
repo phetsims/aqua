@@ -272,6 +272,15 @@ type Row = {
     }
   }
 
+  const createCopiableImageNode = ( canvas: HTMLCanvasElement ): Node => {
+    const image = new Image( canvas );
+    image.cursor = 'pointer';
+    image.addInputListener( new FireListener( {
+      fire: () => window.navigator.clipboard?.writeText( canvas.toDataURL() )
+    } ) );
+    return image;
+  };
+
   const columns: Column[] = options.urls.map( ( url, i ) => new Column( url, i ) );
 
   const scene = new Node();
@@ -336,80 +345,65 @@ type Row = {
     Multilink.multilinkAny( _.flatten( columns.map( column => {
       const snapshot = column.getSnapshot( runnable, brand );
       return [ snapshot.hasErroredProperty, snapshot.hashProperty, snapshot.isCompleteProperty ];
-    } ) ), () => {
+    } ) ), async () => {
       const snapshots = columns.map( column => column.getSnapshot( runnable, brand ) );
       if ( _.every( snapshots, snapshot => snapshot.isCompleteProperty.value ) ) {
         if ( _.some( snapshots, snapshot => snapshot.hasErroredProperty.value ) ) {
-          runnableText.fill = 'magenta';
+          runnableText.fill = 'magenta'; // an error occurred running the snapshots
         }
         else {
+          // Not errored
+
           const hash = snapshots[ 0 ].hashProperty.value;
-          if ( _.every( snapshots, snapshot => snapshot.hashProperty.value === hash ) ) {
-            runnableText.fill = '#0b0';
-          }
-          else {
-            runnableText.fill = '#b00';
-            runnableText.cursor = 'pointer';
+          runnableText.fill = '#0b0'; // Good until proven otherwise
 
-            const resultsNode = new HBox( {
-              spacing: 5,
-              layoutOptions: { column: snapshots.length + 1, row: runnableYMap[ yMapKey ], xAlign: 'left' }
-            } );
-            gridChildren.push( resultsNode );
-            gridBox.children = gridChildren;
+          // If hashes aren't equal
+          if ( !_.every( snapshots, snapshot => snapshot.hashProperty.value === hash ) ) {
 
-            let expanded = false;
-            let allDiffImages: Node[] = null;
-            resetEmitter.addListener( () => {
-              allDiffImages = null;
-              resultsNode.children = [];
-            } );
+            // Even though the hashes aren't equal, the images may be identical (or close enough, see image-compare.js).
+            const firstFrames = snapshots[ 0 ].frames;
 
-            runnableText.addInputListener( new FireListener( {
-              fire: async () => {
-                if ( expanded ) {
-                  resultsNode.visible = false;
-                }
-                else {
-                  if ( !allDiffImages ) {
-                    runnableText.cursor = 'wait';
-                    const firstFrames = snapshots[ 0 ].frames;
+            // Populated only with images that are actually different
+            const allDiffImages = [];
 
-                    const createImageNode = ( canvas: HTMLCanvasElement ): Node => {
-                      const image = new Image( canvas );
-                      image.cursor = 'pointer';
-                      image.addInputListener( new FireListener( {
-                        fire: () => window.navigator.clipboard?.writeText( canvas.toDataURL() )
-                      } ) );
-                      return image;
-                    };
+            for ( let i = 0; i < firstFrames.length; i++ ) {
+              const frame = snapshots[ 0 ].frames[ i ];
 
-                    allDiffImages = [];
+              for ( let j = 1; j < snapshots.length; j++ ) {
+                const otherFrame = snapshots[ j ].frames[ i ];
 
-                    for ( let i = 0; i < firstFrames.length; i++ ) {
-                      const frame = snapshots[ 0 ].frames[ i ];
-
-                      for ( let j = 1; j < snapshots.length; j++ ) {
-                        const otherFrame = snapshots[ j ].frames[ i ];
-
-                        const data = await window.compareImages( frame.screenshot.url, otherFrame.screenshot.url, options.simWidth, options.simHeight );
-                        if ( data ) {
-                          if ( allDiffImages.length === 0 ) {
-                            allDiffImages.push( createImageNode( data.a ) );
-                          }
-                          allDiffImages.push( createImageNode( data.b ) );
-                          allDiffImages.push( createImageNode( data.diff ) );
-                        }
-                      }
-                    }
-                    resultsNode.addChild( new HBox( { children: allDiffImages } ) );
-                    runnableText.cursor = 'pointer';
+                const data = await window.compareImages( frame.screenshot.url, otherFrame.screenshot.url, options.simWidth, options.simHeight );
+                if ( data ) {
+                  if ( allDiffImages.length === 0 ) {
+                    allDiffImages.push( createCopiableImageNode( data.a ) );
                   }
-                  resultsNode.visible = true;
+                  allDiffImages.push( createCopiableImageNode( data.b ) );
+                  allDiffImages.push( createCopiableImageNode( data.diff ) );
                 }
-                expanded = !expanded;
               }
-            } ) );
+            }
+
+            if ( allDiffImages.length > 0 ) {
+              runnableText.cursor = 'pointer';
+              runnableText.fill = '#b00';
+
+              const resultsNode = new HBox( {
+                spacing: 5,
+                children: allDiffImages,
+                visible: false,
+                layoutOptions: { column: snapshots.length + 1, row: runnableYMap[ yMapKey ], xAlign: 'left' }
+              } );
+              gridChildren.push( resultsNode );
+              gridBox.children = gridChildren;
+
+              let expanded = false;
+              runnableText.addInputListener( new FireListener( {
+                fire: async () => {
+                  expanded = !expanded;
+                  resultsNode.visible = expanded;
+                }
+              } ) );
+            }
           }
         }
       }

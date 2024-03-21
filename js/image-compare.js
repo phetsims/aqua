@@ -9,6 +9,10 @@
 
 ( () => {
 
+  const AVERAGE_THRESHOLD = 0.001;
+  const MAX_NUMBER_OF_CHANGED_PIXELS = 10;
+  const MAX_NUMBER_OF_COMPONENT_DIFFERENCES = MAX_NUMBER_OF_CHANGED_PIXELS * 4; // a bad algorithm for recognizing RGBA
+
   const loadImage = url => {
     return new Promise( resolve => {
       const image = document.createElement( 'img' );
@@ -42,12 +46,13 @@
   }
 
   function compareImageElements( imageA, imageB, width, height, msg = '' ) {
-    const threshold = 0;
     const a = contextToData( imageToContext( imageA, width, height ), width, height );
     const b = contextToData( imageToContext( imageB, width, height ), width, height );
 
     let largestDifference = 0;
     let totalDifference = 0;
+    let numberOfDifferences = 0;
+
     const colorDiffData = document.createElement( 'canvas' ).getContext( '2d' ).createImageData( a.width, a.height );
     const alphaDiffData = document.createElement( 'canvas' ).getContext( '2d' ).createImageData( a.width, a.height );
     for ( let i = 0; i < a.data.length; i++ ) {
@@ -62,6 +67,10 @@
       else {
         colorDiffData.data[ i ] = diff;
       }
+      if ( diff ) {
+        numberOfDifferences++;
+      }
+
       const alphaIndex = ( i - ( i % 4 ) + 3 );
       // grab the associated alpha channel and multiply it times the diff
       const alphaMultipliedDiff = ( i % 4 === 3 ) ? diff : diff * ( a.data[ alphaIndex ] / 255 ) * ( b.data[ alphaIndex ] / 255 );
@@ -75,9 +84,20 @@
       // }
     }
 
+    // Average across all pixels
     const averageDifference = totalDifference / ( 4 * a.width * a.height );
 
-    if ( averageDifference > threshold ) {
+    // How different was each difference, on average (excludes equal component colors)
+    const averageDifferenceMagnitude = numberOfDifferences > 0 ? totalDifference / numberOfDifferences : 0;
+
+    if ( averageDifference > AVERAGE_THRESHOLD || numberOfDifferences > MAX_NUMBER_OF_COMPONENT_DIFFERENCES ) {
+      console.log(
+        '-Images differ greater than threshold: ' +
+        '\n\ttotal average:\t', averageDifference,
+        '\n\tnumberOfComponents:\t', numberOfDifferences,
+        '\n\taverage of color difference:\t', averageDifferenceMagnitude
+      );
+
       const container = document.createElement( 'div' );
       const comparisonData = {
         a: dataToCanvas( a, width, height ),
@@ -96,6 +116,14 @@
       container.appendChild( comparisonData.diff );
 
       return comparisonData;
+    }
+    else if ( averageDifference > 0 || numberOfDifferences > 0 ) {
+      console.log(
+        '-Images differ less than threshold: ' +
+        '\n\ttotal average:\t', averageDifference,
+        '\n\tnumberOfComponents:\t', numberOfDifferences,
+        '\n\taverage of color difference:\t', averageDifferenceMagnitude
+      );
     }
     return null;
   }
