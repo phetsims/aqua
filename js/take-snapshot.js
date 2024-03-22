@@ -189,6 +189,7 @@ async function handleFrame() {
       }
 
       await waitForAnimationFrame();
+      await waitForAnimationFrame();
 
       const screenshotURL = await getScreenshot();
       const hashedScreenshotURL = hash( screenshotURL );
