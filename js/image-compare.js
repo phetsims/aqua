@@ -139,4 +139,3 @@
 
   window.compareImages = compareImages;
 } )();
-
