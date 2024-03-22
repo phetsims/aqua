@@ -188,6 +188,7 @@ async function handleFrame() {
         sendStep( random.nextDouble() * 0.5 + 0.016 );
       }
 
+      // Two animation frames were needed to ensure that webgl changes and redraw and update before the screenshot is captured.
       await waitForAnimationFrame();
       await waitForAnimationFrame();
 
