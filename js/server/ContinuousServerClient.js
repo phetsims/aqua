@@ -1,4 +1,4 @@
-// Copyright 2022-2023, University of Colorado Boulder
+// Copyright 2022-2024, University of Colorado Boulder
 
 /**
  * A Node script that handles multiple browser clients for Continuous Testing's server. This file uses Workers to kick
