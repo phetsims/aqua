@@ -329,5 +329,4 @@
     req.open( 'GET', '../../perennial/data/active-runnables', true );
     req.send();
   } )();
-
 } )();
