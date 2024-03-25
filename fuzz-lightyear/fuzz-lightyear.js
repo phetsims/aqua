@@ -40,7 +40,7 @@
     },
 
     // A list of simulation/runnable names to be included in the test. Will default to perennial/data/active-runnables
-    testSims: {
+    repos: {
       type: 'array',
       defaultValue: [], // will get filled in automatically if left as default
       elementSchema: {
@@ -66,8 +66,8 @@
     }
   } );
 
-  let simNames; // {Array.<string>} - will be filled in below by an AJAX request
-  const testQueue = []; // {Array.<{ simName: {string}, wrapperName: {string} }>} - Sim test target queue
+  let repoNames; // {Array.<string>} - will be filled in below by an AJAX request
+  const testQueue = []; // {Array.<{ repo: {string}, wrapperName: {string} }>} - Sim test target queue
 
   const failedSims = []; // {Array.<string>} - sim names that failed the tests
 
@@ -89,10 +89,10 @@
   rerunFailedTestsButton.innerHTML = 'Rerun Failed Sims';
   rerunFailedTestsButton.addEventListener( 'click', () => {
     if ( failedSims.length > 0 ) {
-      const nextSims = failedSims.concat( currentSim ? [ currentSim ] : [] ).concat( testQueue.map( x => x.simName ) );
-      const omitTestSimsSearch = QueryStringMachine.removeKeyValuePair( window.location.search, 'testSims' );
+      const nextSims = failedSims.concat( currentSim ? [ currentSim ] : [] ).concat( testQueue.map( x => x.repo ) );
+      const omitReposSearch = QueryStringMachine.removeKeyValuePair( window.location.search, 'repos' );
       let url = window.location.origin + window.location.pathname;
-      url += QueryStringMachine.appendQueryString( omitTestSimsSearch, `testSims=${_.uniq( nextSims ).join( ',' )}` );
+      url += QueryStringMachine.appendQueryString( omitReposSearch, `repos=${_.uniq( nextSims ).join( ',' )}` );
       if ( shiftPressed ) {
         window.open( url, '_blank' );
       }
@@ -132,16 +132,16 @@
   document.body.appendChild( simListDiv );
 
   let currentTest;
-  const simStatusElements = {}; // map simName {string} => {HTMLElement}, which holds the status w/ classes
+  const simStatusElements = {}; // map repo {string} => {HTMLElement}, which holds the status w/ classes
 
   // we need to clear timeouts if we bail from a sim early. Note this reference is used both for the load and test timeouts.
   let timeoutID;
 
-  function createStatusElement( simName ) {
+  function createStatusElement( repo ) {
     const simStatusElement = document.createElement( 'div' );
     simStatusElement.classList.add( 'status' );
     simListDiv.appendChild( simStatusElement );
-    simStatusElements[ simName ] = simStatusElement;
+    simStatusElements[ repo ] = simStatusElement;
 
     const devStatus = document.createElement( 'span' );
     devStatus.classList.add( 'dev' );
@@ -149,25 +149,25 @@
     devStatus.innerHTML = '■';
     simStatusElement.appendChild( devStatus );
 
-    const simNameStatus = document.createElement( 'span' );
-    simNameStatus.classList.add( 'simName' );
-    simNameStatus.innerHTML = simName;
-    simStatusElement.appendChild( simNameStatus );
+    const repoStatus = document.createElement( 'span' );
+    repoStatus.classList.add( 'repo' );
+    repoStatus.innerHTML = repo;
+    simStatusElement.appendChild( repoStatus );
   }
 
 // loads a sim into the iframe
-  function loadSim( simName ) {
-    iframe.src = `../../${simName}/${simName}_en.html${simulationQueryString}`;
-    simStatusElements[ simName ].classList.add( 'loading-dev' );
+  function loadSim( repo ) {
+    iframe.src = `../../${repo}/${repo}_en.html${simulationQueryString}`;
+    simStatusElements[ repo ].classList.add( 'loading-dev' );
   }
 
   // loads a wrapper into the iframe
-  function loadWrapper( simName, wrapperName ) {
+  function loadWrapper( repo, wrapperName ) {
     wrapperName = wrapperName === 'studio' ? wrapperName : `phet-io-wrappers/${wrapperName}`;
     iframe.src = QueryStringMachine.appendQueryString(
-      QueryStringMachine.appendQueryString( `../../${wrapperName}/`, `?sim=${simName}` ),
+      QueryStringMachine.appendQueryString( `../../${wrapperName}/`, `?sim=${repo}` ),
       simulationQueryString );
-    simStatusElements[ simName ].classList.add( 'loading-dev' );
+    simStatusElements[ repo ].classList.add( 'loading-dev' );
   }
 
 // switches to the next sim (if there are any)
@@ -176,21 +176,21 @@
     currentSim = '';
 
     if ( currentTest ) {
-      simStatusElements[ currentTest.simName ].classList.add( 'complete-dev' );
+      simStatusElements[ currentTest.repo ].classList.add( 'complete-dev' );
       if ( !currentTest.loaded ) {
-        addSimToRerunList( currentTest.simName );
+        addSimToRerunList( currentTest.repo );
       }
     }
 
     if ( testQueue.length ) {
       const test = testQueue.shift();
-      currentSim = test.simName;
+      currentSim = test.repo;
       currentTest = test;
       if ( test.wrapperName !== '' ) {
-        loadWrapper( test.simName, test.wrapperName );
+        loadWrapper( test.repo, test.wrapperName );
       }
       else {
-        loadSim( test.simName );
+        loadSim( test.repo );
       }
       timeoutID = setTimeout( nextSim, options.loadTimeout );
     }
@@ -200,14 +200,14 @@
     }
   }
 
-  function onSimLoad( simName ) {
+  function onSimLoad( repo ) {
     clearTimeout( timeoutID ); // Loaded, so clear the timeout
-    console.log( `loaded ${simName}` );
+    console.log( `loaded ${repo}` );
 
     currentTest.loaded = true;
 
     // not loading anymore
-    simStatusElements[ simName ].classList.remove( 'loading-dev' );
+    simStatusElements[ repo ].classList.remove( 'loading-dev' );
 
     // window.open stub on child. otherwise we get tons of "Report Problem..." popups that stall
     iframe.contentWindow.open = function() {
@@ -224,14 +224,14 @@
     }
   }
 
-  async function onSimError( simName, data ) {
-    console.log( `error on ${simName}` );
+  async function onSimError( repo, data ) {
+    console.log( `error on ${repo}` );
 
     const errorLog = devErrors;
 
     eventLog.style.display = 'block';
     errorLog.style.display = 'block';
-    errorLog.innerHTML += `<strong>${simName}</strong>`;
+    errorLog.innerHTML += `<strong>${repo}</strong>`;
 
     if ( data.message ) {
       console.log( `message: ${data.message}` );
@@ -244,12 +244,12 @@
       errorLog.innerHTML += `<pre>${transpiledStacktrace}</pre>`;
     }
 
-    simStatusElements[ simName ].classList.add( 'error-dev' );
+    simStatusElements[ repo ].classList.add( 'error-dev' );
 
     // since we can have multiple errors for a single sim (due to being asynchronous),
     // we need to not move forward more than one sim
-    if ( simName === currentTest.simName ) {
-      addSimToRerunList( simName );
+    if ( repo === currentTest.repo ) {
+      addSimToRerunList( repo );
 
       // on failure, speed up by switching to the next sim
       nextSim();
@@ -264,7 +264,7 @@
 
     const data = JSON.parse( evt.data );
 
-    function simNameFromURL( url ) {
+    function repoFromURL( url ) {
       // url like http://localhost/phet/git/molecule-shapes/molecule-shapes_en.html?ea&postMessageOnLoad&postMessageOnError
       // output molecule-shapes
       if ( url.indexOf( '_en_phet.html' ) >= 0 ) {
@@ -284,10 +284,10 @@
     if ( data.type === 'load' || data.type === 'continuous-test-wrapper-load' ) {
 
       // Some wrappers like PhET-iO State have 2 sims in the same wrapper, so we may get multiple loaded events
-      currentTest && !currentTest.loaded && onSimLoad( simNameFromURL( data.url ) );
+      currentTest && !currentTest.loaded && onSimLoad( repoFromURL( data.url ) );
     }
     else if ( data.type === 'error' || data.type === 'continuous-test-wrapper-error' ) {
-      currentTest && onSimError( simNameFromURL( data.url ), data );
+      currentTest && onSimError( repoFromURL( data.url ), data );
     }
   } );
 
@@ -298,29 +298,29 @@
       const simListText = req.responseText;
 
       // split string into an array of sim names, ignoring blank lines
-      simNames = simListText.trim().replace( /\r/g, '' ).split( '\n' );
-      if ( options.testSims.length ) {
-        simNames = options.testSims;
+      repoNames = simListText.trim().replace( /\r/g, '' ).split( '\n' );
+      if ( options.repos.length ) {
+        repoNames = options.repos;
       }
       if ( options.randomize ) {
-        simNames = _.shuffle( simNames );
+        repoNames = _.shuffle( repoNames );
       }
       if ( options.reverse ) {
-        simNames = simNames.reverse();
+        repoNames = repoNames.reverse();
       }
 
-      simNames.forEach( simName => {
-        createStatusElement( simName );
+      repoNames.forEach( repo => {
+        createStatusElement( repo );
 
         // First, if enabled, put unbuilt testing on the queue
         testQueue.push( {
-          simName: simName,
+          repo: repo,
           wrapperName: options.wrapperName
         } );
       } );
 
       // This can help you reproduce states instead of needing to get this yourself from active-repos
-      console.log( 'testing:', simNames.join( ',' ) );
+      console.log( 'testing:', repoNames.join( ',' ) );
 
       // kick off the loops
       nextSim();

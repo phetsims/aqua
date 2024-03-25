@@ -23,7 +23,7 @@
   req.send();
 } )();
 
-function setup( simNames ) {
+function setup( repoNames ) {
   const snapshots = [];
   window.snapshots = snapshots; // For debugging etc.
   let queue = [];
@@ -33,17 +33,12 @@ function setup( simNames ) {
   // Keep track of the final hash we get from the snapshot-taker, as it may come before the last frame comes.
   let currentHash = null;
 
+  const NO_RANDOM_SIMS = -4;
+
   const options = QueryStringMachine.getAll( {
 
     // comma separated list of sims to test snapshots for
-    sims: {
-      type: 'array',
-      elementSchema: { type: 'string' },
-      defaultValue: null
-    },
-
-    // comma separated list of sims to test snapshots for
-    testSims: {
+    repos: {
       type: 'array',
       elementSchema: { type: 'string' },
       defaultValue: null
@@ -51,7 +46,7 @@ function setup( simNames ) {
 
     randomSims: {
       type: 'number',
-      defaultValue: -1
+      defaultValue: NO_RANDOM_SIMS
     },
 
     // If you want to seed the sims
@@ -96,14 +91,9 @@ function setup( simNames ) {
     }
   } );
 
-  if ( options.randomSims === -1 ) {
-    assert && assert( !( options.sims && options.testSims ), 'specify testSims OR sims, not both' );
-    options.sims = options.sims || options.testSims || simNames;
-  }
-  else {
-    assert && assert( !( options.sims || options.testSims ), 'specify testSims OR sims, not both' );
-    options.sims = _.sampleSize( simNames, options.randomSims );
-  }
+  options.repos = options.randomSims !== NO_RANDOM_SIMS ?
+                 _.sampleSize( repoNames, options.randomSims ) :
+                 options.repos || repoNames;
 
 
   const addBR = string => string + '<br/>';
@@ -180,7 +170,7 @@ function setup( simNames ) {
 
   const rowMap = {};
   const table = document.createElement( 'table' );
-  options.sims.forEach( sim => {
+  options.repos.forEach( sim => {
     const row = document.createElement( 'tr' );
     rowMap[ sim ] = row;
     table.appendChild( row );
@@ -219,7 +209,7 @@ function setup( simNames ) {
     globalStartTime = Date.now();
     currentSnapshot = {};
     snapshots.push( currentSnapshot );
-    queue = queue.concat( options.sims ); // TODO: this should likely clear and reset, but since currentSnapshot is reset, everything left in the queue will be appended to the new snapshot. https://github.com/phetsims/aqua/issues/126
+    queue = queue.concat( options.repos ); // TODO: this should likely clear and reset, but since currentSnapshot is reset, everything left in the queue will be appended to the new snapshot. https://github.com/phetsims/aqua/issues/126
     nextSim();
   }
 

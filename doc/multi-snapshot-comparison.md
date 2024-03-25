@@ -12,8 +12,8 @@
 - ?urls: multiple URLs should be comma-separated, and the URLs might need to be urlencoded depending on the browser (
   run `encodeURIComponent( url )` on it and use the output). The default
   is `?urls=http://localhost,http://localhost:8080`. One, two, or more URLs can be used, and will have a column each
-- ?runnables: if provided, a comma-separated list of runnables to test (useful if you know some that are failing),
-  e.g. `?runnables=acid-base-solutions,density`
+- ?repos: if provided, a comma-separated list of runnables to test (useful if you know some that are failing),
+  e.g. `?repos=acid-base-solutions,density`
 - ?simWidth/?simHeight: controls the size of the sims (can be used for higher resolution)
 
 It will show columns corresponding to each URL, and rows corresponding to each thing to snapshot. It will take multiple

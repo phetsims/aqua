@@ -23,7 +23,7 @@ type Frame = {
 };
 
 type Row = {
-  runnable: string;
+  repo: string;
   brand: string;
 };
 
@@ -55,9 +55,9 @@ type Row = {
       public: true
     },
 
-    // If provided, a comma-separated list of runnables to test (useful if you know some that are failing), e.g.
-    // `?runnables=acid-base-solutions,density`
-    runnables: {
+    // If provided, a comma-separated list of repos to test (useful if you know some that are failing), e.g.
+    // `?repos=acid-base-solutions,density`
+    repos: {
       type: 'array',
       elementSchema: { type: 'string' },
       defaultValue: activeRunnables
@@ -85,7 +85,7 @@ type Row = {
       defaultValue: 'ea'
     },
 
-    // How many frames should be snapshot per runnable
+    // How many frames should be snapshot per repo
     numFrames: {
       type: 'number',
       defaultValue: 10
@@ -129,10 +129,10 @@ type Row = {
     }&logFrameInfo=${encodeURIComponent( options.logFrameInfo )
     }`;
 
-  const rows: Row[] = _.flatten( options.runnables.map( ( runnable: string ) => {
+  const rows: Row[] = _.flatten( options.repos.map( ( repo: string ) => {
     return [
-      { runnable: runnable, brand: 'phet' },
-      ...( options.testPhetio && activePhetIO.includes( runnable ) ? [ { runnable: runnable, brand: 'phet-io' } ] : [] )
+      { repo: repo, brand: 'phet' },
+      ...( options.testPhetio && activePhetIO.includes( repo ) ? [ { repo: repo, brand: 'phet-io' } ] : [] )
     ];
   } ) ).filter( ( item, i ) => i % options.stride === options.offset );
 
@@ -141,7 +141,7 @@ type Row = {
 
   class Snapshot {
 
-    public readonly runnable: string;
+    public readonly repo: string;
     public readonly brand: string;
     public readonly frames: Frame[] = [];
     public readonly frameCountProperty: Property<number>;
@@ -150,8 +150,8 @@ type Row = {
     public readonly isCompleteProperty: Property<boolean>;
     private readonly column: Column;
 
-    public constructor( runnable: string, brand: string, column: Column ) {
-      this.runnable = runnable;
+    public constructor( repo: string, brand: string, column: Column ) {
+      this.repo = repo;
       this.brand = brand;
       this.column = column;
       this.frameCountProperty = new NumberProperty( 0 );
@@ -183,16 +183,16 @@ type Row = {
     private readonly index: number;
     public readonly iframe: HTMLIFrameElement;
     private currentSnapshot: Snapshot | null;
-    private readonly nextRunnable: ( snapshotter: Snapshotter ) => void;
+    private readonly nextRepo: ( snapshotter: Snapshotter ) => void;
 
     private receivedHash: string | null = null;
 
 
-    public constructor( url: string, index: number, private readonly numFrames: number, nextRunnable: ( snapshotter: Snapshotter ) => void ) {
+    public constructor( url: string, index: number, private readonly numFrames: number, nextRepo: ( snapshotter: Snapshotter ) => void ) {
       this.url = new URL( url );
       this.index = index;
       this.currentSnapshot = null;
-      this.nextRunnable = nextRunnable;
+      this.nextRepo = nextRepo;
 
       this.iframe = document.createElement( 'iframe' );
       this.iframe.setAttribute( 'frameborder', '0' );
@@ -220,22 +220,22 @@ type Row = {
     private finishIfReady(): void {
       if ( this.currentSnapshot?.frameCountProperty.value === this.numFrames && this.receivedHash ) {
         this.currentSnapshot.addHash( this.receivedHash );
-        this.nextRunnable( this );
+        this.nextRepo( this );
       }
     }
 
     public addError(): void {
       this.currentSnapshot!.addError();
-      this.nextRunnable( this );
+      this.nextRepo( this );
     }
 
     public load( snapshot: Snapshot ): void {
-      console.log( 'loading:', snapshot.runnable, snapshot.brand, this.url.origin );
+      console.log( 'loading:', snapshot.repo, snapshot.brand, this.url.origin );
       this.currentSnapshot = snapshot;
       this.receivedHash = null;
 
       const simQueryParameters = encodeURIComponent( ( snapshot.brand === 'phet-io' ? 'brand=phet-io&phetioStandalone' : 'brand=phet' ) + '&' + options.simQueryParameters );
-      const url = encodeURIComponent( `../../${snapshot.runnable}/${snapshot.runnable}_en.html` );
+      const url = encodeURIComponent( `../../${snapshot.repo}/${snapshot.repo}_en.html` );
       this.iframe.src = `${this.url.href}aqua/html/take-snapshot.html?id=${this.index}&${childQueryParams}&url=${url}&simQueryParameters=${simQueryParameters}`;
     }
   }
@@ -250,16 +250,16 @@ type Row = {
     public constructor( url: string, index: number ) {
       this.url = url;
       this.index = index;
-      this.snapshots = rows.map( row => new Snapshot( row.runnable, row.brand, this ) );
+      this.snapshots = rows.map( row => new Snapshot( row.repo, row.brand, this ) );
       this.queue = this.snapshots.slice();
-      this.snapshotters = _.range( 0, options.copies ).map( i => new Snapshotter( url, index + i * 100, options.numFrames, this.nextRunnable.bind( this ) ) );
+      this.snapshotters = _.range( 0, options.copies ).map( i => new Snapshotter( url, index + i * 100, options.numFrames, this.nextRepo.bind( this ) ) );
     }
 
-    public getSnapshot( runnable: string, brand: string ): Snapshot {
-      return _.find( this.snapshots, snapshot => snapshot.runnable === runnable && snapshot.brand === brand )!;
+    public getSnapshot( repo: string, brand: string ): Snapshot {
+      return _.find( this.snapshots, snapshot => snapshot.repo === repo && snapshot.brand === brand )!;
     }
 
-    public nextRunnable( snapshotter: Snapshotter ): void {
+    public nextRepo( snapshotter: Snapshotter ): void {
       if ( this.queue.length ) {
         const snapshot = this.queue.shift()!;
 
@@ -268,7 +268,7 @@ type Row = {
     }
 
     public start(): void {
-      this.snapshotters.forEach( snapshotter => this.nextRunnable( snapshotter ) );
+      this.snapshotters.forEach( snapshotter => this.nextRepo( snapshotter ) );
     }
   }
 
@@ -328,34 +328,34 @@ type Row = {
   } );
   y += options.copies;
 
-  const runnableYMap: Record<string, number> = {};
+  const repoYMap: Record<string, number> = {};
   rows.forEach( ( row, i ) => {
-    const runnable = row.runnable;
+    const repo = row.repo;
     const brand = row.brand;
-    const yMapKey = `${runnable}${brand}`;
-    runnableYMap[ yMapKey ] = y;
+    const yMapKey = `${repo}${brand}`;
+    repoYMap[ yMapKey ] = y;
 
-    const runnableText = new Text( runnable + ( brand !== 'phet' ? ` (${brand})` : '' ), {
+    const repoText = new Text( repo + ( brand !== 'phet' ? ` (${brand})` : '' ), {
       font: new Font( { size: 12 } ),
       layoutOptions: { column: 0, row: y },
-      opacity: unreliableSims.includes( runnable ) ? 0.2 : 1
+      opacity: unreliableSims.includes( repo ) ? 0.2 : 1
     } );
-    gridChildren.push( runnableText );
+    gridChildren.push( repoText );
 
     Multilink.multilinkAny( _.flatten( columns.map( column => {
-      const snapshot = column.getSnapshot( runnable, brand );
+      const snapshot = column.getSnapshot( repo, brand );
       return [ snapshot.hasErroredProperty, snapshot.hashProperty, snapshot.isCompleteProperty ];
     } ) ), async () => {
-      const snapshots = columns.map( column => column.getSnapshot( runnable, brand ) );
+      const snapshots = columns.map( column => column.getSnapshot( repo, brand ) );
       if ( _.every( snapshots, snapshot => snapshot.isCompleteProperty.value ) ) {
         if ( _.some( snapshots, snapshot => snapshot.hasErroredProperty.value ) ) {
-          runnableText.fill = 'magenta'; // an error occurred running the snapshots
+          repoText.fill = 'magenta'; // an error occurred running the snapshots
         }
         else {
           // Not errored
 
           const hash = snapshots[ 0 ].hashProperty.value;
-          runnableText.fill = '#0b0'; // Good until proven otherwise
+          repoText.fill = '#0b0'; // Good until proven otherwise
 
           // If hashes aren't equal
           if ( !_.every( snapshots, snapshot => snapshot.hashProperty.value === hash ) ) {
@@ -384,20 +384,20 @@ type Row = {
             }
 
             if ( allDiffImages.length > 0 ) {
-              runnableText.cursor = 'pointer';
-              runnableText.fill = '#b00';
+              repoText.cursor = 'pointer';
+              repoText.fill = '#b00';
 
               const resultsNode = new HBox( {
                 spacing: 5,
                 children: allDiffImages,
                 visible: false,
-                layoutOptions: { column: snapshots.length + 1, row: runnableYMap[ yMapKey ], xAlign: 'left' }
+                layoutOptions: { column: snapshots.length + 1, row: repoYMap[ yMapKey ], xAlign: 'left' }
               } );
               gridChildren.push( resultsNode );
               gridBox.children = gridChildren;
 
               let expanded = false;
-              runnableText.addInputListener( new FireListener( {
+              repoText.addInputListener( new FireListener( {
                 fire: async () => {
                   expanded = !expanded;
                   resultsNode.visible = expanded;
@@ -408,7 +408,7 @@ type Row = {
         }
       }
       else {
-        runnableText.fill = 'black';
+        repoText.fill = 'black';
       }
     } );
 
