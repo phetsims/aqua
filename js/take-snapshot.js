@@ -88,7 +88,6 @@ function sendMouseToggleEvent() {
   const domEvent = iframe.contentWindow.document.createEvent( 'MouseEvent' );
 
   // technically deprecated, but DOM4 event constructors not out yet. people on #whatwg said to use it
-  // TODO: Firefox warning: initMouseEvent() is deprecated. Use the MouseEvent() constructor instead. https://github.com/phetsims/aqua/issues/205
   domEvent.initMouseEvent( isMouseDown ? 'mouseup' : 'mousedown', true, true, iframe.contentWindow, 1, // click count
     mouseX, mouseY, mouseX, mouseY,
     false, false, false, false,
