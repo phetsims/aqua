@@ -51,8 +51,7 @@ type Row = {
       elementSchema: {
         type: 'string'
       },
-      defaultValue: [ 'http://localhost', 'http://localhost:8080' ],
-      public: true
+      defaultValue: [ 'http://localhost', 'http://localhost:8080' ]
     },
 
     // If provided, a comma-separated list of repos to test (useful if you know some that are failing), e.g.
