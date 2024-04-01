@@ -188,7 +188,91 @@
         }
       }
 
-      nextSim( this );
+      if ( testQueue.length ) {
+        const test = testQueue.shift()!;
+        this.setTest( test );
+      }
+      else {
+        this.iframe.src = 'about:blank';
+        this.currentTest = null;
+      }
+    }
+
+    public onSimLoad(): void {
+
+      // Some wrappers like PhET-iO State have 2 sims in the same wrapper, so we may get multiple loaded events
+      // TODO: assert we have a test? https://github.com/phetsims/aqua/issues/208
+      if ( !this.currentTest || this.currentTest.loaded ) {
+        return;
+      }
+      const repo = this.currentSim;
+
+      clearTimeout( this.timeoutID ); // Loaded, so clear the timeout
+      console.log( `loaded ${repo}` );
+
+      this.currentTest.loaded = true;
+
+      // not loading anymore
+      simStatusElements[ repo ].classList.remove( 'loading-dev' );
+
+      // window.open stub on child. otherwise we get tons of "Report Problem..." popups that stall
+      // @ts-expect-error - overwriting open() is not normally ideal
+      this.iframe.contentWindow!.open = function() {
+        return {
+          focus: function() { /* not empty here boss */ },
+          blur: function() { /* not empty here boss */ }
+        };
+      };
+
+      this.timeoutID = setTimeout( () => {
+        this.handleNext();
+
+      }, options.testDuration );
+
+      if ( !options.testTask ) {
+        this.handleNext();
+      }
+    }
+
+    public async onSimError( data: { message: string; stack: string } ): Promise<void> {
+      if ( !this.currentTest ) {
+        return;
+      }
+
+      const repo = this.currentSim;
+      assert && assert( repo );
+
+      console.log( `error on ${repo}` );
+
+      const errorLog = devErrors;
+
+      eventLog.style.display = 'block';
+      errorLog.style.display = 'block';
+      errorLog.innerHTML += `<strong>${repo}</strong>`;
+
+      if ( data.message ) {
+        console.log( `message: ${data.message}` );
+        errorLog.innerHTML += `<pre>${data.message}</pre>`;
+      }
+      if ( data.stack ) {
+
+        // @ts-expect-error - we have this function, because we define it elsewhere.
+        const transpiledStacktrace = await window.transpileStacktrace( data.stack );
+        console.log( transpiledStacktrace );
+        errorLog.innerHTML += `<pre>${transpiledStacktrace}</pre>`;
+      }
+
+      simStatusElements[ repo ].classList.add( 'error-dev' );
+
+
+      // since we can have multiple errors for a single sim (due to being asynchronous),
+      // we need to not move forward more than one sim
+      if ( repo === this.currentTest.repo ) {
+        addSimToRerunList( repo );
+
+        // on failure, speed up by switching to the next sim
+        this.handleNext();
+      }
     }
   }
 
@@ -240,99 +324,8 @@
     return fuzzer;
   }
 
-  //
-  // function getAvailableFuzzer(): Fuzzer {
-  //   const fuzzer = _.find( fuzzers, fuzzer => !!fuzzer.currentSim )!;
-  //   assert && assert( fuzzer, 'no empty fuzzer' );
-  //   return fuzzer;
-  // }
 
-// switches to the next sim (if there are any)
-  function nextSim( fuzzer: Fuzzer ): void {
-
-    if ( testQueue.length ) {
-      const test = testQueue.shift()!;
-      fuzzer.setTest( test );
-    }
-    else {
-      fuzzer.iframe.src = 'about:blank';
-      fuzzer.currentTest = null;
-    }
-  }
-
-  function onSimLoad( repo: RepoName, fuzzer: Fuzzer ): void {
-
-    // Some wrappers like PhET-iO State have 2 sims in the same wrapper, so we may get multiple loaded events
-    // TODO: assert we have a test? https://github.com/phetsims/aqua/issues/208
-    if ( !fuzzer.currentTest || fuzzer.currentTest.loaded ) {
-      return;
-    }
-
-    clearTimeout( fuzzer.timeoutID ); // Loaded, so clear the timeout
-    console.log( `loaded ${repo}` );
-
-    fuzzer.currentTest.loaded = true;
-
-    // not loading anymore
-    simStatusElements[ repo ].classList.remove( 'loading-dev' );
-
-    // window.open stub on child. otherwise we get tons of "Report Problem..." popups that stall
-    // @ts-expect-error - overwriting open() is not normally ideal
-    fuzzer.iframe.contentWindow!.open = function() {
-      return {
-        focus: function() { /* not empty here boss */ },
-        blur: function() { /* not empty here boss */ }
-      };
-    };
-
-    fuzzer.timeoutID = setTimeout( () => {
-      fuzzer.handleNext();
-
-    }, options.testDuration );
-
-    if ( !options.testTask ) {
-      fuzzer.handleNext();
-    }
-  }
-
-  async function onSimError( repo: RepoName, fuzzer: Fuzzer, data: { message: string; stack: string } ): Promise<void> {
-    if ( !fuzzer.currentTest ) {
-      return; // TODO: assert? https://github.com/phetsims/aqua/issues/208
-    }
-    console.log( `error on ${repo}` );
-
-    const errorLog = devErrors;
-
-    eventLog.style.display = 'block';
-    errorLog.style.display = 'block';
-    errorLog.innerHTML += `<strong>${repo}</strong>`;
-
-    if ( data.message ) {
-      console.log( `message: ${data.message}` );
-      errorLog.innerHTML += `<pre>${data.message}</pre>`;
-    }
-    if ( data.stack ) {
-
-      // @ts-expect-error - we have this function, because we define it elsewhere.
-      const transpiledStacktrace = await window.transpileStacktrace( data.stack );
-      console.log( transpiledStacktrace );
-      errorLog.innerHTML += `<pre>${transpiledStacktrace}</pre>`;
-    }
-
-    simStatusElements[ repo ].classList.add( 'error-dev' );
-
-
-    // since we can have multiple errors for a single sim (due to being asynchronous),
-    // we need to not move forward more than one sim
-    if ( repo === fuzzer.currentTest.repo ) {
-      addSimToRerunList( repo );
-
-      // on failure, speed up by switching to the next sim
-      fuzzer.handleNext();
-    }
-  }
-
-// handling messages from sims
+  // handling messages from sims
   window.addEventListener( 'message', evt => {
     if ( typeof evt.data !== 'string' ) {
       return;
@@ -362,13 +355,13 @@
       const repo = repoFromURL( data.url );
       const fuzzer = getFuzzer( repo );
 
-      onSimLoad( repoFromURL( data.url ), fuzzer );
+      fuzzer.onSimLoad();
     }
     else if ( data.type === 'error' || data.type === 'continuous-test-wrapper-error' ) {
       const repo = repoFromURL( data.url );
       const fuzzer = getFuzzer( repo );
 
-      onSimError( repoFromURL( data.url ), fuzzer, data ); // eslint-disable-line @typescript-eslint/no-floating-promises
+      fuzzer.onSimError( data ); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   } );
 
