@@ -101,7 +101,7 @@
   rerunFailedTestsButton.innerHTML = 'Rerun Failed Sims';
   rerunFailedTestsButton.addEventListener( 'click', () => {
     if ( failedSims.length > 0 ) {
-      const currentSims = fuzzers.map( fuzzer => fuzzer.currentSim ).filter( x => !!x );
+      const currentSims = fuzzers.map( fuzzer => fuzzer.currentSim ).filter( x => !!x ) as string[];
       const nextSims = failedSims.concat( currentSims ).concat( testQueue.map( x => x.repo ) );
       const omitReposSearch = QueryStringMachine.removeKeyValuePair( window.location.search, 'repos' );
       let url = window.location.origin + window.location.pathname;
@@ -140,7 +140,7 @@
 
     public currentTest: Test | null = null;
 
-    public currentSim: RepoName = '';
+    public currentSim: RepoName | null = null;
 
     // we need to clear timeouts if we bail from a sim early. Note this reference is used both for the load and test timeouts.
     public timeoutID?: number | ReturnType<typeof setTimeout>;
@@ -162,7 +162,7 @@
 
     public clear(): void {
       clearTimeout( this.timeoutID );
-      this.currentSim = ''; // TODO: to null? https://github.com/phetsims/aqua/issues/208
+      this.currentSim = null;
     }
 
     public setTest( test: Test ): void {
@@ -201,11 +201,11 @@
     public onSimLoad(): void {
 
       // Some wrappers like PhET-iO State have 2 sims in the same wrapper, so we may get multiple loaded events
-      // TODO: assert we have a test? https://github.com/phetsims/aqua/issues/208
       if ( !this.currentTest || this.currentTest.loaded ) {
         return;
       }
-      const repo = this.currentSim;
+      assert && assert( this.currentTest );
+      const repo = this.currentSim!;
 
       clearTimeout( this.timeoutID ); // Loaded, so clear the timeout
       console.log( `loaded ${repo}` );
@@ -234,12 +234,12 @@
       }
     }
 
-    public async onSimError( data: { message: string; stack: string } ): Promise<void> {
+    public async onSimError( data: { message?: string; stack?: string } ): Promise<void> {
       if ( !this.currentTest ) {
         return;
       }
 
-      const repo = this.currentSim;
+      const repo = this.currentSim!;
       assert && assert( repo );
 
       console.log( `error on ${repo}` );
