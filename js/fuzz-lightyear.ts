@@ -43,6 +43,11 @@
       defaultValue: 30000 // ms
     },
 
+    fuzzers: {
+      type: 'number',
+      defaultValue: 1
+    },
+
     // A list of simulation/runnable names to be included in the test. Will default to perennial/data/active-runnables
     repos: {
       type: 'array',
@@ -81,9 +86,6 @@
 
   const failedSims: RepoName[] = []; // {Array.<string>} - sim names that failed the tests
 
-  // The name of the sim currently being tested
-  let currentSim: RepoName = '';
-
   // Track whether 'shift' key is pressed, so that we can change how windows are opened.  If shift is pressed, the
   // page is launched in a separate tab.
   let shiftPressed = false;
@@ -99,7 +101,8 @@
   rerunFailedTestsButton.innerHTML = 'Rerun Failed Sims';
   rerunFailedTestsButton.addEventListener( 'click', () => {
     if ( failedSims.length > 0 ) {
-      const nextSims = failedSims.concat( currentSim ? [ currentSim ] : [] ).concat( testQueue.map( x => x.repo ) );
+      const currentSims = fuzzers.map( fuzzer => fuzzer.currentSim ).filter( x => !!x );
+      const nextSims = failedSims.concat( currentSims ).concat( testQueue.map( x => x.repo ) );
       const omitReposSearch = QueryStringMachine.removeKeyValuePair( window.location.search, 'repos' );
       let url = window.location.origin + window.location.pathname;
       url += QueryStringMachine.appendQueryString( omitReposSearch, `repos=${_.uniq( nextSims ).join( ',' )}` );
@@ -126,26 +129,77 @@
   document.body.appendChild( eventLog );
   const devErrors = document.getElementById( 'dev-errors' )!;
 
-// a borderless iframe
-  const iframe = document.createElement( 'iframe' );
-  iframe.setAttribute( 'frameborder', '0' );
-  iframe.setAttribute( 'seamless', '1' );
-// NOTE: we don't set allow-popups, but this was causing a security error when it was open
-// instead, we override window.open AFTER it sends the load message (which isn't foolproof)
-// see https://html.spec.whatwg.org/multipage/embedded-content.html#attr-iframe-sandbox
-// iframe.setAttribute( 'sandbox', 'allow-forms allow-pointer-lock allow-same-origin allow-scripts' );
-  document.body.appendChild( iframe );
+  const iframesDiv = document.getElementById( 'iframes' )!;
+  if ( options.fuzzers > 1 ) {
+    iframesDiv.classList.add( 'multi-frames' );
+    eventLog.style.marginTop = '270px';
+  }
+
+  class Fuzzer {
+    public iframe: HTMLIFrameElement;
+
+    public currentTest: Test | null = null;
+
+    public currentSim: RepoName = '';
+
+    // we need to clear timeouts if we bail from a sim early. Note this reference is used both for the load and test timeouts.
+    public timeoutID?: number | ReturnType<typeof setTimeout>;
+
+    public constructor() {
+
+      // a borderless iframe
+      const iframeTempRename = document.createElement( 'iframe' );
+      iframeTempRename.setAttribute( 'frameborder', '0' );
+      iframeTempRename.setAttribute( 'seamless', '1' );
+      // NOTE: we don't set allow-popups, but this was causing a security error when it was open
+      // instead, we override window.open AFTER it sends the load message (which isn't foolproof)
+      // see https://html.spec.whatwg.org/multipage/embedded-content.html#attr-iframe-sandbox
+      // iframe.setAttribute( 'sandbox', 'allow-forms allow-pointer-lock allow-same-origin allow-scripts' );
+      iframesDiv.appendChild( iframeTempRename );
+
+      this.iframe = iframeTempRename;
+    }
+
+    public clear(): void {
+      clearTimeout( this.timeoutID );
+      this.currentSim = ''; // TODO: to null? https://github.com/phetsims/aqua/issues/208
+    }
+
+    public setTest( test: Test ): void {
+      this.currentSim = test.repo;
+      this.currentTest = test;
+      if ( test.wrapperName !== '' ) {
+        loadWrapper( test.repo, test.wrapperName, this.iframe );
+      }
+      else {
+        loadSim( test.repo, this.iframe );
+      }
+      this.timeoutID = setTimeout( () => {
+        this.handleNext();
+      }, options.loadTimeout );
+    }
+
+    public handleNext(): void {
+
+      if ( this.currentTest ) {
+        simStatusElements[ this.currentTest.repo ].classList.add( 'complete-dev' );
+        if ( !this.currentTest.loaded ) {
+          addSimToRerunList( this.currentTest.repo );
+        }
+      }
+
+      nextSim( this );
+    }
+  }
+
+  const fuzzers: Fuzzer[] = _.times( options.fuzzers ).map( () => new Fuzzer() );
 
 // a place for sim status divs
   const simListDiv = document.createElement( 'div' );
   simListDiv.id = 'simList';
   document.body.appendChild( simListDiv );
 
-  let currentTest: Test | null = null;
   const simStatusElements: Record<RepoName, HTMLElement> = {}; // map repo {string} => {HTMLElement}, which holds the status w/ classes
-
-  // we need to clear timeouts if we bail from a sim early. Note this reference is used both for the load and test timeouts.
-  let timeoutID: ReturnType<typeof setTimeout>;
 
   function createStatusElement( repo: RepoName ): void {
     const simStatusElement = document.createElement( 'div' );
@@ -166,13 +220,13 @@
   }
 
 // loads a sim into the iframe
-  function loadSim( repo: RepoName ): void {
+  function loadSim( repo: RepoName, iframe: HTMLIFrameElement ): void {
     iframe.src = `../../${repo}/${repo}_en.html${simulationQueryString}`;
     simStatusElements[ repo ].classList.add( 'loading-dev' );
   }
 
   // loads a wrapper into the iframe
-  function loadWrapper( repo: RepoName, wrapperName: string ): void {
+  function loadWrapper( repo: RepoName, wrapperName: string, iframe: HTMLIFrameElement ): void {
     wrapperName = wrapperName === 'studio' ? wrapperName : `phet-io-wrappers/${wrapperName}`;
     iframe.src = QueryStringMachine.appendQueryString(
       QueryStringMachine.appendQueryString( `../../${wrapperName}/`, `?sim=${repo}` ),
@@ -180,62 +234,71 @@
     simStatusElements[ repo ].classList.add( 'loading-dev' );
   }
 
-// switches to the next sim (if there are any)
-  function nextSim(): void {
-    clearTimeout( timeoutID );
-    currentSim = '';
+  function getFuzzer( repo: RepoName ): Fuzzer {
+    const fuzzer = _.find( fuzzers, fuzzer => fuzzer.currentSim === repo )!;
+    assert && assert( fuzzer, `no fuzzer working on ${repo}` );
+    return fuzzer;
+  }
 
-    if ( currentTest ) {
-      simStatusElements[ currentTest.repo ].classList.add( 'complete-dev' );
-      if ( !currentTest.loaded ) {
-        addSimToRerunList( currentTest.repo );
-      }
-    }
+  //
+  // function getAvailableFuzzer(): Fuzzer {
+  //   const fuzzer = _.find( fuzzers, fuzzer => !!fuzzer.currentSim )!;
+  //   assert && assert( fuzzer, 'no empty fuzzer' );
+  //   return fuzzer;
+  // }
+
+// switches to the next sim (if there are any)
+  function nextSim( fuzzer: Fuzzer ): void {
 
     if ( testQueue.length ) {
       const test = testQueue.shift()!;
-      currentSim = test.repo;
-      currentTest = test;
-      if ( test.wrapperName !== '' ) {
-        loadWrapper( test.repo, test.wrapperName );
-      }
-      else {
-        loadSim( test.repo );
-      }
-      timeoutID = setTimeout( nextSim, options.loadTimeout );
+      fuzzer.setTest( test );
     }
     else {
-      iframe.src = 'about:blank';
-      currentTest = null;
+      fuzzer.iframe.src = 'about:blank';
+      fuzzer.currentTest = null;
     }
   }
 
-  function onSimLoad( repo: RepoName ): void {
-    clearTimeout( timeoutID ); // Loaded, so clear the timeout
+  function onSimLoad( repo: RepoName, fuzzer: Fuzzer ): void {
+
+    // Some wrappers like PhET-iO State have 2 sims in the same wrapper, so we may get multiple loaded events
+    // TODO: assert we have a test? https://github.com/phetsims/aqua/issues/208
+    if ( !fuzzer.currentTest || fuzzer.currentTest.loaded ) {
+      return;
+    }
+
+    clearTimeout( fuzzer.timeoutID ); // Loaded, so clear the timeout
     console.log( `loaded ${repo}` );
 
-    currentTest!.loaded = true;
+    fuzzer.currentTest.loaded = true;
 
     // not loading anymore
     simStatusElements[ repo ].classList.remove( 'loading-dev' );
 
     // window.open stub on child. otherwise we get tons of "Report Problem..." popups that stall
     // @ts-expect-error - overwriting open() is not normally ideal
-    iframe.contentWindow!.open = function() {
+    fuzzer.iframe.contentWindow!.open = function() {
       return {
         focus: function() { /* not empty here boss */ },
         blur: function() { /* not empty here boss */ }
       };
     };
 
-    timeoutID = setTimeout( nextSim, options.testDuration );
+    fuzzer.timeoutID = setTimeout( () => {
+      fuzzer.handleNext();
+
+    }, options.testDuration );
 
     if ( !options.testTask ) {
-      nextSim();
+      fuzzer.handleNext();
     }
   }
 
-  async function onSimError( repo: RepoName, data: { message: string; stack: string } ): Promise<void> {
+  async function onSimError( repo: RepoName, fuzzer: Fuzzer, data: { message: string; stack: string } ): Promise<void> {
+    if ( !fuzzer.currentTest ) {
+      return; // TODO: assert? https://github.com/phetsims/aqua/issues/208
+    }
     console.log( `error on ${repo}` );
 
     const errorLog = devErrors;
@@ -258,15 +321,14 @@
 
     simStatusElements[ repo ].classList.add( 'error-dev' );
 
-    assert && assert( currentTest );
 
     // since we can have multiple errors for a single sim (due to being asynchronous),
     // we need to not move forward more than one sim
-    if ( repo === currentTest!.repo ) {
+    if ( repo === fuzzer.currentTest.repo ) {
       addSimToRerunList( repo );
 
       // on failure, speed up by switching to the next sim
-      nextSim();
+      fuzzer.handleNext();
     }
   }
 
@@ -297,11 +359,16 @@
 
     if ( data.type === 'load' || data.type === 'continuous-test-wrapper-load' ) {
 
-      // Some wrappers like PhET-iO State have 2 sims in the same wrapper, so we may get multiple loaded events
-      currentTest && !currentTest.loaded && onSimLoad( repoFromURL( data.url ) );
+      const repo = repoFromURL( data.url );
+      const fuzzer = getFuzzer( repo );
+
+      onSimLoad( repoFromURL( data.url ), fuzzer );
     }
     else if ( data.type === 'error' || data.type === 'continuous-test-wrapper-error' ) {
-      currentTest && onSimError( repoFromURL( data.url ), data ); // eslint-disable-line @typescript-eslint/no-floating-promises
+      const repo = repoFromURL( data.url );
+      const fuzzer = getFuzzer( repo );
+
+      onSimError( repoFromURL( data.url ), fuzzer, data ); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   } );
 
@@ -337,7 +404,7 @@
       console.log( 'testing:', repoNames.join( ',' ) );
 
       // kick off the loops
-      nextSim();
+      fuzzers.forEach( fuzzer => fuzzer.handleNext() );
     };
     // location of active sims
     req.open( 'GET', '../../perennial/data/active-runnables', true );

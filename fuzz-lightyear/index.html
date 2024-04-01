@@ -23,6 +23,12 @@
       padding: 0;
     }
 
+    .multi-frames {
+      overflow-x: scroll;
+      display: flex;
+      height: 260px;
+    }
+
     iframe {
       width: 320px;
       height: 240px;
@@ -110,6 +116,7 @@
 </head>
 
 <body>
+<div id="iframes"></div>
 <script src="../../sherpa/lib/lodash-4.17.4.min.js"></script>
 <script src="../../sherpa/lib/jquery-2.1.0.min.js"></script>
 <script src="../../assert/js/assert.js"></script>
