@@ -7,5 +7,8 @@ module.exports = {
 
   rules: {
     'bad-sim-text': 'off'
+  },
+  globals: {
+    Hashes: 'readonly'
   }
 };
