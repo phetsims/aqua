@@ -7,6 +7,8 @@
 
 /* eslint-env browser */
 
+import IntentionalAny from '../../../phet-core/js/types/IntentionalAny.js';
+
 ( function() {
 
   window.assertions.enableAssert();
@@ -143,7 +145,7 @@
     public currentSim: RepoName | null = null;
 
     // we need to clear timeouts if we bail from a sim early. Note this reference is used both for the load and test timeouts.
-    public timeoutID?: number | ReturnType<typeof setTimeout>;
+    public timeoutID?: number | IntentionalAny; // TODO: why does my webstorm not like "number here"? It thinks it should be the NodeJS Timeout type, https://github.com/phetsims/aqua/issues/208
 
     public constructor() {
 
