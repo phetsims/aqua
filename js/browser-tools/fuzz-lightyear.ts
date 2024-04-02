@@ -320,9 +320,11 @@ import IntentionalAny from '../../../phet-core/js/types/IntentionalAny.js';
     simStatusElements[ repo ].classList.add( 'loading-dev' );
   }
 
-  function getFuzzer( repo: RepoName ): Fuzzer {
+  function getFuzzer( repo: RepoName ): Fuzzer | null {
     const fuzzer = _.find( fuzzers, fuzzer => fuzzer.currentSim === repo )!;
-    assert && assert( fuzzer, `no fuzzer working on ${repo}` );
+    if ( !fuzzer ) {
+      console.warn( `no fuzzer working on ${repo}` );
+    }
     return fuzzer;
   }
 
@@ -357,13 +359,13 @@ import IntentionalAny from '../../../phet-core/js/types/IntentionalAny.js';
       const repo = repoFromURL( data.url );
       const fuzzer = getFuzzer( repo );
 
-      fuzzer.onSimLoad();
+      fuzzer && fuzzer.onSimLoad();
     }
     else if ( data.type === 'error' || data.type === 'continuous-test-wrapper-error' ) {
       const repo = repoFromURL( data.url );
       const fuzzer = getFuzzer( repo );
 
-      fuzzer.onSimError( data ); // eslint-disable-line @typescript-eslint/no-floating-promises
+      fuzzer && fuzzer.onSimError( data ); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   } );
 
