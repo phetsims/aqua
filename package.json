@@ -29,7 +29,24 @@
       "kite": "readonly",
       "scenery": "readonly",
       "__dirname": "readonly"
-    }
+    },
+    "overrides": [
+      {
+        "files": [
+          "./js/browser-tools/**",
+          "./js/client/**",
+          "./js/report/**"
+        ],
+        "extends": "../chipper/eslint/phet-library_eslintrc.js",
+        "rules": {
+          "bad-sim-text": "off"
+        },
+        "env": {
+          "browser": true,
+          "node": false
+        }
+      }
+    ]
   },
   "phet": {
     "buildStandalone": true,
