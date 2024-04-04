@@ -222,12 +222,12 @@
         };
       };
 
-      this.timeoutID = window.setTimeout( () => {
-        this.handleNext();
-
-      }, options.testDuration );
-
-      if ( !options.testTask ) {
+      if ( options.testTask ) {
+        this.timeoutID = window.setTimeout( () => {
+          this.handleNext();
+        }, options.testDuration );
+      }
+      else {
         this.handleNext();
       }
     }
@@ -318,9 +318,7 @@
 
   function getFuzzer( repo: RepoName ): Fuzzer | null {
     const fuzzer = _.find( fuzzers, fuzzer => fuzzer.currentSim === repo )!;
-    if ( !fuzzer ) {
-      console.warn( `no fuzzer working on ${repo}` );
-    }
+    assert && assert( fuzzer, `no fuzzer working on ${repo}` );
     return fuzzer;
   }
 
