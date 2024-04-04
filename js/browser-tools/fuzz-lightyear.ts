@@ -318,7 +318,9 @@
 
   function getFuzzer( repo: RepoName ): Fuzzer | null {
     const fuzzer = _.find( fuzzers, fuzzer => fuzzer.currentSim === repo )!;
-    assert && assert( fuzzer, `no fuzzer working on ${repo}` );
+    if ( !fuzzer ) {
+      console.warn( `no fuzzer working on ${repo}` );
+    }
     return fuzzer;
   }
 
