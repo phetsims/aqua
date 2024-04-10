@@ -46,7 +46,10 @@ const FUZZ_SIM = 'my-solar-system';
 const STUDIO_FUZZ_SIM = 'greenhouse-effect';
 const PHET_IO_COMPARE_SIM = 'density';
 const WAIT_BETWEEN_RUNS = 20000; // in ms
-const EXECUTE_OPTIONS = { errors: 'resolve' };
+const EXECUTE_OPTIONS = {
+  errors: 'resolve',
+  childProcessEnv: { NODE_OPTIONS: '--max-old-space-size=8192' }
+};
 
 class QuickServer {
   constructor( options ) {
