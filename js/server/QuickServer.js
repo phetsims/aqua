@@ -44,7 +44,6 @@ const jsonHeaders = {
 
 const FUZZ_SIM = 'my-solar-system';
 const STUDIO_FUZZ_SIM = 'greenhouse-effect';
-const PHET_IO_COMPARE_SIM = 'density';
 const WAIT_BETWEEN_RUNS = 20000; // in ms
 const EXECUTE_OPTIONS = {
   errors: 'resolve',
@@ -252,7 +251,7 @@ class QuickServer {
    */
   async testPhetioCompare() {
     winston.info( 'QuickServer: phet-io compare' );
-    return execute( gruntCommand, [ 'compare-phet-io-api' ], `${this.rootDir}/${PHET_IO_COMPARE_SIM}`, EXECUTE_OPTIONS );
+    return execute( gruntCommand, [ 'compare-phet-io-api', '--simList=../perennial/data/phet-io-api-stable' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
   }
 
   /**
