@@ -640,7 +640,7 @@ class ContinuousServer {
         if ( test.type === 'lint' ) {
           test.complete = true;
           try {
-            const output = await execute( gruntCommand, [ 'lint' ], `${snapshot.directory}/${test.repo}` );
+            const output = await execute( gruntCommand, [ 'lint', '--disable-eslint-cache' ], `${snapshot.directory}/${test.repo}` );
 
             ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
           }
