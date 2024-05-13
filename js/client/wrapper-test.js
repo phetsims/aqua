@@ -71,7 +71,7 @@
         clearTimeout( timeoutID );
 
         const transpiledStacktrace = await window.transpileStacktrace( data.stack );
-        aqua.simpleFail( `${data.message}\n${transpiledStacktrace}` );
+        aqua.simpleFail( `${data.message}\nSTACK: ${transpiledStacktrace}` );
       }
       else if ( data.type === 'continuous-test-wrapper-unload' ) {
         clearTimeout( timeoutID );

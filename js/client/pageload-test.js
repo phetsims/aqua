@@ -46,7 +46,7 @@
     }
     else if ( data.type === 'pageload-error' ) {
       const transpiledStacktrace = await window.transpileStacktrace( data.stack );
-      aqua.simpleFail( `${data.message}\n${transpiledStacktrace}` );
+      aqua.simpleFail( `${data.message}\nSTACK: ${transpiledStacktrace}` );
     }
   } );
 } )();
