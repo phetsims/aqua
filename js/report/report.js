@@ -414,6 +414,7 @@ if ( options.full ) {
             const failedTests = `${failedTestCount} Tests Failed`;
             const shas = JSON.stringify( snapshot.shas, null, 2 );
             popup( label, `${snapshot.timestamp}\n\n${completedTests}\n${failedTests}\n\n${diffString}\n\n${shas}` );
+            popup( label, `${snapshot.timestamp}\n\n${completedTests}\n${failedTests}\n\n${diffString}\n\n${shas}` );
           }
         } ) );
         return label;
@@ -454,7 +455,7 @@ if ( options.full ) {
         return tests.map( ( test, j ) => {
           const x = getX( i );
           const y = getY( j );
-          const background = new Rectangle( 0, 0, maxSnapshotLabelWidth, maxTestLabelHeight, {
+          const cellBackground = new Rectangle( 0, 0, maxSnapshotLabelWidth, maxTestLabelHeight, {
             x: x,
             y: y
           } );
@@ -497,43 +498,43 @@ if ( options.full ) {
 
           if ( failCount > 0 ) {
             if ( untestedCount === 0 ) {
-              background.fill = constants.failColor;
+              cellBackground.fill = constants.failColor;
             }
             else {
-              background.fill = constants.failColorPartial;
-              background.addChild( new Rectangle( 0, 0, completeRatio * maxSnapshotLabelWidth, maxTestLabelHeight, {
+              cellBackground.fill = constants.failColorPartial;
+              cellBackground.addChild( new Rectangle( 0, 0, completeRatio * maxSnapshotLabelWidth, maxTestLabelHeight, {
                 fill: constants.failColor
               } ) );
             }
           }
           else if ( passCount > 0 ) {
             if ( untestedCount === 0 ) {
-              background.fill = constants.passColor;
+              cellBackground.fill = constants.passColor;
             }
             else {
-              background.fill = constants.passColorPartial;
-              background.addChild( new Rectangle( 0, 0, completeRatio * maxSnapshotLabelWidth, maxTestLabelHeight, {
+              cellBackground.fill = constants.passColorPartial;
+              cellBackground.addChild( new Rectangle( 0, 0, completeRatio * maxSnapshotLabelWidth, maxTestLabelHeight, {
                 fill: constants.passColor
               } ) );
             }
           }
           else if ( unavailableCount > 0 ) {
-            background.fill = constants.unavailableColor;
+            cellBackground.fill = constants.unavailableColor;
           }
           else {
-            background.fill = constants.untestedColor;
+            cellBackground.fill = constants.untestedColor;
           }
 
           if ( messages.length ) {
-            background.addInputListener( new FireListener( {
+            cellBackground.addInputListener( new FireListener( {
               fire: () => {
-                popup( background, messages.join( '\n\n----------------------------------\n\n' ) );
+                popup( cellBackground, messages.join( '\n\n----------------------------------\n\n' ) );
               }
             } ) );
-            background.cursor = 'pointer';
+            cellBackground.cursor = 'pointer';
           }
 
-          return background;
+          return cellBackground;
         } );
       } ) );
 
