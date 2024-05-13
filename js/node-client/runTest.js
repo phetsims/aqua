@@ -116,7 +116,7 @@ module.exports = async function( testInfo, options ) {
           winston.info( 'Sending FAIL result' );
 
           currentSendingCount++;
-          const serverMessage = await sendTestResult( `${event.message}\n${log}`, testInfo, false, options );
+          const serverMessage = await sendTestResult( `${event.message}\n\nFULL LOG:\n${log}`, testInfo, false, options );
           currentSendingCount--;
 
           winston.info( `Server receipt: ${JSON.stringify( serverMessage )}` );

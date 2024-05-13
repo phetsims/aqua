@@ -96,7 +96,7 @@
       if ( sentMessage ) { return; }
       sentMessage = true;
 
-      aqua.testFail( ( iframe ? `${iframe.src}\n` : '' ) + message );
+      aqua.testFail( ( iframe ? `URL: ${iframe.src}\n` : '' ) + `ERROR: ${message}` );
       aqua.simpleFinish();
     },
 

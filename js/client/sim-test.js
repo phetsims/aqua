@@ -39,7 +39,7 @@
     options.simQueryParameters
   ] );
 
-  const failPrefix = ( options.simQueryParameters ? ( `Query: ${options.simQueryParameters}\n` ) : '' );
+  const failPrefix = ( options.simQueryParameters ? ( `QUERY: ${options.simQueryParameters}\n` ) : '' );
 
   let hasLoaded = false;
 
@@ -74,7 +74,7 @@
       if ( data.type === 'continuous-test-error' ) {
         clearTimeout( timeoutID );
         const transpiledStacktrace = await window.transpileStacktrace( data.stack );
-        aqua.simpleFail( `${failPrefix + data.message}\n${transpiledStacktrace}` );
+        aqua.simpleFail( `${failPrefix + data.message}\nSTACK: ${transpiledStacktrace}` );
       }
       else if ( data.type === 'continuous-test-unload' ) {
         clearTimeout( timeoutID );
