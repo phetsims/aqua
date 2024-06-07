@@ -571,13 +571,8 @@ class QuickServer {
     if ( name === ctqType.LINT ) {
       let currentFilename = null;
 
-      // This message is duplicated in CHIPPER/lint, please change cautiously.
-      const IMPORTANT_MESSAGE = 'All results (repeated from above)';
-      assert( message.includes( IMPORTANT_MESSAGE ), 'expected formatting from lint ' + message );
-      message = message.split( IMPORTANT_MESSAGE )[ 1 ].trim();
-
       // split up the error message by line for parsing
-      const messageLines = this.splitAndTrimMessage( message );
+      const messageLines = this.splitAndTrimMessage( message.trim() );
 
       // Look for a filename. once found, all subsequent lines are an individual errors to add until the next filename is reached
       messageLines.forEach( line => {
