@@ -116,7 +116,7 @@ type Row = {
     // Console logs about frame snapshot info, see take-snapshot.js
     logFrameInfo: {
       type: 'boolean',
-      defaultValue: true
+      defaultValue: false
     }
   } );
 
