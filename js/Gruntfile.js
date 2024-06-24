@@ -90,7 +90,7 @@ module.exports = grunt => {
   // @deprecated
   grunt.registerTask(
     'client-server',
-    'Launches puppeteer clients to run tests for CT with the following options:\n' +
+    '@deprecated. Launches puppeteer clients to run tests for CT with the following options:\n' +
     '--puppeteerClients=number : specify how many puppeteer clients to run with, defaults to 16\n' +
     '--firefoxClients=number : specify how many playwright firefox clients to run with, defaults to 0\n' +
     '--ctID=string : specify id to give to continuous-loop.html, in URL string, defaults to "Sparky". Will have the platform appended like "ID%20Puppeteer"\n' +

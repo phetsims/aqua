@@ -2,6 +2,7 @@
 
 /**
  * Launch puppeteer and point it to CT running on a server for 15 minutes.
+ * @deprecated
  * @author Michael Kauzmann (PhET Interactive Simulations)
  */
 
