@@ -12,13 +12,6 @@
 </head>
 
 <body>
-<script src="../../assert/js/assert.js"></script>
-<script src="../../tandem/js/PhetioIDUtils.js"></script>
-<script src="../../sherpa/lib/jquery-2.1.0.js"></script>
-<script src="../../sherpa/lib/lodash-4.17.4.min.js"></script>
-<script src="../../sherpa/lib/linebreak-1.1.0.js"></script>
-<script src="../../sherpa/lib/he-1.1.1.js"></script>
-<script src="../../query-string-machine/js/QueryStringMachine.js"></script>
 <script type="text/javascript">
   window.phet = window.phet || {};
   window.phet.chipper = window.phet.chipper || {};
@@ -48,9 +41,50 @@
       requirejsNamespace: 'TAMBO'
     }
   ];
-</script>
-<script src="../../chipper/js/initialize-globals.js"></script>
+  phet.chipper.stringPath = '../';
 
-<script type="module" src="../../chipper/dist/js/aqua/js/aqua-main.js"></script>
+  // Preloads, with more included for phet-io brand
+  const preloads = [
+    '../joist/js/splash.js',
+    '../sherpa/lib/jquery-2.1.0.js',
+    '../sherpa/lib/lodash-4.17.4.js',
+    '../sherpa/lib/FileSaver-b8054a2.js',
+    '../sherpa/lib/linebreak-1.1.0.js',
+    '../sherpa/lib/flatqueue-1.2.1.js',
+    '../sherpa/lib/paper-js-0.12.17.js',
+    '../sherpa/lib/he-1.1.1.js',
+    '../assert/js/assert.js',
+    '../query-string-machine/js/QueryStringMachine.js',
+    '../chipper/js/initialize-globals.js',
+    '../sherpa/lib/seedrandom-2.4.2.js',
+    '../sherpa/lib/base64-js-1.2.0.js',
+    '../sherpa/lib/TextEncoderLite-3c9f6f0.js',
+    '../tandem/js/PhetioIDUtils.js',
+    '../perennial-alias/js/common/SimVersion.js'
+  ];
+
+  // Loads a synchronously-executed asynchronously-downloaded script tag, with optional data-main parameter.
+  // See http://www.html5rocks.com/en/tutorials/speed/script-loading/ for more about script loading. It helps to
+  // load all of the scripts with this method, so they are treated the same (and placed in the correct execution
+  // order).
+  const loadURL = ( preloadURL, type = 'text/javascript' ) => {
+    const script = document.createElement( 'script' );
+    script.type = type;
+    script.src = `${phet.chipper.stringPath}${preloadURL}`;
+    script.async = false;
+    script.setAttribute( 'crossorigin', 'use-credentials' );
+    document.head.appendChild( script );
+  };
+
+  // Kick off string loading immediately
+  loadURL( '../chipper/js/load-unbuilt-strings.js' );
+
+  // Queue all of the preloads to be loaded.
+  preloads.forEach( preload => loadURL( preload ) );
+
+  // Module loading in compilation-free (development) mode will be kicked off once strings are loaded.
+  // This is done in load-unbuilt-strings.js
+  window.phet.chipper.loadModules = () => loadURL( '../chipper/dist/js/aqua/js/aqua-main.js', 'module' );
+</script>
 </body>
 </html>
