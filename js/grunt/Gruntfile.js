@@ -9,7 +9,7 @@
 // AQUA wants to opt out of global SIGINT handling so that it can handle it itself.
 global.processEventOptOut = true;
 
-const Gruntfile = require( '../../chipper/js/grunt/Gruntfile' );
+const Gruntfile = require( '../../../chipper/js/grunt/Gruntfile' );
 const assert = require( 'assert' );
 const _ = require( 'lodash' );
 const winston = require( 'winston' );
@@ -47,7 +47,7 @@ module.exports = grunt => {
       console.log( builtReportURL );
       console.log( loopURL );
 
-      const ContinuousServer = require( './server/ContinuousServer' );
+      const ContinuousServer = require( '../server/ContinuousServer' );
       const server = new ContinuousServer( useRootDir );
       server.startServer( port );
       server.generateReportLoop();
@@ -71,7 +71,7 @@ module.exports = grunt => {
     '--testing : for running locally (will immediately kick into testing instead of waiting for changes)\n' +
     '--port=PORT : specify a custom port for the server interface\n',
     () => {
-      const QuickServer = require( './server/QuickServer' );
+      const QuickServer = require( '../server/QuickServer' );
 
       // We don't finish! Don't tell grunt this...
       grunt.task.current.async();
@@ -96,7 +96,7 @@ module.exports = grunt => {
     '--ctID=string : specify id to give to continuous-loop.html, in URL string, defaults to "Sparky". Will have the platform appended like "ID%20Puppeteer"\n' +
     '--serverURL=string : defaults to "https://sparky.colorado.edu/"\n',
     () => {
-      const ContinuousServerClient = require( './server/ContinuousServerClient' );
+      const ContinuousServerClient = require( '../server/ContinuousServerClient' );
 
       // We don't finish! Don't tell grunt this...
       grunt.task.current.async();
@@ -128,7 +128,7 @@ module.exports = grunt => {
     '--serverURL=string : defaults to "https://sparky.colorado.edu/. For local testing --serverURL=http://localhost:45366"\n' +
     '--fileServerURL=string : defaults to "https://sparky.colorado.edu/continuous-testing. For local testing --fileServerURL=http://localhost"\n',
     () => {
-      const runNextTest = require( './node-client/runNextTest' );
+      const runNextTest = require( '../node-client/runNextTest' );
 
       // We don't finish! Don't tell grunt this...
       grunt.task.current.async();
@@ -137,10 +137,10 @@ module.exports = grunt => {
       const browser = grunt.option( 'browser' );
       if ( browser ) {
         if ( browser === 'firefox' ) {
-          options.browserCreator = require( '../../perennial/node_modules/playwright' ).firefox;
+          options.browserCreator = require( 'playwright' ).firefox;
         }
         else if ( browser === 'safari' ) {
-          options.browserCreator = require( '../../perennial/node_modules/playwright' ).webkit;
+          options.browserCreator = require( 'playwright' ).webkit;
         }
         else {
           assert( browser === 'puppeteer', 'supported browsers: puppeteer or firefox or webkit' );

@@ -2,4 +2,4 @@
 
 
 // use aqua's gruntfile
-module.exports = require( '../aqua/js/Gruntfile.js' );
+module.exports = require( './js/grunt/Gruntfile.js' );
