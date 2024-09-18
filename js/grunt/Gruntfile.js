@@ -166,4 +166,8 @@ module.exports = grunt => {
       } )();
     }
   );
+
+  const registerTasks = require( '../../../chipper/js/grunt/registerTasks' );
+
+  registerTasks( grunt, __dirname + '/tasks' );
 };
