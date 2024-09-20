@@ -147,7 +147,7 @@ for future pulls.
 
 Test locally for server changes, and push when ready. Notify the team on slack#dev-public
 
-1. `git pull` under aqua (`/data/share/phet/continuous-testing/aqua`)
+1. `git pull` under aqua (`/data/share/phet/continuous-testing/ct-main/aqua`)
 2. If the save-file format has changed, or state needs to be wiped, remove the save
    file (`rm /data/share/phet/continuous-testing/ct-main/aqua/.continuous-testing-state.json`). This generally won't be
    needed.
