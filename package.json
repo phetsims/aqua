@@ -45,6 +45,16 @@
           "browser": true,
           "node": false
         }
+      },
+      {
+        "files": [
+          "**/*.ts"
+        ],
+        "parserOptions": {
+          "project": [
+            "../aqua/tsconfig.json"
+          ]
+        }
       }
     ]
   },
