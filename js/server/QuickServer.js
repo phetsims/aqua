@@ -241,7 +241,6 @@ class QuickServer {
 
     // Use the "node" executable so that it works across platforms, launching `tsc` as the command on windows results in ENOENT -4058.
     // Pretty false will make the output more machine readable.
-    // TODO: Restart the quick server after adding -b, see https://github.com/phetsims/chipper/issues/1356
     return execute( 'node', [ '../../../chipper/node_modules/typescript/bin/tsc', '-b', '--pretty', 'false' ],
       `${this.rootDir}/chipper/tsconfig/all`, EXECUTE_OPTIONS );
   }
