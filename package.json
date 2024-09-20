@@ -52,7 +52,7 @@
         ],
         "parserOptions": {
           "project": [
-            "../aqua/tsconfig.json"
+            "../chipper/tsconfig/eslint-all/tsconfig.json"
           ]
         }
       }
