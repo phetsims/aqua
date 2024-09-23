@@ -6,9 +6,9 @@
  * @author Chris Klusendorf (PhET Interactive Simulations)
  */
 
-import { Circle, Color, Font, Node, NodeOptions, Rectangle, Text } from '../../scenery/js/imports.js';
 import ScreenView from '../../joist/js/ScreenView.js';
 import { EmptySelfOptions } from '../../phet-core/js/optionize.js';
+import { Circle, Color, Font, Node, NodeOptions, Rectangle, Text } from '../../scenery/js/imports.js';
 
 // colors
 const phetBlue = '#6acdf5';
