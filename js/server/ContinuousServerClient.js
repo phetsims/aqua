@@ -89,7 +89,6 @@ class ContinuousServerClient {
     console.log( `ctID: ${this.ctID}` );
     console.log( `serverURL: ${this.serverURL}` );
 
-    // TODO: What happened to no-constant-condition? See https://github.com/phetsims/chipper/issues/1451
     while ( true ) {
 
       // Always keep this many workers chugging away

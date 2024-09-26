@@ -82,7 +82,6 @@ if ( options.full ) {
   // Report loop
   ( async () => {
 
-    // TODO: What happened to no-constant-condition? See https://github.com/phetsims/chipper/issues/1451
     while ( true ) {
       const result = await request( '/aquaserver/report' );
       if ( result ) {

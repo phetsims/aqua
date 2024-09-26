@@ -616,7 +616,6 @@ class ContinuousServer {
    */
   async localTaskLoop() {
 
-    // TODO: What happened to no-constant-condition? See https://github.com/phetsims/chipper/issues/1451
     while ( true ) {
       try {
         if ( this.snapshots.length === 0 ) {
@@ -696,7 +695,6 @@ class ContinuousServer {
    */
   async computeWeightsLoop() {
 
-    // TODO: What happened to no-constant-condition? See https://github.com/phetsims/chipper/issues/1451
     while ( true ) {
       try {
         this.computeRecentTestWeights();
@@ -715,7 +713,6 @@ class ContinuousServer {
    */
   async autosaveLoop() {
 
-    // TODO: What happened to no-constant-condition? See https://github.com/phetsims/chipper/issues/1451
     while ( true ) {
       try {
         this.saveToFile();
@@ -733,7 +730,6 @@ class ContinuousServer {
    */
   async generateReportLoop() {
 
-    // TODO: What happened to no-constant-condition? See https://github.com/phetsims/chipper/issues/1451
     while ( true ) {
       try {
         winston.info( 'Generating Report' );

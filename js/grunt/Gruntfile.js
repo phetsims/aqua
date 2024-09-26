@@ -161,7 +161,7 @@ module.exports = grunt => {
       winston.info( `Config: ${JSON.stringify( options )}` );
 
       ( async () => {
-        while ( true ) { // TODO: no-constant-condition, see https://github.com/phetsims/chipper/issues/1451
+        while ( true ) {
           await runNextTest( options );
         }
       } )();

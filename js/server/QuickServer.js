@@ -157,7 +157,6 @@ class QuickServer {
       browser: browser
     };
 
-    // TODO: What happened to no-constant-condition? See https://github.com/phetsims/chipper/issues/1451
     while ( true ) {
 
       // Run the test, and let us know if we should wait for next test, or proceed immediately.
