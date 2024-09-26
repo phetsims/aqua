@@ -17,37 +17,6 @@
     "puppeteer": "~19.2.2",
     "winston": "~0.9.0"
   },
-  "eslintConfig": {
-    "extends": "../chipper/eslint/node_eslintrc.js",
-    "globals": {
-      "aqua": "readonly",
-      "XMLHttpRequest": "readonly",
-      "Hashes": "readonly",
-      "phetCore": "readonly",
-      "axon": "readonly",
-      "dot": "readonly",
-      "kite": "readonly",
-      "scenery": "readonly",
-      "__dirname": "readonly"
-    },
-    "overrides": [
-      {
-        "files": [
-          "./js/browser-tools/**",
-          "./js/client/**",
-          "./js/report/**"
-        ],
-        "extends": "../chipper/eslint/phet-library_eslintrc.js",
-        "rules": {
-          "bad-sim-text": "off"
-        },
-        "env": {
-          "browser": true,
-          "node": false
-        }
-      }
-    ]
-  },
   "phet": {
     "buildStandalone": true,
     "standaloneTranspiles": [
