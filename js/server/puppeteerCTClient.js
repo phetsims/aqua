@@ -9,7 +9,7 @@
 const assert = require( 'assert' );
 const path = require( 'path' );
 const puppeteerLoad = require( '../../../perennial/js/common/puppeteerLoad' );
-const { parentPort } = require( 'worker_threads' ); // eslint-disable-line require-statement-match
+const { parentPort } = require( 'worker_threads' ); // eslint-disable-line phet/require-statement-match
 
 process.on( 'SIGINT', () => process.exit() );
 

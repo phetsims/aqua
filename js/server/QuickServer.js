@@ -157,7 +157,8 @@ class QuickServer {
       browser: browser
     };
 
-    while ( true ) { // eslint-disable-line no-constant-condition
+    // TODO: What happened to no-constant-condition? See https://github.com/phetsims/chipper/issues/1451
+    while ( true ) {
 
       // Run the test, and let us know if we should wait for next test, or proceed immediately.
       await this.runQuickTest();

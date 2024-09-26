@@ -6,8 +6,7 @@
  *
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
-
-/* eslint-disable bad-phet-library-text */
+ 
 
 const options = QueryStringMachine.getAll( {
 

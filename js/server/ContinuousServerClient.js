@@ -13,7 +13,7 @@
 const _ = require( 'lodash' );
 const path = require( 'path' );
 const assert = require( 'assert' );
-const { Worker } = require( 'worker_threads' ); // eslint-disable-line require-statement-match
+const { Worker } = require( 'worker_threads' ); // eslint-disable-line phet/require-statement-match
 const sleep = require( '../../../perennial/js/common/sleep' );
 
 process.on( 'SIGINT', () => process.exit( 0 ) );
@@ -89,7 +89,8 @@ class ContinuousServerClient {
     console.log( `ctID: ${this.ctID}` );
     console.log( `serverURL: ${this.serverURL}` );
 
-    while ( true ) { // eslint-disable-line no-constant-condition
+    // TODO: What happened to no-constant-condition? See https://github.com/phetsims/chipper/issues/1451
+    while ( true ) {
 
       // Always keep this many workers chugging away
       while ( this.puppeteerWorkers.length < this.numberOfPuppeteers ) {

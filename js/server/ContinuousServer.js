@@ -615,7 +615,9 @@ class ContinuousServer {
    * @public
    */
   async localTaskLoop() {
-    while ( true ) { // eslint-disable-line no-constant-condition
+
+    // TODO: What happened to no-constant-condition? See https://github.com/phetsims/chipper/issues/1451
+    while ( true ) {
       try {
         if ( this.snapshots.length === 0 ) {
           await sleep( 1000 );
@@ -693,7 +695,9 @@ class ContinuousServer {
    * @public
    */
   async computeWeightsLoop() {
-    while ( true ) { // eslint-disable-line no-constant-condition
+
+    // TODO: What happened to no-constant-condition? See https://github.com/phetsims/chipper/issues/1451
+    while ( true ) {
       try {
         this.computeRecentTestWeights();
       }
@@ -710,7 +714,9 @@ class ContinuousServer {
    * @public
    */
   async autosaveLoop() {
-    while ( true ) { // eslint-disable-line no-constant-condition
+
+    // TODO: What happened to no-constant-condition? See https://github.com/phetsims/chipper/issues/1451
+    while ( true ) {
       try {
         this.saveToFile();
       }
@@ -726,7 +732,9 @@ class ContinuousServer {
    * @public
    */
   async generateReportLoop() {
-    while ( true ) { // eslint-disable-line no-constant-condition
+
+    // TODO: What happened to no-constant-condition? See https://github.com/phetsims/chipper/issues/1451
+    while ( true ) {
       try {
         winston.info( 'Generating Report' );
         const testNameMap = {};

@@ -14,7 +14,9 @@ process.on( 'SIGINT', () => process.exit() );
 ( async () => {
 
   assert( process.argv[ 2 ], 'usage: node puppeteerHelpCT {{SOME_IDENTIFIER_HERE}}' );
-  while ( true ) { // eslint-disable-line no-constant-condition
+
+  // TODO: What happened to no-constant-condition? See https://github.com/phetsims/chipper/issues/1451
+  while ( true ) {
 
     await puppeteerLoad( `https://sparky.colorado.edu/continuous-testing/aqua/html/continuous-loop.html?id=localPuppeteer${process.argv[ 2 ]}`, {
       waitAfterLoad: 100000,

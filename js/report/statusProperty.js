@@ -20,7 +20,9 @@ const startupTimestampProperty = new NumberProperty( 0 );
 
 // Snapshot status loop
 ( async () => {
-  while ( true ) { // eslint-disable-line no-constant-condition
+
+  // TODO: What happened to no-constant-condition? See https://github.com/phetsims/chipper/issues/1451
+  while ( true ) {
     const result = await request( '/aquaserver/status' );
     if ( result ) {
       statusProperty.value = result.status;

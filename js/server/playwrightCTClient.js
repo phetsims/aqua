@@ -8,7 +8,7 @@
 
 const assert = require( 'assert' );
 const playwrightLoad = require( '../../../perennial/js/common/playwrightLoad' );
-const { parentPort } = require( 'worker_threads' ); // eslint-disable-line require-statement-match
+const { parentPort } = require( 'worker_threads' ); // eslint-disable-line phet/require-statement-match
 const playwright = require( '../../../perennial/node_modules/playwright' );
 
 process.on( 'SIGINT', () => process.exit() );
