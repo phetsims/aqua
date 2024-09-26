@@ -7,10 +7,10 @@
  * @author Michael Kauzmann (PhET Interactive Simulations)
  */
 
-import parent from '../chipper/eslint/node.eslint.config.mjs';
+import nodeEslintConfig from '../chipper/eslint/node.eslint.config.mjs';
 
 export default [
-  ...parent,
+  ...nodeEslintConfig,
   {
     languageOptions: {
       globals: {
