@@ -1,14 +1,10 @@
 {
-  "extends": "../chipper/tsconfig-core.json",
-  "include": [
-    "js/**/*",
-    "images/**/*",
-    "mipmaps/**/*",
-    "sounds/**/*"
-  ],
   "references": [
     {
-      "path": "../chipper/tsconfig/buildjson/tsconfig.json"
+      "path": "tsconfig/browser/tsconfig.json"
+    },
+    {
+      "path": "tsconfig/node/tsconfig.json"
     }
   ]
 }

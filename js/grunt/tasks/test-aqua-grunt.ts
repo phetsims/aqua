@@ -7,7 +7,7 @@
  * @author Sam Reid (PhET Interactive Simulations)
  */
 
-import getOption from '../../../../chipper/js/grunt/tasks/util/getOption';
+import getOption from '../../../../perennial/js/grunt/tasks/util/getOption';
 
 // grunt test-grunt --brands=a,b,c --lint=false --noTSC
 const brands = getOption( 'brands' );
