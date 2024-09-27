@@ -13,10 +13,9 @@
 import assert from 'assert';
 import grunt from '../../../../perennial/js/import-shared/grunt';
 import winston from '../../../../perennial/js/import-shared/winston';
+import runNextTest from '../../node-client/runNextTest';
 
 winston.default.transports.console.level = 'info';
-
-const runNextTest = require( '../../node-client/runNextTest' );
 
 // We don't finish! Don't tell grunt this...
 grunt.task.current.async();

@@ -13,8 +13,7 @@
 
 import getOption from '../../../../perennial/js/grunt/tasks/util/getOption';
 import grunt from '../../../../perennial/js/import-shared/grunt';
-
-const QuickServer = require( '../../server/QuickServer' );
+import QuickServer from '../../server/QuickServer';
 
 // We don't finish! Don't tell grunt this...
 grunt.task.current.async();

@@ -2,6 +2,8 @@
 
 # Run with a single command-line argument, generally a number 01 through 99
 
+# TODO: Delete this, https://github.com/phetsims/chipper/issues/1463
+
 echo "Running chrome-${1}"
 
 while [ 1 ]

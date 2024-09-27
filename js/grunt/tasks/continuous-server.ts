@@ -15,6 +15,7 @@ import getOption from '../../../../perennial/js/grunt/tasks/util/getOption';
 import grunt from '../../../../perennial/js/import-shared/grunt';
 import _ from '../../../../perennial/js/import-shared/lodash';
 import winston from '../../../../perennial/js/import-shared/winston'
+import ContinuousServer from '../../server/ContinuousServer';
 
 winston.default.transports.console.level = 'info';
 
@@ -37,7 +38,6 @@ console.log( unbuiltReportURL );
 console.log( builtReportURL );
 console.log( loopURL );
 
-const ContinuousServer = require( '../server/ContinuousServer' );
 const server = new ContinuousServer( useRootDir );
 server.startServer( port );
 server.generateReportLoop();
