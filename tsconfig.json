@@ -1,10 +1,33 @@
 {
+  "files": [],
   "references": [
+
+    // BROWSER
     {
-      "path": "tsconfig/browser/tsconfig.json"
+      "path": "js/browser-tools/tsconfig.json"
     },
     {
-      "path": "tsconfig/node/tsconfig.json"
+      "path": "js/client/tsconfig.json"
+    },
+    {
+      "path": "js/report/tsconfig.json"
+    },
+
+    // NODE
+    {
+      "path": "js/config/tsconfig.json"
+    },
+    {
+      "path": "js/grunt/tsconfig.json"
+    },
+    {
+      "path": "js/local/tsconfig.json"
+    },
+    {
+      "path": "js/node-client/tsconfig.json"
+    },
+    {
+      "path": "js/server/tsconfig.json"
     }
   ]
 }

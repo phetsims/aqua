@@ -1,0 +1,11 @@
+{
+  "extends": "../../../chipper/tsconfig-node.json",
+  "include": [
+    "**/*",
+  ],
+  "references": [
+    {
+      "path": "../../../perennial/tsconfig.json"
+    }
+  ]
+}
