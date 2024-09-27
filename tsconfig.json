@@ -4,13 +4,7 @@
 
     // BROWSER
     {
-      "path": "js/browser-tools/tsconfig.json"
-    },
-    {
-      "path": "js/client/tsconfig.json"
-    },
-    {
-      "path": "js/report/tsconfig.json"
+      "path": "js/tsconfig.json"
     },
 
     // NODE
