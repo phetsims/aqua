@@ -10,7 +10,7 @@
 global.processEventOptOut = true;
 
 const Gruntfile = require( '../../../chipper/js/grunt/Gruntfile' );
-const registerTasks = require( '../../../chipper/js/grunt/registerTasks' );
+const registerTasks = require( '../../../perennial-alias/js/grunt/util/registerTasks' );
 const assert = require( 'assert' );
 const _ = require( 'lodash' );
 const winston = require( 'winston' );
