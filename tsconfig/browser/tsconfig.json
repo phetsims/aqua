@@ -5,7 +5,7 @@
     "../../js/browser-tools/**/*",
     "../../js/client/**/*",
     "../../js/report/**/*",
-    "../../js/report/*" // top level stuff
+    "../../js/*" // top level stuff
   ],
   "references": [
     {
