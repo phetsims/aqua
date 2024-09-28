@@ -11,6 +11,7 @@
  */
 
 import assert from 'assert';
+import playwright from 'playwright';
 import grunt from '../../../../perennial/js/import-shared/grunt';
 import winston from '../../../../perennial/js/import-shared/winston';
 import runNextTest from '../../node-client/runNextTest';
@@ -23,11 +24,12 @@ grunt.task.current.async();
 const options: any = {};
 const browser = grunt.option( 'browser' );
 if ( browser ) {
+
   if ( browser === 'firefox' ) {
-    options.browserCreator = require( 'playwright' ).firefox;
+    options.browserCreator = playwright.firefox;
   }
   else if ( browser === 'safari' ) {
-    options.browserCreator = require( 'playwright' ).webkit;
+    options.browserCreator = playwright.webkit;
   }
   else {
     assert( browser === 'puppeteer', 'supported browsers: puppeteer or firefox or webkit' );

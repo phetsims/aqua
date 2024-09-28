@@ -361,7 +361,7 @@
       const repo = repoFromURL( data.url );
       const fuzzer = getFuzzer( repo );
 
-      fuzzer && fuzzer.onSimError( data ); // eslint-disable-line @typescript-eslint/no-floating-promises
+      fuzzer && fuzzer.onSimError( data );
     }
   } );
 

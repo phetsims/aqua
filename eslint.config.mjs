@@ -40,5 +40,19 @@ export default [
       browser: true,
       node: false
     }
+  }, {
+    files: [ 'js/grunt/tasks/**/*' ],
+    rules: {
+
+      // We travel with perennial, always on main and do not allow dependencies on versioned repos like phet-core,
+      // so cannot use IntentionalAny
+      '@typescript-eslint/no-explicit-any': 'off'
+    }
+  },
+  {
+    files: [ '**/*.ts' ],
+    rules: {
+      '@typescript-eslint/no-floating-promises': 'off'
+    }
   }
 ];

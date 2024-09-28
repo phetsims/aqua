@@ -14,7 +14,6 @@
  */
 
 import grunt from '../../../../perennial/js/import-shared/grunt';
-
 import ContinuousServerClient from '../../server/ContinuousServerClient';
 
 // We don't finish! Don't tel l grunt this...
