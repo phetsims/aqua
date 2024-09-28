@@ -1,27 +1,16 @@
 {
+  // NOTE we do not extend tsconfig-core.json. This is a composite just for referencing the individual typescript sub-
+  // projects within this repo.
+
+  // By default, TypeScript includes all files below the tsconfig.json location. However, we must override that to
+  // blank it out, so that we can let each browser/node decide what they want to include.
   "files": [],
   "references": [
-
-    // BROWSER
     {
-      "path": "js/tsconfig.json"
-    },
-
-    // NODE
-    {
-      "path": "js/config/tsconfig.json"
+      "path": "tsconfig-browser.json"
     },
     {
-      "path": "js/grunt/tsconfig.json"
-    },
-    {
-      "path": "js/local/tsconfig.json"
-    },
-    {
-      "path": "js/node-client/tsconfig.json"
-    },
-    {
-      "path": "js/server/tsconfig.json"
+      "path": "tsconfig-node.json"
     }
   ]
 }
