@@ -13,8 +13,6 @@
 import assert from 'assert';
 import getOption from '../../../../perennial/js/grunt/tasks/util/getOption';
 import grunt from '../../../../perennial/js/import-shared/grunt';
-
-// eslint-disable-next-line phet/default-import-match-filename
 import _ from '../../../../perennial/js/import-shared/lodash';
 import winston from '../../../../perennial/js/import-shared/winston';
 import ContinuousServer from '../../server/ContinuousServer';
