@@ -12,17 +12,14 @@
 
 import assert from 'assert';
 import playwright from 'playwright';
-import grunt from '../../../../perennial/js/import-shared/grunt';
+import getOption from '../../../../perennial/js/grunt/tasks/util/getOption';
 import winston from '../../../../perennial/js/import-shared/winston';
 import runNextTest from '../../node-client/runNextTest';
 
 winston.default.transports.console.level = 'info';
 
-// We don't finish! Don't tell grunt this...
-grunt.task.current.async();
-
 const options: any = {};
-const browser = grunt.option( 'browser' );
+const browser = getOption( 'browser' );
 if ( browser ) {
 
   if ( browser === 'firefox' ) {
@@ -35,14 +32,14 @@ if ( browser ) {
     assert( browser === 'puppeteer', 'supported browsers: puppeteer or firefox or webkit' );
   }
 }
-if ( grunt.option( 'ctID' ) ) {
-  options.ctID = grunt.option( 'ctID' );
+if ( getOption( 'ctID' ) ) {
+  options.ctID = getOption( 'ctID' );
 }
-if ( grunt.option( 'serverURL' ) ) {
-  options.serverURL = grunt.option( 'serverURL' );
+if ( getOption( 'serverURL' ) ) {
+  options.serverURL = getOption( 'serverURL' );
 }
-if ( grunt.option( 'fileServerURL' ) ) {
-  options.fileServerURL = grunt.option( 'fileServerURL' );
+if ( getOption( 'fileServerURL' ) ) {
+  options.fileServerURL = getOption( 'fileServerURL' );
 }
 
 winston.info( 'Starting node client' );

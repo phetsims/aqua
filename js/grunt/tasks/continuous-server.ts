@@ -11,16 +11,12 @@
  */
 
 import assert from 'assert';
-import getOption from '../../../../perennial/js/grunt/tasks/util/getOption';
-import grunt from '../../../../perennial/js/import-shared/grunt';
-import _ from '../../../../perennial/js/import-shared/lodash';
-import winston from '../../../../perennial/js/import-shared/winston';
-import ContinuousServer from '../../server/ContinuousServer';
+import getOption from '../../../../perennial/js/grunt/tasks/util/getOption.js';
+import _ from '../../../../perennial/js/import-shared/lodash.js';
+import winston from '../../../../perennial/js/import-shared/winston.js';
+import ContinuousServer from '../../server/ContinuousServer.js';
 
 winston.default.transports.console.level = 'info';
-
-// We don't finish! Don't tell grunt this...
-grunt.task.current.async();
 
 assert( getOption( 'localCount' ), 'Please specify --localCount=NUMBER, for specifying the number of local threads running things like grunt tasks' );
 

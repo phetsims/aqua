@@ -12,11 +12,7 @@
  */
 
 import getOption from '../../../../perennial/js/grunt/tasks/util/getOption';
-import grunt from '../../../../perennial/js/import-shared/grunt';
 import QuickServer from '../../server/QuickServer';
-
-// We don't finish! Don't tell grunt this...
-grunt.task.current.async();
 
 const port = getOption( 'port' ) ? Number( getOption( 'port' ) ) : 45367;
 
@@ -25,4 +21,6 @@ const server = new QuickServer( {
   isTestMode: testing
 } );
 server.startServer( port );
-server.startMainLoop();
+server.startMainLoop().catch( e => {
+  throw new Error( `Error in CTQ main loop: ${e}` );
+} );
