@@ -45,7 +45,7 @@ export default [
     rules: {
 
       // We travel with perennial, always on main and do not allow dependencies on versioned repos like phet-core,
-      // so cannot use IntentionalAny
+      // so cannot use IntentionalAny. TODO: https://github.com/phetsims/chipper/issues/1465
       '@typescript-eslint/no-explicit-any': 'off'
     }
   },

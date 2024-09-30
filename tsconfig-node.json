@@ -1,5 +1,5 @@
 {
-  "extends": "../chipper/tsconfig-node.json",
+  "extends": "../chipper/tsconfig/shared/tsconfig-node.json",
   "include": [
     "js/config/**/*",
     "js/grunt/**/*",
