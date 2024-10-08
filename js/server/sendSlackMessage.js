@@ -6,7 +6,7 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-const buildLocal = require( '../../../perennial/js/common/buildLocal' );
+import buildLocal from '../../../perennial/js/common/buildLocal';
 
 const { App } = require( '@slack/bolt' ); // eslint-disable-line phet/require-statement-match
 
