@@ -32,7 +32,7 @@ export default [
       './js/client/**',
       './js/report/**'
     ],
-    extends: '../chipper/eslint/phet-library_eslintrc.js',
+    // extends: '../chipper/eslint/phet-library_eslintrc.js',
     rules: {
       'bad-sim-text': 'off'
     },
