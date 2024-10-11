@@ -7,10 +7,28 @@
  * @author Michael Kauzmann (PhET Interactive Simulations)
  */
 
-import nodeEslintConfig from '../chipper/eslint/node.eslint.config.mjs';
+import { getBrowserConfiguration } from '../chipper/eslint/browser.eslint.config.mjs';
+import { getNodeConfiguration } from '../chipper/eslint/node.eslint.config.mjs';
+import rootEslintConfig from '../chipper/eslint/root.eslint.config.mjs';
 
+const nodeJSDirs = [
+  'js/config/**',
+  'js/grunt/**',
+  'js/local/**',
+  'js/node-client/**',
+  'js/server/**'
+];
 export default [
-  ...nodeEslintConfig,
+  ...rootEslintConfig,
+  ...getBrowserConfiguration( {
+    files: [
+      '**/*'
+    ],
+    ignores: nodeJSDirs
+  } ),
+  ...getNodeConfiguration( {
+    files: nodeJSDirs
+  } ),
   {
     languageOptions: {
       globals: {
@@ -24,36 +42,9 @@ export default [
         scenery: 'readonly',
         __dirname: 'readonly'
       }
-    }
-  },
-  {
-    files: [
-      './js/browser-tools/**',
-      './js/client/**',
-      './js/report/**'
-    ],
-    // TODO: Review https://github.com/phetsims/chipper/issues/1451
-    // extends: '../chipper/eslint/phet-library_eslintrc.js',
-    rules: {
-      'bad-sim-text': 'off'
     },
-    env: {
-      browser: true,
-      node: false
-    }
-  }, {
-    files: [ 'js/grunt/tasks/**/*' ],
     rules: {
-
-      // We travel with perennial, always on main and do not allow dependencies on versioned repos like phet-core,
-      // so cannot use IntentionalAny. TODO: https://github.com/phetsims/chipper/issues/1465
-      '@typescript-eslint/no-explicit-any': 'off'
-    }
-  },
-  {
-    files: [ '**/*.ts' ],
-    rules: {
-      '@typescript-eslint/no-floating-promises': 'off'
+      '@typescript-eslint/no-explicit-any': 'off' // TODO: if we could use IntentionalAny. . . . https://github.com/phetsims/chipper/issues/1469
     }
   }
 ];

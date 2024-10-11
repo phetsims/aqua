@@ -27,6 +27,7 @@ type Row = {
   brand: string;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 ( async () => {
 
   window.assertions.enableAssert();

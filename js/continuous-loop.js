@@ -1,6 +1,7 @@
 // Copyright 2017-2024, University of Colorado Boulder
 
 /**
+ * @deprecated, we use node-based browsers via "grunt ct-node-client"
  * Continuously loops tests, by:
  * 1. Request a test from the server (continuous-server.js)
  * 2. Run the test (reporting results back)
