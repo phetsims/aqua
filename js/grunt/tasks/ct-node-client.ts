@@ -11,7 +11,7 @@
  */
 
 import assert from 'assert';
-import playwright from 'playwright';
+import playwright from '../../../../perennial/node_modules/playwright';
 import getOption from '../../../../perennial/js/grunt/tasks/util/getOption';
 import winston from '../../../../perennial/js/import-shared/winston';
 import runNextTest from '../../node-client/runNextTest';
