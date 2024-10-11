@@ -32,6 +32,7 @@ export default [
       './js/client/**',
       './js/report/**'
     ],
+    // TODO: Review https://github.com/phetsims/chipper/issues/1451
     // extends: '../chipper/eslint/phet-library_eslintrc.js',
     rules: {
       'bad-sim-text': 'off'
