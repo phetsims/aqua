@@ -44,7 +44,7 @@ export default [
       }
     },
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off' // TODO: if we could use IntentionalAny. . . . https://github.com/phetsims/chipper/issues/1469
+      '@typescript-eslint/no-explicit-any': 'off' // TODO: if we could use IntentionalAny. . . . https://github.com/phetsims/perennial/issues/371
     }
   }
 ];
