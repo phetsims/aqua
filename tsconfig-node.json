@@ -9,7 +9,7 @@
   ],
   "references": [
     {
-      "path": "../perennial"
+      "path": "../perennial/tsconfig.json"
     }
   ]
 }
