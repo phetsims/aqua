@@ -4,7 +4,7 @@
   "files": [],
   "references": [
     {
-      "path": "./tsconfig-browser.json"
+      "path": "./tsconfig-aqua-browser.json"
     },
     {
       "path": "./tsconfig-node.json"
