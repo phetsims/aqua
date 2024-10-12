@@ -1,6 +1,6 @@
 {
   // This is the tsconfig for browser files, for node files, see within each node-like subdirectory.
-  "extends": "../chipper/tsconfig-browser.json",
+  "extends": "../chipper/tsconfig/shared/tsconfig-browser.json",
   "include": [
     "js/browser-tools/**/*",
     "js/client/**/*",
