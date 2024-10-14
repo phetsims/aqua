@@ -7,7 +7,7 @@
       "path": "./tsconfig-aqua-browser.json"
     },
     {
-      "path": "./tsconfig-node.json"
+      "path": "./tsconfig-aqua-node.json"
     }
   ]
 }
