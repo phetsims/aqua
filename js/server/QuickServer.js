@@ -241,8 +241,7 @@ class QuickServer {
 
     // Use the "node" executable so that it works across platforms, launching `tsc` as the command on windows results in ENOENT -4058.
     // Pretty false will make the output more machine readable.
-    return execute( 'node', [ '../../../chipper/node_modules/typescript/bin/tsc', '-b', '--pretty', 'false' ],
-      `${this.rootDir}/chipper/tsconfig/all`, EXECUTE_OPTIONS );
+    return execute( gruntCommand, [ 'check', '--everything', '--pretty', 'false' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
   }
 
   /**
