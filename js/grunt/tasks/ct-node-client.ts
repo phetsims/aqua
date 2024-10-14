@@ -11,9 +11,9 @@
  */
 
 import assert from 'assert';
-import playwright from '../../../../perennial/node_modules/playwright';
 import getOption from '../../../../perennial/js/grunt/tasks/util/getOption';
 import winston from '../../../../perennial/js/import-shared/winston';
+import playwright from '../../../../perennial/node_modules/playwright';
 import runNextTest from '../../node-client/runNextTest';
 
 winston.default.transports.console.level = 'info';

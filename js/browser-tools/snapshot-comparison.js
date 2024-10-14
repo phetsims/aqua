@@ -92,8 +92,8 @@ function setup( repoNames ) {
   } );
 
   options.repos = options.randomSims !== NO_RANDOM_SIMS ?
-                 _.sampleSize( repoNames, options.randomSims ) :
-                 options.repos || repoNames;
+                  _.sampleSize( repoNames, options.randomSims ) :
+                  options.repos || repoNames;
 
 
   const addBR = string => string + '<br/>';

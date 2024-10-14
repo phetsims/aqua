@@ -8,11 +8,11 @@
  */
 
 import BooleanProperty from '../../../axon/js/BooleanProperty.js';
+import Emitter from '../../../axon/js/Emitter.js';
 import Multilink from '../../../axon/js/Multilink.js';
 import NumberProperty from '../../../axon/js/NumberProperty.js';
 import Property from '../../../axon/js/Property.js';
 import { Color, Display, DOM, FireListener, FlowBox, Font, GridBackgroundNode, GridBox, GridCell, HBox, Image, Node, Rectangle, Text } from '../../../scenery/js/imports.js';
-import Emitter from '../../../axon/js/Emitter.js';
 
 type Frame = {
   number: number;

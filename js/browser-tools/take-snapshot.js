@@ -6,7 +6,7 @@
  *
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
- 
+
 
 const options = QueryStringMachine.getAll( {
 
