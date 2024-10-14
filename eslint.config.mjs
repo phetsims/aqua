@@ -21,9 +21,7 @@ const nodeJSDirs = [
 export default [
   ...rootEslintConfig,
   ...getBrowserConfiguration( {
-    files: [
-      '**/*'
-    ],
+    files: [ '**/*' ],
     ignores: nodeJSDirs
   } ),
   ...getNodeConfiguration( {
