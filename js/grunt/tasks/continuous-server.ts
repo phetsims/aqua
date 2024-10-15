@@ -12,8 +12,8 @@
 
 import assert from 'assert';
 import getOption from '../../../../perennial/js/grunt/tasks/util/getOption.js';
-import _ from '../../../../perennial/js/import-shared/lodash.js';
-import winston from '../../../../perennial/js/import-shared/winston.js';
+import _ from '../../../../perennial/js/npm-dependencies/lodash.js';
+import winston from '../../../../perennial/js/npm-dependencies/winston.js';
 import ContinuousServer from '../../server/ContinuousServer.js';
 
 winston.default.transports.console.level = 'info';

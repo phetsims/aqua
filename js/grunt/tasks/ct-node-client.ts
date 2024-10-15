@@ -12,7 +12,7 @@
 
 import assert from 'assert';
 import getOption from '../../../../perennial/js/grunt/tasks/util/getOption';
-import winston from '../../../../perennial/js/import-shared/winston';
+import winston from '../../../../perennial/js/npm-dependencies/winston';
 import playwright from '../../../../perennial/node_modules/playwright';
 import runNextTest from '../../node-client/runNextTest';
 
