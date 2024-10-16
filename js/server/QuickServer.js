@@ -259,7 +259,7 @@ class QuickServer {
    */
   async transpile() {
     winston.info( 'QuickServer: transpiling' );
-    return execute( 'node', [ 'js/scripts/transpile.js' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
+    return execute( gruntCommand, [ 'output-js-all' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
   }
 
   /**
