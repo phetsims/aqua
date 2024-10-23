@@ -241,7 +241,7 @@ class QuickServer {
 
     // Use grunt so that it works across platforms, launching `tsc` as the command on windows results in ENOENT -4058.
     // Pretty false will make the output more machine readable.
-    return execute( gruntCommand, [ 'check', '--everything', '--pretty', 'false' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
+    return execute( gruntCommand, [ 'check', '--all', '--pretty', 'false' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
   }
 
   /**
