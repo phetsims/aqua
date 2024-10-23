@@ -652,7 +652,7 @@ class ContinuousServer {
         else if ( test.type === 'lint-everything' ) {
           test.complete = true;
           try {
-            const output = await execute( gruntCommand, [ 'lint-everything', '--hide-progress-bar', '--disable-eslint-cache' ], `${snapshot.directory}/perennial` );
+            const output = await execute( gruntCommand, [ 'lint', '--all', '--hide-progress-bar', '--disable-eslint-cache' ], `${snapshot.directory}/perennial` );
 
             ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
           }
