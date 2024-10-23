@@ -229,7 +229,7 @@ class QuickServer {
    */
   async testLint() {
     winston.info( 'QuickServer: linting' );
-    return execute( gruntCommand, [ 'lint-everything', '--hide-progress-bar' ], `${this.rootDir}/perennial`, EXECUTE_OPTIONS );
+    return execute( gruntCommand, [ 'lint', '--all', '--hide-progress-bar' ], `${this.rootDir}/perennial`, EXECUTE_OPTIONS );
   }
 
   /**
