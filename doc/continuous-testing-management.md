@@ -14,7 +14,7 @@ At a high level, there is:
 # Tests, and changing what is tested
 
 `perennial/js/listContinuousTests.js` controls what tests are run. Simply commit/push to change what will be tested on
-the next CT snapshot. Run `node js/listContinuousTests.js` in perennial in order to test the output.
+the next CT snapshot. Run `sage run js/listContinuousTests.js` in perennial in order to test the output.
 
 There is no need to restart the CT server or other interfaces to change what is tested (unless a new test type is added,
 etc.)
