@@ -8,27 +8,55 @@
  * @author Chris Klusendorf (PhET Interactive Simulations)
  */
 
-const cloneMissingRepos = require( '../../../perennial/js/common/cloneMissingRepos' );
-const deleteDirectory = require( '../../../perennial/js/common/deleteDirectory' );
-const execute = require( '../../../perennial/js/common/execute' );
-const getRepoList = require( '../../../perennial/js/common/getRepoList' );
-const gitPull = require( '../../../perennial/js/common/gitPull' );
-const gitRevParse = require( '../../../perennial/js/common/gitRevParse' );
-const gruntCommand = require( '../../../perennial/js/common/gruntCommand' );
-const isStale = require( '../../../perennial/js/common/isStale' );
-const npmUpdate = require( '../../../perennial/js/common/npmUpdate' );
-const puppeteerLoad = require( '../../../perennial/js/common/puppeteerLoad' );
-const withServer = require( '../../../perennial/js/common/withServer' );
-const assert = require( 'assert' );
-const http = require( 'http' );
-const _ = require( 'lodash' );
-const path = require( 'path' );
-const url = require( 'url' );
-const winston = require( 'winston' );
-const puppeteer = require( 'puppeteer' );
-const sendSlackMessage = require( './sendSlackMessage' );
+import assert from 'assert';
+import http from 'http';
+import path from 'path';
+import puppeteer from 'puppeteer';
+import url from 'url';
+import cloneMissingRepos from '../../../perennial/js/common/cloneMissingRepos.js';
+import deleteDirectory from '../../../perennial/js/common/deleteDirectory.js';
+import execute from '../../../perennial/js/common/execute.js';
+import getRepoList from '../../../perennial/js/common/getRepoList.js';
+import gitPull from '../../../perennial/js/common/gitPull.js';
+import gitRevParse from '../../../perennial/js/common/gitRevParse.js';
+import gruntCommand from '../../../perennial/js/common/gruntCommand.js';
+import isStale from '../../../perennial/js/common/isStale.js';
+import npmUpdate from '../../../perennial/js/common/npmUpdate.js';
+import { Repo } from '../../../perennial/js/common/PerennialTypes.js';
+import puppeteerLoad from '../../../perennial/js/common/puppeteerLoad.js';
+import withServer from '../../../perennial/js/common/withServer.js';
+import _ from '../../../perennial/js/npm-dependencies/lodash.js';
+import winston from '../../../perennial/js/npm-dependencies/winston.js';
+import sendSlackMessage from './sendSlackMessage';
 
-const ctqType = {
+
+type TestData = {
+  passed: boolean;
+
+  // full length message, used when someone clicks on a quickNode in CT for error details
+  message: string;
+
+  // trimmed down and separated error messages, used to track the state of individual errors and show
+  // abbreviated errors for the Slack CT Notifier
+  errorMessages: string[];
+};
+
+type Tests = {
+  lint: TestData;
+  tsc: TestData;
+  simFuzz: TestData;
+  studioFuzz: TestData;
+  phetioCompare: TestData;
+};
+type TestName = keyof Tests;
+
+type TestingState = {
+  tests: Tests;
+  shas?: Dependencies;
+  timestamp?: number;
+};
+
+const ctqType: Record<string, TestName> = {
   LINT: 'lint',
   TSC: 'tsc',
   SIM_FUZZ: 'simFuzz', // Should end with "Fuzz"
@@ -50,48 +78,68 @@ const EXECUTE_OPTIONS = {
   childProcessEnv: { NODE_OPTIONS: '--max-old-space-size=8192' }
 };
 
+type Dependencies = Record<Repo, string>;
+
+type QuickServerOptions = {
+  rootDir: string;
+  isTestMode: boolean;
+};
+
+
+// TODO: Delete this once execute is converted to typescript https://github.com/phetsims/perennial/issues/369
+type ExecuteResult = {
+  code: number;
+  stdout: string;
+  stderr: string;
+};
+
+
 class QuickServer {
-  constructor( options ) {
 
-    options = {
+  // the tests object stores the results of tests so that they can be iterated through for "all results"
+  private testingState!: TestingState;
+
+  // root of your GitHub working copy, relative to the name of the directory that the
+  // currently-executing script resides in
+  private readonly rootDir: string;
+  // whether we are in testing mode. if true, tests are continuously forced to run
+  private readonly isTestMode: boolean;
+
+  // errors found in any given loop from any portion of the testing state
+  private readonly errorMessages: string[] = [];
+
+  // Keep track of if we should wait for the next test or not kick it off immediately.
+  private forceTests: boolean;
+
+  // How many times has the quick-test loop run
+  private testCount = 0;
+
+  // For now, provide an initial message every time, so treat it as broken when it starts
+  private lastBroken = false;
+
+  // Passed to puppeteerLoad()
+  private puppeteerOptions = {};
+
+  public constructor( providedOptions?: Partial<QuickServerOptions> ) {
+
+    const options: QuickServerOptions = _.assignIn( {
       rootDir: path.normalize( `${__dirname}/../../../` ),
-      isTestMode: false,
-      ...options
-    };
+      isTestMode: false
+    }, providedOptions );
 
-    // @public {*} - the tests object stores the results of tests so that they can be iterated through for "all results"
-    this.testingState = { tests: {} };
-
-    // @public {string} - root of your GitHub working copy, relative to the name of the directory that the
-    // currently-executing script resides in
     this.rootDir = options.rootDir;
 
-    // @public {boolean} - whether we are in testing mode. if true, tests are continuously forced to run
     this.isTestMode = options.isTestMode;
 
-    // @private {string[]} - errors found in any given loop from any portion of the testing state
-    this.errorMessages = [];
-
-    // Keep track of if we should wait for the next test or not kick it off immediately.
     this.forceTests = this.isTestMode;
-
-    // How many times has the quick-test loop run
-    this.testCount = 0;
-
-    // For now, provide an initial message every time, so treat it as broken when it starts
-    this.lastBroken = false;
-
-    // Passed to puppeteerLoad()
-    this.puppeteerOptions = {};
 
     this.wireUpMessageOnExit();
   }
 
   /**
    * Send a slack message when exiting unexpectedly to say that we exited.
-   * @private
    */
-  wireUpMessageOnExit() {
+  private wireUpMessageOnExit(): void {
 
     // catching signals and do something before exit
     [ 'SIGINT', 'SIGHUP', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT', 'SIGBUS', 'SIGFPE', 'SIGUSR1',
@@ -102,14 +150,13 @@ class QuickServer {
         winston.info( message );
         this.slackMessage( message ).then( () => {
           process.exit( 1 );
-        } );
+        } ).catch( e => { throw e; } );
       } );
     } );
   }
 
-  // @private
-  async getStaleReposFrom( reposToCheck ) {
-    const staleRepos = [];
+  private async getStaleReposFrom( reposToCheck: Repo[] ): Promise<Repo[]> {
+    const staleRepos: Repo[] = [];
     await Promise.all( reposToCheck.map( async repo => {
       if ( await isStale( repo ) ) {
         staleRepos.push( repo );
@@ -119,10 +166,7 @@ class QuickServer {
     return staleRepos;
   }
 
-  /**
-   * @public
-   */
-  async startMainLoop() {
+  public async startMainLoop(): Promise<void> {
 
     // Factor out so that webstorm doesn't complain about this whole block inline with the `launch` call
     const launchOptions = {
@@ -166,10 +210,7 @@ class QuickServer {
     }
   }
 
-  /**
-   * @private
-   */
-  async runQuickTest() {
+  private async runQuickTest(): Promise<void> {
 
     try {
       const reposToCheck = this.isTestMode ? [ 'natural-selection' ] : getRepoList( 'active-repos' );
@@ -214,101 +255,75 @@ class QuickServer {
     }
   }
 
-  /**
-   * @private
-   * @param {Object} testingState
-   * @returns {boolean}
-   */
-  isBroken( testingState = this.testingState ) {
-    return _.some( Object.keys( testingState.tests ), name => !testingState.tests[ name ].passed );
+  private isBroken( testingState = this.testingState ): boolean {
+    return _.some( Object.keys( testingState.tests ), ( name: keyof TestingState['tests'] ) => !testingState.tests[ name ].passed );
   }
 
-  /**
-   * @private
-   @returns {Promise<{code:number,stdout:string,stderr:string}>}
-   */
-  async testLint() {
+  private async testLint(): Promise<ExecuteResult> {
     winston.info( 'QuickServer: linting' );
+    // @ts-expect-error TODO: remove this once execute is in TypeScript, https://github.com/phetsims/perennial/issues/369
     return execute( gruntCommand, [ 'lint', '--all', '--hide-progress-bar' ], `${this.rootDir}/perennial`, EXECUTE_OPTIONS );
   }
 
-  /**
-   * @private
-   * @returns {Promise<{code:number,stdout:string,stderr:string}>}
-   */
-  async testTSC() {
+  private async testTSC(): Promise<ExecuteResult> {
     winston.info( 'QuickServer: tsc' );
 
     // Use grunt so that it works across platforms, launching `tsc` as the command on windows results in ENOENT -4058.
     // Pretty false will make the output more machine readable.
+    // @ts-expect-error TODO: remove this once execute is in TypeScript, https://github.com/phetsims/perennial/issues/369
     return execute( gruntCommand, [ 'check', '--all', '--pretty', 'false' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
   }
 
-  /**
-   * @private
-   * @returns {Promise<{code:number,stdout:string,stderr:string}>}
-   */
-  async testPhetioCompare() {
+  private async testPhetioCompare(): Promise<ExecuteResult> {
     winston.info( 'QuickServer: phet-io compare' );
+    // @ts-expect-error TODO: remove this once execute is in TypeScript, https://github.com/phetsims/perennial/issues/369
     return execute( gruntCommand, [ 'compare-phet-io-api', '--simList=../perennial/data/phet-io-api-stable' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
   }
 
-  /**
-   * @private
-   * @returns {Promise<{code:number,stdout:string,stderr:string}>}
-   */
-  async transpile() {
+  private async transpile(): Promise<ExecuteResult> {
     winston.info( 'QuickServer: transpiling' );
+    // @ts-expect-error TODO: remove this once execute is in TypeScript, https://github.com/phetsims/perennial/issues/369
     return execute( gruntCommand, [ 'output-js', '--all' ], `${this.rootDir}/perennial`, EXECUTE_OPTIONS );
   }
 
-  /**
-   * @private
-   * @returns {Promise<string|null>}
-   */
-  async testSimFuzz() {
+  private async testSimFuzz(): Promise<string | null> {
     winston.info( 'QuickServer: sim fuzz' );
 
-    let simFuzz = null;
+    let simFuzz: string | null = null;
     try {
-      await withServer( async port => {
+      await withServer( async ( port: number ) => {
         const url = `http://localhost:${port}/${FUZZ_SIM}/${FUZZ_SIM}_en.html?brand=phet&ea&debugger&fuzz`;
         await puppeteerLoad( url, this.puppeteerOptions );
       } );
     }
     catch( e ) {
-      simFuzz = e.toString();
+      if ( e instanceof Error ) {
+        simFuzz = e.toString();
+      }
     }
+
     return simFuzz;
   }
 
-  /**
-   * @private
-   * @returns {Promise<string|null>}
-   */
-  async testStudioFuzz() {
+  private async testStudioFuzz(): Promise<string | null> {
     winston.info( 'QuickServer: studio fuzz' );
 
-    let studioFuzz = null;
+    let studioFuzz: string | null = null;
     try {
-      await withServer( async port => {
+      await withServer( async ( port: number ) => {
         const url = `http://localhost:${port}/studio/index.html?sim=${STUDIO_FUZZ_SIM}&phetioElementsDisplay=all&fuzz&phetioWrapperDebug=true`;
         await puppeteerLoad( url, this.puppeteerOptions );
       } );
     }
     catch( e ) {
-      studioFuzz = e.toString();
+      if ( e instanceof Error ) {
+        studioFuzz = e.toString();
+      }
     }
     return studioFuzz;
   }
 
-  /**
-   * @private
-   * @param {string[]} staleRepos
-   * @param {string[]} allRepos
-   * @returns {Promise<Object<string,string>>} - shas for repos
-   */
-  async synchronizeRepos( staleRepos, allRepos ) {
+  private async synchronizeRepos( staleRepos: Repo[], allRepos: Repo[] ): Promise<Dependencies> {
     for ( const repo of staleRepos ) {
       winston.info( `QuickServer: pulling ${repo}` );
       await gitPull( repo );
@@ -325,7 +340,7 @@ class QuickServer {
     }
 
     winston.info( 'QuickServer: checking SHAs' );
-    const shas = {};
+    const shas: Dependencies = {};
     for ( const repo of allRepos ) {
       shas[ repo ] = await gitRevParse( repo, 'main' );
     }
@@ -343,17 +358,14 @@ class QuickServer {
 
   /**
    * Starts the HTTP server part (that will connect with any reporting features).
-   * @public
-   *
-   * @param {number} port
    */
-  startServer( port ) {
+  public startServer( port: number ): void {
     assert( typeof port === 'number', 'port should be a number' );
 
     // Main server creation
     http.createServer( ( req, res ) => {
       try {
-        const requestInfo = url.parse( req.url, true );
+        const requestInfo = url.parse( req.url!, true );
 
         if ( requestInfo.pathname === '/quickserver/status' ) {
           res.writeHead( 200, jsonHeaders );
@@ -370,11 +382,8 @@ class QuickServer {
 
   /**
    * Checks the error messages and reports the current status to the logs and Slack.
-   *
-   * @param {boolean} broken
-   * @private
    */
-  async reportErrorStatus( broken ) {
+  private async reportErrorStatus( broken: boolean ): Promise<void> {
 
     // Robustness handling just in case there are errors that are tracked from last broken state
     if ( !broken ) {
@@ -403,10 +412,8 @@ class QuickServer {
    * - Same broken as last state (report nothing)
    * - Some new items are broken (report only new things)
    * - Some previously broken items have been fixed (update internal state but no new reporting)
-   *
-   * @private
    */
-  async handleBrokenState() {
+  private async handleBrokenState(): Promise<void> {
 
     // The message reported to slack, depending on our state
     let message = '';
@@ -417,7 +424,7 @@ class QuickServer {
     // Keep track of the previous errors that still exist so we don't duplicate reporting
     const previousErrorsFound = [];
 
-    const checkForNewErrors = testResult => {
+    const checkForNewErrors = ( testResult: TestData ) => {
       !testResult.passed && testResult.errorMessages.forEach( errorMessage => {
 
         let isPreexisting = false;
@@ -445,7 +452,7 @@ class QuickServer {
     };
 
     // See if there are any new errors in our tests
-    Object.keys( this.testingState.tests ).forEach( testKeyName => checkForNewErrors( this.testingState.tests[ testKeyName ] ) );
+    ( Object.keys( this.testingState.tests ) as unknown as TestName[] ).forEach( testKeyName => checkForNewErrors( this.testingState.tests[ testKeyName ] ) );
 
     if ( message.length > 0 ) {
 
@@ -470,7 +477,7 @@ class QuickServer {
         message = 'CTQ failing:\n```' + message + '```';
       }
 
-      await this.slackMessage( message, this.isTestMode );
+      await this.slackMessage( message );
     }
     else {
       winston.info( 'broken -> broken, no new failures to report to Slack' );
@@ -481,11 +488,8 @@ class QuickServer {
 
   /**
    * send a message to slack, with error handling
-   * @param {string} message
-   * @returns {Promise<void>}
-   * @private
    */
-  async slackMessage( message ) {
+  private async slackMessage( message: string ): Promise<void> {
     try {
       winston.info( `Sending to slack: ${message}` );
       await sendSlackMessage( message, this.isTestMode );
@@ -496,33 +500,16 @@ class QuickServer {
     }
   }
 
-  /**
-   * @private
-   * @param {string} result
-   * @param {string} name
-   * @returns {{errorMessages: string[], passed: boolean, message: string}}
-   */
-  executeResultToTestData( result, name ) {
+  private executeResultToTestData( result: ExecuteResult, name: TestName ): TestData {
     return {
       passed: result.code === 0,
-
-      // full length message, used when someone clicks on a quickNode in CT for error details
       message: `code: ${result.code}\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`,
-
-      // trimmed down and separated error messages, used to track the state of individual errors and show
-      // abbreviated errors for the Slack CT Notifier
       errorMessages: result.code === 0 ? [] : this.parseCompositeError( result.stdout, name, result.stderr )
     };
   }
 
 
-  /**
-   * @private
-   * @param {string} result
-   * @param {string} name
-   * @returns {{errorMessages: string[], passed: boolean, message: string}}
-   */
-  fuzzResultToTestData( result, name ) {
+  private fuzzResultToTestData( result: string | null, name: TestName ): TestData {
     if ( result === null ) {
       return { passed: true, message: '', errorMessages: [] };
     }
@@ -534,25 +521,15 @@ class QuickServer {
     }
   }
 
-  /**
-   * @private
-   * @param {string} message
-   * @returns {string}
-   */
-  splitAndTrimMessage( message ) {
+  private splitAndTrimMessage( message: string ): string[] {
     return message.split( /\r?\n/ ).map( line => line.trim() ).filter( line => line.length > 0 );
   }
 
   /**
    * Parses individual errors out of a collection of the same type of error, e.g. lint
-   *
-   * @param {string} message
-   * @param {string} name
-   * @param {string} stderr - if the error is in the running process, and not the report
-   * @returns {string[]}
-   * @private
+   *  stderr only if the error is in the running process, and not the report
    */
-  parseCompositeError( message, name, stderr = '' ) {
+  private parseCompositeError( message: string, name: string, stderr = '' ): string[] {
     const errorMessages = [];
 
     // If there is stderr from a process, assume that means there was a problem conducting the test, and ignore the message
@@ -568,7 +545,7 @@ class QuickServer {
     const lintProblemRegex = /^\d+:\d+\s+error\s/; // row:column error {{ERROR}}
 
     if ( name === ctqType.LINT ) {
-      let currentFilename = null;
+      let currentFilename: string | null = null;
 
       // split up the error message by line for parsing
       const messageLines = this.splitAndTrimMessage( message.trim() );
@@ -587,7 +564,7 @@ class QuickServer {
         }
 
         if ( !currentFilename && fileNameRegex.test( line ) ) {
-          currentFilename = line.match( fileNameRegex )[ 0 ];
+          currentFilename = line.match( fileNameRegex )![ 0 ];
         }
       } );
     }
@@ -629,4 +606,4 @@ class QuickServer {
   }
 }
 
-module.exports = QuickServer;
+export default QuickServer;
