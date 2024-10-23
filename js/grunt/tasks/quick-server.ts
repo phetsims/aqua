@@ -12,7 +12,7 @@
  */
 
 import getOption from '../../../../perennial/js/grunt/tasks/util/getOption';
-import QuickServer from '../../server/QuickServer';
+import QuickServer from '../../server/QuickServer.js';
 
 const port = getOption( 'port' ) ? Number( getOption( 'port' ) ) : 45367;
 
