@@ -283,7 +283,7 @@ class QuickServer {
   private async transpile(): Promise<ExecuteResult> {
     winston.info( 'QuickServer: transpiling' );
     // @ts-expect-error TODO: remove this once execute is in TypeScript, https://github.com/phetsims/perennial/issues/369
-    return execute( gruntCommand, [ 'output-js', '--all' ], `${this.rootDir}/perennial`, EXECUTE_OPTIONS );
+    return execute( gruntCommand, [ 'transpile', '--all' ], `${this.rootDir}/perennial`, EXECUTE_OPTIONS );
   }
 
   private async testSimFuzz(): Promise<string | null> {
