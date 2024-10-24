@@ -4,7 +4,7 @@
 
 const fs = require( 'fs' );
 const puppeteer = require( 'puppeteer' );
-const puppeteerQUnit = require( './puppeteerQUnit' );
+const puppeteerQUnit = require( '../../../perennial-alias/js/test/puppeteerQUnit.js' );
 const _ = require( '../../../sherpa/lib/lodash-4.17.4' );
 const child_process = require( 'child_process' );
 
