@@ -17,6 +17,7 @@ const gitRevParse = require( '../../../perennial/js/common/gitRevParse' );
 const Test = require( './Test' );
 const fs = require( 'fs' );
 const winston = require( 'winston' );
+const tsxCommand = require( '../../../perennial/js/common/tsxCommand.js' );
 
 class Snapshot {
   /**
@@ -96,7 +97,7 @@ class Snapshot {
     for ( const repo of getRepoList( 'active-runnables' ) ) {
       this.setStatus( `Scanning dependencies for timestamps: ${repo}` );
       try {
-        const output = await execute( 'node', [ 'js/scripts/print-dependencies.js', repo ], `${this.rootDir}/chipper` );
+        const output = await execute( tsxCommand, [ 'js/scripts/print-dependencies.js', repo ], `${this.rootDir}/chipper` );
         const dependencies = output.trim().split( ',' );
         let timestamp = 0;
         for ( const dependency of dependencies ) {
@@ -117,7 +118,7 @@ class Snapshot {
     this.setStatus( 'Loading tests from perennial' );
 
     // @public {Array.<Test>}
-    this.tests = JSON.parse( await execute( 'node', [ 'js/listContinuousTests.js' ], '../perennial' ) ).map( description => {
+    this.tests = JSON.parse( await execute( tsxCommand, [ 'js/listContinuousTests.js' ], '../perennial' ) ).map( description => {
       const potentialRepo = description && description.test && description.test[ 0 ];
 
       return new Test( this, description, lastRepoTimestamps[ potentialRepo ] || 0, lastRunnableTimestamps[ potentialRepo ] || 0 );
