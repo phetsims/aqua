@@ -13,7 +13,7 @@
 const _ = require( 'lodash' );
 const path = require( 'path' );
 const assert = require( 'assert' );
-const { Worker } = require( 'worker_threads' ); // eslint-disable-line phet/require-statement-match
+const { Worker } = require( 'worker_threads' );
 const sleep = require( '../../../perennial/js/common/sleep' );
 
 process.on( 'SIGINT', () => process.exit( 0 ) );
