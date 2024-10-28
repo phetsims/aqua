@@ -6,9 +6,9 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-const getNextTestInfo = require( './getNextTestInfo' );
-const runTest = require( './runTest' );
-const sendTestResult = require( './sendTestResult' );
+const getNextTestInfo = require( './getNextTestInfo.js' );
+const runTest = require( './runTest.js' );
+const sendTestResult = require( './sendTestResult.js' );
 const winston = require( 'winston' );
 
 /**

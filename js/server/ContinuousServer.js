@@ -6,18 +6,18 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-const asyncFilter = require( '../../../perennial/js/common/asyncFilter' );
-const cloneMissingRepos = require( '../../../perennial/js/common/cloneMissingRepos' );
-const execute = require( '../../../perennial/js/common/execute' );
-const getRepoList = require( '../../../perennial/js/common/getRepoList' );
-const gitPull = require( '../../../perennial/js/common/gitPull' );
-const gitRevParse = require( '../../../perennial/js/common/gitRevParse' );
-const gruntCommand = require( '../../../perennial/js/common/gruntCommand' );
-const isStale = require( '../../../perennial/js/common/isStale' );
-const npmUpdate = require( '../../../perennial/js/common/npmUpdate' );
-const transpileAll = require( '../../../perennial/js/common/transpileAll' );
-const sleep = require( '../../../perennial/js/common/sleep' );
-const Snapshot = require( './Snapshot' );
+const asyncFilter = require( '../../../perennial/js/common/asyncFilter.js' );
+const cloneMissingRepos = require( '../../../perennial/js/common/cloneMissingRepos.js' );
+const execute = require( '../../../perennial/js/common/execute.js' );
+const getRepoList = require( '../../../perennial/js/common/getRepoList.js' );
+const gitPull = require( '../../../perennial/js/common/gitPull.js' );
+const gitRevParse = require( '../../../perennial/js/common/gitRevParse.js' );
+const gruntCommand = require( '../../../perennial/js/common/gruntCommand.js' );
+const isStale = require( '../../../perennial/js/common/isStale.js' );
+const npmUpdate = require( '../../../perennial/js/common/npmUpdate.js' );
+const transpileAll = require( '../../../perennial/js/common/transpileAll.js' );
+const sleep = require( '../../../perennial/js/common/sleep.js' );
+const Snapshot = require( './Snapshot.js' );
 const assert = require( 'assert' );
 const fs = require( 'fs' );
 const http = require( 'http' );

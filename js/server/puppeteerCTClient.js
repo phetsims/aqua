@@ -8,7 +8,7 @@
 
 const assert = require( 'assert' );
 const path = require( 'path' );
-const puppeteerLoad = require( '../../../perennial/js/common/puppeteerLoad' );
+const puppeteerLoad = require( '../../../perennial/js/common/puppeteerLoad.js' );
 const { parentPort } = require( 'worker_threads' );
 
 process.on( 'SIGINT', () => process.exit() );

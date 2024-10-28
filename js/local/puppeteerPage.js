@@ -1,7 +1,7 @@
 // Copyright 2018-2024, University of Colorado Boulder
 // @author Michael Kauzmann (PhET Interactive Simulations)
 
-const puppeteerLoad = require( '../../../perennial-alias/js/common/puppeteerLoad' );
+const puppeteerLoad = require( '../../../perennial-alias/js/common/puppeteerLoad.js' );
 
 module.exports = async function puppeteerPage( browser, targetURL, timeout ) {
 

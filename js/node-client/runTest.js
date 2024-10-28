@@ -7,9 +7,9 @@
  */
 
 const _ = require( 'lodash' );
-const sendTestResult = require( './sendTestResult' );
-const puppeteer = require( '../../../perennial/node_modules/puppeteer' );
-const browserPageLoad = require( '../../../perennial/js/common/browserPageLoad' );
+const sendTestResult = require( './sendTestResult.js' );
+const puppeteer = require( '../../../perennial/node_modules/puppeteer.js' );
+const browserPageLoad = require( '../../../perennial/js/common/browserPageLoad.js' );
 const winston = require( 'winston' );
 const path = require( 'path' );
 require( 'dotenv' ).config();

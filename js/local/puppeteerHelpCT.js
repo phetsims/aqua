@@ -5,8 +5,7 @@
  * @author Michael Kauzmann (PhET Interactive Simulations)
  */
 
-
-const puppeteerLoad = require( '../../../perennial/js/common/puppeteerLoad' );
+const puppeteerLoad = require( '../../../perennial/js/common/puppeteerLoad.js' );
 const assert = require( 'assert' );
 
 process.on( 'SIGINT', () => process.exit() );
