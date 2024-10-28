@@ -9,7 +9,7 @@
 const assert = require( 'assert' );
 const playwrightLoad = require( '../../../perennial/js/common/playwrightLoad.js' );
 const { parentPort } = require( 'worker_threads' );
-const playwright = require( '../../../perennial/node_modules/playwright.js' );
+const playwright = require( '../../../perennial/node_modules/playwright' );
 
 process.on( 'SIGINT', () => process.exit() );
 
