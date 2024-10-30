@@ -24,7 +24,7 @@ const request = relativeURL => new Promise( ( resolve, reject ) => {
       resolve( null );
     }
     else {
-      resolve( JSON.parse( req.responseText ) );
+      resolve( req.responseText === '' ? null : JSON.parse( req.responseText ) );
     }
   };
   req.onerror = function() {
