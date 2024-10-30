@@ -43,7 +43,8 @@ module.exports = async function( options ) {
     }
   }
 
-  winston.error( 'FAILED TO RUN TEST' );
-  testInfo && winston.error( await sendTestResult( `Tried to run ${attemptCount} times, never completed, failure: ${lastFailure}`, testInfo, false, options ) );
+  const message = `Tried to run ${attemptCount} times, never completed, failure: ${lastFailure}`;
+  winston.error( `FAILED TO RUN TEST, ${message}` );
+  testInfo && winston.error( await sendTestResult( message, testInfo, false, options ) );
   return false;
 };
