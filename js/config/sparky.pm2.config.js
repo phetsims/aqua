@@ -26,14 +26,14 @@ module.exports = {
       time: true
     },
     {
-      name: 'ct-quick',
+      name: 'ctq',
       cwd: '/data/share/phet/continuous-testing/ct-quick/aqua',
       script: 'grunt',
       args: 'quick-server',
       time: true
     },
     {
-      name: 'ct-node-puppeteer-client',
+      name: 'ct-puppeteer-client',
       cwd: '/data/share/phet/continuous-testing/ct-node-client/aqua',
 
       // This is the static IP for sparky, but it gets around the DNS, which was causing trouble in https://github.com/phetsims/aqua/issues/185#issuecomment-1604337447
@@ -44,7 +44,7 @@ module.exports = {
       time: true
     },
     {
-      name: 'ct-node-firefox-client',
+      name: 'ct-firefox-client',
       cwd: '/data/share/phet/continuous-testing/ct-node-client/aqua',
       args: 'ct-node-client --ctID="Sparky Node Firefox" --browser=firefox --serverURL=http://127.0.0.1 --fileServerURL=http://127.0.0.1/continuous-testing',
       script: 'grunt',
