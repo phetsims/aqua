@@ -14,6 +14,8 @@ const winston = require( 'winston' );
 const path = require( 'path' );
 require( 'dotenv' ).config();
 
+/* global window */
+
 /**
  * Runs a CT test
  * @public
