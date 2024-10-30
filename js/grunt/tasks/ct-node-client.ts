@@ -50,7 +50,7 @@ winston.info( `Config: ${JSON.stringify( options )}` );
   while ( true ) {
     const success = await runNextTest( options );
     if ( !success ) {
-      winston.info( 'running test unsuccessful, waiting a few seconds to run next test' );
+      winston.error( 'running test unsuccessful, waiting a few seconds to run next test' );
       await sleep( 5000 );
     }
   }
