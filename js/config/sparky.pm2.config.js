@@ -40,7 +40,7 @@ module.exports = {
       args: 'ct-node-client --ctID="Sparky Node Puppeteer" --serverURL=http://128.138.93.172/ --fileServerURL=http://128.138.93.172/continuous-testing',
       script: 'grunt',
       exec_mode: 'cluster',
-      instances: 85,
+      instances: 30,
       time: true
     },
     {
@@ -49,7 +49,7 @@ module.exports = {
       args: 'ct-node-client --ctID="Sparky Node Firefox" --browser=firefox --serverURL=http://127.0.0.1 --fileServerURL=http://127.0.0.1/continuous-testing',
       script: 'grunt',
       exec_mode: 'cluster',
-      instances: 45,
+      instances: 10,
       time: true
     }
   ]
