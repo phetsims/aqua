@@ -23,7 +23,7 @@ module.exports = async function( options ) {
 
   }, options );
 
-  let response = {};
+  let response = null;
   try {
     response = await axios( `${options.serverURL}/aquaserver/next-test?old=${options.old}` );
   }
@@ -31,9 +31,9 @@ module.exports = async function( options ) {
     throw new Error( `axios failure code ${e.response.status} getting next-test: ${e.message}` );
   }
 
-  if ( response.status !== 200 ) {
+  if ( response?.status !== 200 ) {
     throw new Error( `nextTest request failed with status ${response.status} ${response}` );
   }
 
-  return response.data || {};
+  return response?.data || null;
 };

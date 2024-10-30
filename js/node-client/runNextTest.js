@@ -32,9 +32,11 @@ module.exports = async function( options ) {
         testInfo = await getNextTestInfo( options );
         winston.info( 'testInfo', JSON.stringify( testInfo ) );
       }
-      await runTest( testInfo, options );
-      winston.debug( 'runTest completed' );
-      return;
+      if ( testInfo ) {
+        await runTest( testInfo, options );
+        winston.debug( 'runTest completed' );
+        return;
+      }
     }
     catch( e ) {
       lastFailure = e;
