@@ -11,6 +11,7 @@
  */
 
 import assert from 'assert';
+import sleep from '../../../../perennial/js/common/sleep';
 import getOption from '../../../../perennial/js/grunt/tasks/util/getOption';
 import winston from '../../../../perennial/js/npm-dependencies/winston';
 import playwright from '../../../../perennial/node_modules/playwright';
@@ -47,6 +48,10 @@ winston.info( `Config: ${JSON.stringify( options )}` );
 
 ( async () => {
   while ( true ) {
-    await runNextTest( options );
+    const success = await runNextTest( options );
+    if ( !success ) {
+      winston.info( 'running test unsuccessful, waiting a few seconds to run next test' );
+      await sleep( 5000 );
+    }
   }
 } )();

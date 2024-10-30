@@ -35,7 +35,7 @@ module.exports = async function( options ) {
       if ( testInfo ) {
         await runTest( testInfo, options );
         winston.debug( 'runTest completed' );
-        return;
+        return true;
       }
     }
     catch( e ) {
@@ -45,4 +45,5 @@ module.exports = async function( options ) {
 
   winston.info( 'FAILED TO RUN TEST' );
   testInfo && winston.info( await sendTestResult( `Tried to run ${attemptCount} times, never completed, failure: ${lastFailure}`, testInfo, false, options ) );
+  return false;
 };
