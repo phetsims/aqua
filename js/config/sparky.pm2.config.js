@@ -29,7 +29,7 @@ module.exports = {
       name: 'ct-quick',
       cwd: '/data/share/phet/continuous-testing/ct-quick/aqua',
       script: 'grunt',
-      args: 'quick-server',
+      args: 'quick-server --testing',
       time: true
     },
     {
