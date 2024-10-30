@@ -20,16 +20,18 @@ const winston = require( 'winston' );
  */
 module.exports = async function( options ) {
 
-  const testInfo = await getNextTestInfo( options );
-  winston.info( 'testInfo', JSON.stringify( testInfo ) );
-
   const attemptCount = 3;
   let attemptsLeft = attemptCount;
 
   let lastFailure;
 
+  let testInfo = null;
   while ( attemptsLeft-- > 0 ) {
     try {
+      if ( !testInfo ) {
+        testInfo = await getNextTestInfo( options );
+        winston.info( 'testInfo', JSON.stringify( testInfo ) );
+      }
       await runTest( testInfo, options );
       winston.debug( 'runTest completed' );
       return;

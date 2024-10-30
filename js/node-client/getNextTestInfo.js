@@ -23,11 +23,17 @@ module.exports = async function( options ) {
 
   }, options );
 
-  const response = await axios( `${options.serverURL}/aquaserver/next-test?old=${options.old}` );
+  let response = {};
+  try {
+    response = await axios( `${options.serverURL}/aquaserver/next-test?old=${options.old}` );
+  }
+  catch( e ) {
+    throw new Error( `axios failure code ${e.response.status} getting next-test: ${e.message}` );
+  }
 
   if ( response.status !== 200 ) {
     throw new Error( `nextTest request failed with status ${response.status} ${response}` );
   }
 
-  return response.data;
+  return response.data || {};
 };
