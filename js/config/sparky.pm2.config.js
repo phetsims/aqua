@@ -41,6 +41,7 @@ module.exports = {
       script: 'bash',
       exec_mode: 'cluster',
       instances: 40,
+      merge_logs: true,
       time: true
     },
     {
@@ -50,6 +51,7 @@ module.exports = {
       script: 'bash',
       exec_mode: 'cluster',
       instances: 10,
+      merge_logs: true,
       time: true
     }
   ]
