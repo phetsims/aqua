@@ -40,6 +40,7 @@ module.exports = {
       args: 'run js/grunt/tasks/ct-node-client.ts --ctID="Sparky Node Puppeteer" --serverURL=http://128.138.93.172/ --fileServerURL=http://128.138.93.172/continuous-testing',
       script: '../perennial/bin/sage',
       exec_mode: 'cluster',
+      interpreter: '/bin/bash',
       instances: 40,
       merge_logs: true,
       time: true
@@ -49,6 +50,7 @@ module.exports = {
       cwd: '/data/share/phet/continuous-testing/ct-node-client/aqua',
       args: 'run js/grunt/tasks/ct-node-client.ts --ctID="Sparky Node Firefox" --browser=firefox --serverURL=http://127.0.0.1 --fileServerURL=http://127.0.0.1/continuous-testing',
       script: '../perennial/bin/sage',
+      interpreter: '/bin/bash',
       exec_mode: 'cluster',
       instances: 10,
       merge_logs: true,
