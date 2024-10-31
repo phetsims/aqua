@@ -21,30 +21,36 @@ module.exports = {
     {
       name: 'yotta-server',
       cwd: '/data/share/phet/yotta-statistics/yotta/',
-      script: 'js/reports/yotta-server.js',
+      interpreter: '/bin/bash',
+      script: '../perennial/bin/sage',
+      args: 'run js/reports/yotta-server.js',
       time: true
     },
     {
       name: 'phettest-server',
       cwd: '/data/web/htdocs/dev/phettest/phettest',
-      script: 'phettest-server.js',
+      interpreter: '/bin/bash',
+      script: '../perennial/bin/sage',
+      args: 'run phettest-server.js',
       time: true
     },
     {
       name: 'monday-server',
       cwd: '/data/share/phet/monday/monday',
-      script: 'js/app.js',
+      interpreter: '/bin/bash',
+      script: '../perennial/bin/sage',
+      args: 'run js/app.js',
       time: true
     },
     {
-      name: 'ct-puppeteer-client',
+      name: 'ct-chrome-client',
       cwd: '/data/share/phet/continuous-testing/ct-node-clients/aqua',
 
       // This is the static IP for sparky, but it gets around the DNS, which was causing trouble in https://github.com/phetsims/aqua/issues/185#issuecomment-1604337447
       args: 'ct-node-client --ctID="Bayes Node Puppeteer" --serverURL=http://128.138.93.172/ --fileServerURL=http://128.138.93.172/continuous-testing',
       script: 'grunt',
       exec_mode: 'cluster',
-      instances: 16,
+      instances: 5,
       time: true
     }
   ]
