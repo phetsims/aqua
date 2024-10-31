@@ -21,15 +21,15 @@ module.exports = {
     {
       name: 'ct-main',
       cwd: '/data/share/phet/continuous-testing/ct-main/aqua',
-      script: 'grunt',
-      args: 'continuous-server --localCount=20',
+      script: 'bash',
+      args: '../perennial/bin/sage run js/grunt/tasks/continuous-server.ts --localCount=20',
       time: true
     },
     {
       name: 'ctq',
       cwd: '/data/share/phet/continuous-testing/ct-quick/aqua',
-      script: 'grunt',
-      args: 'quick-server',
+      script: 'bash',
+      args: '../perennial/bin/sage run js/grunt/tasks/quick-server.ts',
       time: true
     },
     {
