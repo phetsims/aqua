@@ -9,7 +9,7 @@
  * In general or for testing run:
  * pm2 start bayes.pm2.config.js
  *
- * Likely to be run as `phet` user on sparky.colorado.edu
+ * Likely to be run as `phet-admin` user on bayes.colorado.edu
  *
  * @author Michael Kauzmann (PhET Interactive Simulations)
  * @author Jonathan Olson (PhET Interactive Simulations)
