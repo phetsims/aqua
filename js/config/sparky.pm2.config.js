@@ -37,8 +37,8 @@ module.exports = {
       cwd: '/data/share/phet/continuous-testing/ct-node-client/aqua',
 
       // This is the static IP for sparky, but it gets around the DNS, which was causing trouble in https://github.com/phetsims/aqua/issues/185#issuecomment-1604337447
-      args: 'ct-node-client --ctID="Sparky Node Puppeteer" --serverURL=http://128.138.93.172/ --fileServerURL=http://128.138.93.172/continuous-testing',
-      script: 'grunt',
+      args: '../perennial/bin/sage run js/grunt/tasks/ct-node-client.ts --ctID="Sparky Node Puppeteer" --serverURL=http://128.138.93.172/ --fileServerURL=http://128.138.93.172/continuous-testing',
+      script: 'bash',
       exec_mode: 'cluster',
       instances: 3,
       time: true
@@ -46,8 +46,8 @@ module.exports = {
     {
       name: 'ct-firefox-client',
       cwd: '/data/share/phet/continuous-testing/ct-node-client/aqua',
-      args: 'ct-node-client --ctID="Sparky Node Firefox" --browser=firefox --serverURL=http://127.0.0.1 --fileServerURL=http://127.0.0.1/continuous-testing',
-      script: 'grunt',
+      args: '../perennial/bin/sage run js/grunt/tasks/ct-node-client.ts --ctID="Sparky Node Firefox" --browser=firefox --serverURL=http://127.0.0.1 --fileServerURL=http://127.0.0.1/continuous-testing',
+      script: 'bash',
       exec_mode: 'cluster',
       instances: 1,
       time: true
