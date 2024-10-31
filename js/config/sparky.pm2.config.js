@@ -11,48 +11,60 @@
  *
  * Likely to be run as `phet` user on sparky.colorado.edu
  *
+ * Turn off individual processes by setting "enabled" false.
+ *
  * @author Michael Kauzmann (PhET Interactive Simulations)
  * @author Jonathan Olson (PhET Interactive Simulations)
  * @author Matt Pennington (PhET Interactive Simulations)
  */
+
+const CT_MAIN_THREAD_COUNT = 20; // localCount for running terminal tests like builds and lints.
+const FIREFOX_INSTANCES = 2; // Number of firefox browser instances
+const CHROME_INSTANCES = 2; // Number of chrome browser instances
 
 module.exports = {
   apps: [
     {
       name: 'ct-main',
       cwd: '/data/share/phet/continuous-testing/ct-main/aqua',
-      script: 'bash',
-      args: '../perennial/bin/sage run js/grunt/tasks/continuous-server.ts --localCount=20',
-      time: true
+      interpreter: '/bin/bash',
+      script: '../perennial/bin/sage',
+      args: `run js/grunt/tasks/continuous-server.ts --localCount=${CT_MAIN_THREAD_COUNT}`,
+      time: true,
+      enabled: true
     },
     {
       name: 'ctq',
       cwd: '/data/share/phet/continuous-testing/ct-quick/aqua',
-      script: 'bash',
-      args: '../perennial/bin/sage run js/grunt/tasks/quick-server.ts --testing',
-      time: true
+      interpreter: '/bin/bash',
+      script: '../perennial/bin/sage',
+      args: 'run js/grunt/tasks/quick-server.ts',
+      time: true,
+      enabled: true
     },
     {
-      name: 'ct-puppeteer-client',
+      name: 'ct-chrome-client',
       cwd: '/data/share/phet/continuous-testing/ct-node-client/aqua',
 
       // This is the static IP for sparky, but it gets around the DNS, which was causing trouble in https://github.com/phetsims/aqua/issues/185#issuecomment-1604337447
-      args: '--ctID="Sparky Node Puppeteer" --serverURL=http://128.138.93.172/ --fileServerURL=http://128.138.93.172/continuous-testing',
-      script: 'js/grunt/tasks/ct-node-client.ts',
+      args: 'ct-node-client --ctID="Sparky Node Chrome" --serverURL=http://128.138.93.172/ --fileServerURL=http://128.138.93.172/continuous-testing',
+      script: 'grunt',
       exec_mode: 'cluster',
-      instances: 2,
+      instances: CHROME_INSTANCES,
       merge_logs: true,
-      time: true
+      time: true,
+      enabled: true
     },
     {
       name: 'ct-firefox-client',
       cwd: '/data/share/phet/continuous-testing/ct-node-client/aqua',
-      args: '--ctID="Sparky Node Firefox" --browser=firefox --serverURL=http://127.0.0.1 --fileServerURL=http://127.0.0.1/continuous-testing',
-      script: 'js/grunt/tasks/ct-node-client.ts',
+      args: 'ct-node-client --ctID="Sparky Node Firefox" --browser=firefox --serverURL=http://127.0.0.1 --fileServerURL=http://127.0.0.1/continuous-testing',
+      script: 'grunt',
       exec_mode: 'cluster',
-      instances: 2,
+      instances: FIREFOX_INSTANCES,
       merge_logs: true,
-      time: true
+      time: true,
+      enabled: true
     }
   ]
 };
