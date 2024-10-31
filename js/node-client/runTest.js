@@ -142,8 +142,8 @@ ${log}`,
     // Do NOT merge all options here, it will mutate the other options like browserCreator (effecting tripple equals checking)
     options.launchOptions = _.merge( {
 
-      // Without this flag, temp files are written to /tmp/ on bayes, which caused https://github.com/phetsims/aqua/issues/145
-      // /dev/shm/ is much bigger
+      // With this flag, temp files are written to /tmp/ on bayes, which caused https://github.com/phetsims/aqua/issues/145
+      // /dev/shm/ is much bigger, so don't provide this disabling flag
       ignoreDefaultArgs: [ '--disable-dev-shm-usage' ],
       args: [
         '--disable-gpu',
