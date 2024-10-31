@@ -29,7 +29,7 @@ module.exports = {
       name: 'ctq',
       cwd: '/data/share/phet/continuous-testing/ct-quick/aqua',
       script: 'bash',
-      args: '../perennial/bin/sage run js/grunt/tasks/quick-server.ts',
+      args: '../perennial/bin/sage run js/grunt/tasks/quick-server.ts --testing',
       time: true
     },
     {
