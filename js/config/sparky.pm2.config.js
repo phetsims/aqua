@@ -11,8 +11,6 @@
  *
  * Likely to be run as `phet` user on sparky.colorado.edu
  *
- * Turn off individual processes by setting "enabled" false.
- *
  * @author Michael Kauzmann (PhET Interactive Simulations)
  * @author Jonathan Olson (PhET Interactive Simulations)
  * @author Matt Pennington (PhET Interactive Simulations)
@@ -30,8 +28,7 @@ module.exports = {
       interpreter: '/bin/bash',
       script: '../perennial/bin/sage',
       args: `run js/grunt/tasks/continuous-server.ts --localCount=${CT_MAIN_THREAD_COUNT}`,
-      time: true,
-      enabled: true
+      time: true
     },
     {
       name: 'ctq',
@@ -39,8 +36,7 @@ module.exports = {
       interpreter: '/bin/bash',
       script: '../perennial/bin/sage',
       args: 'run js/grunt/tasks/quick-server.ts',
-      time: true,
-      enabled: true
+      time: true
     },
     {
       name: 'ct-chrome-client',
@@ -52,8 +48,7 @@ module.exports = {
       exec_mode: 'cluster',
       instances: CHROME_INSTANCES,
       merge_logs: true,
-      time: true,
-      enabled: true
+      time: true
     },
     {
       name: 'ct-firefox-client',
@@ -63,8 +58,7 @@ module.exports = {
       exec_mode: 'cluster',
       instances: FIREFOX_INSTANCES,
       merge_logs: true,
-      time: true,
-      enabled: true
+      time: true
     }
   ]
 };
