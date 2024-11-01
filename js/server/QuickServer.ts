@@ -11,7 +11,6 @@
 import assert from 'assert';
 import http from 'http';
 import path from 'path';
-import puppeteer from 'puppeteer';
 import url from 'url';
 import cloneMissingRepos from '../../../perennial/js/common/cloneMissingRepos.js';
 import deleteDirectory from '../../../perennial/js/common/deleteDirectory.js';
@@ -26,6 +25,7 @@ import { Repo } from '../../../perennial/js/common/PerennialTypes.js';
 import puppeteerLoad from '../../../perennial/js/common/puppeteerLoad.js';
 import withServer from '../../../perennial/js/common/withServer.js';
 import _ from '../../../perennial/js/npm-dependencies/lodash.js';
+import puppeteer from '../../../perennial/js/npm-dependencies/puppeteer.js';
 import winston from '../../../perennial/js/npm-dependencies/winston.js';
 import sendSlackMessage from './sendSlackMessage';
 
@@ -145,8 +145,8 @@ class QuickServer {
     [ 'SIGINT', 'SIGHUP', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT', 'SIGBUS', 'SIGFPE', 'SIGUSR1',
       'SIGSEGV', 'SIGUSR2', 'SIGTERM', 'beforeExit', 'uncaughtException', 'unhandledRejection'
     ].forEach( sig => {
-      process.on( sig, () => {
-        const message = `CTQ has caught ${sig} and will now exit.`;
+      process.on( sig, ( error: Error ) => {
+        const message = `CTQ has caught ${sig} and will now exit. ${error}`;
         winston.info( message );
         this.slackMessage( message ).then( () => {
           process.exit( 1 );
