@@ -17,8 +17,8 @@
  */
 
 const CT_MAIN_THREAD_COUNT = 20; // localCount for running terminal tests like builds and lints.
-// const FIREFOX_INSTANCES = 10; // Number of firefox browser instances
-const CHROME_INSTANCES = 40; // Number of chrome browser instances
+const FIREFOX_INSTANCES = 30; // Number of firefox browser instances
+const CHROME_INSTANCES = 80; // Number of chrome browser instances
 
 module.exports = {
   apps: [
@@ -51,19 +51,16 @@ module.exports = {
       instances: CHROME_INSTANCES,
       merge_logs: true,
       time: true
+    },
+    {
+      name: 'ct-firefox-client',
+      cwd: '/data/share/phet/continuous-testing/ct-node-client/aqua',
+      args: 'ct-node-client --ctID="Sparky Node Firefox" --browser=firefox --serverURL=http://127.0.0.1 --fileServerURL=http://127.0.0.1/continuous-testing',
+      script: 'grunt',
+      exec_mode: 'cluster',
+      instances: FIREFOX_INSTANCES,
+      merge_logs: true,
+      time: true
     }
-    // ,
-    // {
-    //   name: 'ct-firefox-client',
-    //   cwd: '/data/share/phet/continuous-testing/ct-node-client/aqua',
-    //   interpreter: '/bin/bash',
-    //   script: '../perennial/bin/sage',
-    //   args: 'run js/grunt/tasks/ct-node-client.ts --ctID="Sparky Node Firefox" --browser=firefox --serverURL=http://127.0.0.1 --fileServerURL=http://127.0.0.1/continuous-testing',
-    //   // script: 'grunt',
-    //   // exec_mode: 'cluster',
-    //   // instances: FIREFOX_INSTANCES,
-    //   merge_logs: true,
-    //   time: true
-    // }
   ]
 };
