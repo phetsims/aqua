@@ -11,11 +11,11 @@
  */
 
 import assert from 'assert';
-import sleep from '../../../../perennial/js/common/sleep.js';
-import getOption from '../../../../perennial/js/grunt/tasks/util/getOption.js';
-import winston from '../../../../perennial/js/npm-dependencies/winston.js';
+import sleep from '../../../../perennial/js/common/sleep';
+import getOption from '../../../../perennial/js/grunt/tasks/util/getOption';
+import winston from '../../../../perennial/js/npm-dependencies/winston';
 import playwright from '../../../../perennial/node_modules/playwright';
-import runNextTest from '../../node-client/runNextTest.js';
+import runNextTest from '../../node-client/runNextTest';
 
 winston.default.transports.console.level = 'info';
 
