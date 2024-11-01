@@ -198,7 +198,8 @@ class QuickServer {
       waitAfterLoad: this.isTestMode ? 3000 : 10000,
       allowedTimeToLoad: 120000,
       gotoTimeout: 120000,
-      browser: browser
+      browser: browser,
+      logger: winston.info
     };
 
     while ( true ) {
