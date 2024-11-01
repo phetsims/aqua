@@ -6,25 +6,20 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-const _ = require( 'lodash' );
-const axios = require( 'axios' );
-const winston = require( 'winston' );
+import axios from 'axios';
+import _ from '../../../perennial/js/npm-dependencies/lodash.js';
+import winston from '../../../perennial/js/npm-dependencies/winston.js';
+import { TestInfo } from './getNextTestInfo.js';
+import { CTNodeClientOptions } from './runTest.js';
 
 /**
  * Sends a CT test result
- * @public
- *
- * @param {string|undefined} message
- * @param {Object} testInfo - The original test request from getNextTestInfo
- * @param {boolean} passed
- * @param {Object} [options]
- * @returns {Promise.<Object>} - Resolves with data
  */
-module.exports = async function( message, testInfo, passed, options ) {
-  options = _.assignIn( {
+async function sendTestResult( message: string | undefined, testInfo: TestInfo, passed: boolean, providedOptions?: Partial<CTNodeClientOptions> ): Promise<object> {
+  const options = _.assignIn( {
     serverURL: 'https://sparky.colorado.edu', // {string} - The server to use
     ctID: 'Sparky Node Puppeteer' // {string} - The ID of the client
-  }, options );
+  }, providedOptions );
 
   winston.info( `Sending test result [${passed ? 'PASS' : 'FAIL'}]${message === undefined ? '' : ` with message:\n${message}...`}` );
 
@@ -37,9 +32,12 @@ module.exports = async function( message, testInfo, passed, options ) {
     id: options.ctID
   };
 
-  return ( await axios( {
+  const response = await axios( {
     method: 'post',
     url: `${options.serverURL}/aquaserver/test-result`,
     data: result
-  } ) ).data;
-};
+  } );
+  return response.data;
+}
+
+export default sendTestResult;

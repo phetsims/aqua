@@ -4,27 +4,58 @@
  * Runs a CT test
  *
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Michael Kauzmann (PhET Interactive Simulations)
  */
 
-const _ = require( 'lodash' );
-const sendTestResult = require( './sendTestResult.js' );
-const puppeteer = require( '../../../perennial/node_modules/puppeteer' );
-const browserPageLoad = require( '../../../perennial/js/common/browserPageLoad.js' );
-const winston = require( 'winston' );
-const path = require( 'path' );
+import path from 'path';
+import browserPageLoad from '../../../perennial/js/common/browserPageLoad.js';
+import _ from '../../../perennial/js/npm-dependencies/lodash.js';
+import winston from '../../../perennial/js/npm-dependencies/winston.js';
+import puppeteer from '../../../perennial/node_modules/puppeteer';
+import { TestInfo } from './getNextTestInfo.js';
+import sendTestResult from './sendTestResult.js';
+
 require( 'dotenv' ).config();
 
 /* global window */
 
+type PromiseConstructorParam<T> = ConstructorParameters<typeof Promise<T>>[0];
+type PromiseExecutorParams<T> = Parameters<PromiseConstructorParam<T>>;
+type Resolve<T> = PromiseExecutorParams<T>[0];
+type Reject = PromiseExecutorParams<unknown>[1];
+
+type PageOperator<T> = ( page: object, resolve: Resolve<T>, reject: Reject ) => Promise<void>;
+
+type BrowserPageLoadOptions<T = null> = {
+  gotoTimeout: number;
+  allowedTimeToLoad: number;
+  rejectErrors: boolean;
+  rejectPageErrors: boolean;
+  waitAfterLoad: boolean;
+  resolveFromLoad: boolean;
+  logConsoleOutput: boolean;
+  logNavigation: boolean;
+  cachePages: boolean;
+  logger: ( message: string ) => void;
+  launchOptions: Record<string, any>;
+  onLoadTimeout: null | PageOperator<T>;
+  evaluate: ( ...args: any[] ) => T;
+  evaluateOnNewDocument: null | ( () => void );
+  onPageCreation: null | PageOperator<T>;
+};
+export type CTNodeClientOptions = BrowserPageLoadOptions & {
+  fileServerURL: string;
+  browserCreator: object;
+  serverURL: string;
+  ctID: string;
+  old: boolean;
+};
+
+
 /**
  * Runs a CT test
- * @public
- *
- * @param {Object} testInfo
- * @param {Object} [options] - see browserPageLoad
- * @returns {Promise}
  */
-module.exports = async function( testInfo, options ) {
+async function runTest( testInfo: TestInfo, providedOptions?: Partial<CTNodeClientOptions> ): Promise<void> {
 
   // Make sure not to resolve if we still have results being sent.
   let currentSendingCount = 0;
@@ -37,7 +68,7 @@ module.exports = async function( testInfo, options ) {
   // The whole log of the browser run. Keep this as one string to send it as a CT result.
   let log = '';
 
-  options = _.merge( {
+  const options: CTNodeClientOptions = _.merge( {
     fileServerURL: 'https://sparky.colorado.edu/continuous-testing', // {string} - The server to use
     browserCreator: puppeteer,
 
@@ -57,14 +88,14 @@ module.exports = async function( testInfo, options ) {
     cachePages: false,
 
     // Keep track of all messages to send them out with our CT reporting
-    logger: message => {
+    logger: ( message: string ) => {
       winston.info( message );
       log += `${message}\n`;
     },
-    onLoadTimeout: ( resolve, reject ) => {
+    onLoadTimeout: ( resolve: Resolve<null>, reject: Reject ) => {
       if ( !gotNextTest ) { // If we have gotten this signal, then we are already handling the resolving.
         if ( receivedPassFail && currentSendingCount === 0 ) {
-          resolve();
+          resolve( null );
         }
         else {
           reject( new Error( `Did not get next-test message in ${allowedTimeToLoad}ms (currentSendingCount ${currentSendingCount}): ${JSON.stringify( testInfo.test )}` ) );
@@ -73,27 +104,31 @@ module.exports = async function( testInfo, options ) {
     },
 
     evaluateOnNewDocument: () => {
+      // @ts-expect-error - window from the browser?
       const oldParent = window.parent;
 
+      // @ts-expect-error - window from the browser?
       window.parent = {
-        postMessage: event => {
+        postMessage: ( event: Event ) => {
+          // @ts-expect-error - window from the browser?
           window.onPostMessageReceived && window.onPostMessageReceived( event );
           oldParent && oldParent.postMessage( event, '*' );
         }
       };
     },
 
-    onPageCreation: async ( page, resolve ) => {
+    onPageCreation: async ( page: object, resolve: Resolve<null> ) => {
 
       const resolveIfReady = () => {
         winston.debug( `resolveIfReady, currentSendingCount:${currentSendingCount}, gotNextTest:${gotNextTest}` );
         if ( currentSendingCount === 0 && gotNextTest ) {
           winston.debug( 'resolving from test message' );
-          resolve();
+          resolve( null );
         }
       };
 
       // Define a window.onMessageReceivedEvent function on the page.
+      // @ts-expect-error - TODO: https://github.com/phetsims/perennial/issues/369
       await page.exposeFunction( 'onPostMessageReceived', async event => {
         try {
           event = JSON.parse( event );
@@ -134,7 +169,7 @@ ${log}`,
         }
       } );
     }
-  }, options );
+  }, providedOptions );
 
   // Puppeteer-specific Options
   if ( options.browserCreator === puppeteer ) {
@@ -174,4 +209,6 @@ ${log}`,
   catch( e ) {
     throw new Error( `${e}\n${log}` ); // Post the error with the log from the browser run
   }
-};
+}
+
+export default runTest;
