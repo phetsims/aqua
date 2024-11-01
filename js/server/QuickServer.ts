@@ -140,17 +140,21 @@ class QuickServer {
    * Send a slack message when exiting unexpectedly to say that we exited.
    */
   private wireUpMessageOnExit(): void {
+    let handledSignal = false;
 
     // catching signals and do something before exit
     [ 'SIGINT', 'SIGHUP', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT', 'SIGBUS', 'SIGFPE', 'SIGUSR1',
       'SIGSEGV', 'SIGUSR2', 'SIGTERM', 'beforeExit', 'uncaughtException', 'unhandledRejection'
     ].forEach( sig => {
       process.on( sig, ( error: Error ) => {
-        const message = `CTQ has caught ${sig} and will now exit. ${error}`;
-        winston.info( message );
-        this.slackMessage( message ).then( () => {
-          process.exit( 1 );
-        } ).catch( e => { throw e; } );
+        if ( !handledSignal ) {
+          handledSignal = true;
+          const message = `CTQ has caught ${sig} and will now exit. ${error}`;
+          winston.info( message );
+          this.slackMessage( message ).then( () => {
+            process.exit( 1 );
+          } ).catch( e => { throw e; } );
+        }
       } );
     } );
   }
