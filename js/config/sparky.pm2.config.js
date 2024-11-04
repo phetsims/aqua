@@ -35,7 +35,7 @@ module.exports = {
       cwd: '/data/share/phet/continuous-testing/ct-quick/aqua',
       interpreter: '/bin/bash',
       script: '../perennial/bin/sage',
-      args: 'run js/grunt/tasks/quick-server.ts --testing',
+      args: 'run js/grunt/tasks/quick-server.ts',
       time: true
     },
     {
