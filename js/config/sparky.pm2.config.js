@@ -18,7 +18,7 @@
 
 const CT_MAIN_THREAD_COUNT = 20; // localCount for running terminal tests like builds and lints.
 const FIREFOX_INSTANCES = 30; // Number of firefox browser instances
-const CHROME_INSTANCES = 40; // Number of chrome browser instances
+const CHROME_INSTANCES = 30; // Number of chrome browser instances
 
 module.exports = {
   apps: [

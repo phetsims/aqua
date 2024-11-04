@@ -50,7 +50,7 @@ module.exports = {
       args: 'ct-node-client --ctID="Bayes Node Chrome" --serverURL=http://128.138.93.172/ --fileServerURL=http://128.138.93.172/continuous-testing',
       script: 'grunt',
       exec_mode: 'cluster',
-      instances: 10,
+      instances: 20,
       time: true
     }
   ]
