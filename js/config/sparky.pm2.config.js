@@ -11,7 +11,6 @@
  *
  * Likely to be run as `phet` user on sparky.colorado.edu
  *
- * TODO: this is a test https://github.com/phetsims/aqua/issues/219
  * @author Michael Kauzmann (PhET Interactive Simulations)
  * @author Jonathan Olson (PhET Interactive Simulations)
  * @author Matt Pennington (PhET Interactive Simulations)
