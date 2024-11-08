@@ -8,8 +8,9 @@
  */
 
 import { getBrowserConfiguration } from '../perennial-alias/js/eslint/config/browser.eslint.config.mjs';
-import getNodeConfiguration from '../perennial-alias/js/eslint/config/util/getNodeConfiguration.mjs';
 import rootEslintConfig from '../perennial-alias/js/eslint/config/root.eslint.config.mjs';
+import getNodeConfiguration from '../perennial-alias/js/eslint/config/util/getNodeConfiguration.mjs';
+import useNPMDependenciesFromPerennial from '../perennial-alias/js/eslint/config/util/useNPMDependenciesFromPerennial.mjs';
 
 const nodeJSDirs = [
   'js/config/**',
@@ -27,6 +28,7 @@ export default [
   ...getNodeConfiguration( {
     files: nodeJSDirs
   } ),
+  useNPMDependenciesFromPerennial,
   {
     languageOptions: {
       globals: {
