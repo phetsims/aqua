@@ -9,7 +9,7 @@
 const getNextTestInfo = require( './getNextTestInfo.js' );
 const runTest = require( './runTest.js' );
 const sendTestResult = require( './sendTestResult.js' );
-const winston = require( 'winston' );
+const winston = require( '../../../perennial/js/npm-dependencies/winston.js' ).default;
 
 /**
  * Runs the next browser CT test

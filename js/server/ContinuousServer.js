@@ -24,7 +24,7 @@ const http = require( 'http' );
 const _ = require( 'lodash' );
 const path = require( 'path' );
 const url = require( 'url' );
-const winston = require( 'winston' );
+const winston = require( '../../../perennial/js/npm-dependencies/winston.js' ).default;
 
 // in days, any shapshots that are older will be removed from the continuous report
 const NUMBER_OF_DAYS_TO_KEEP_SNAPSHOTS = 4;

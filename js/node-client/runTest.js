@@ -10,7 +10,7 @@ const _ = require( 'lodash' );
 const sendTestResult = require( './sendTestResult.js' );
 const puppeteer = require( '../../../perennial/node_modules/puppeteer' );
 const browserPageLoad = require( '../../../perennial/js/common/browserPageLoad.js' );
-const winston = require( 'winston' );
+const winston = require( '../../../perennial/js/npm-dependencies/winston.js' ).default;
 const path = require( 'path' );
 require( 'dotenv' ).config();
 

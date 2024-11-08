@@ -16,7 +16,7 @@ const gitLastCommitTimestamp = require( '../../../perennial/js/common/gitLastCom
 const gitRevParse = require( '../../../perennial/js/common/gitRevParse.js' );
 const Test = require( './Test.js' );
 const fs = require( 'fs' );
-const winston = require( 'winston' );
+const winston = require( '../../../perennial/js/npm-dependencies/winston.js' ).default;
 const tsxCommand = require( '../../../perennial/js/common/tsxCommand.js' );
 
 class Snapshot {
