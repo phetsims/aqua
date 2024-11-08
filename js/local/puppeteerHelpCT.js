@@ -5,6 +5,8 @@
  * @author Michael Kauzmann (PhET Interactive Simulations)
  */
 
+// TODO: Delete this file, https://github.com/phetsims/aqua/issues/221
+
 const puppeteerLoad = require( '../../../perennial/js/common/puppeteerLoad.js' );
 const assert = require( 'assert' );
 

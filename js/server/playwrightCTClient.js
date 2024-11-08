@@ -3,6 +3,7 @@
 /**
  * Launch playwright and point it to CT running on a server for 15 minutes.
  * @author Michael Kauzmann (PhET Interactive Simulations)
+ * // TODO: Delete this file, https://github.com/phetsims/aqua/issues/221
  * @deprecated
  */
 

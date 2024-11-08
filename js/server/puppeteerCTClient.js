@@ -3,6 +3,7 @@
 /**
  * Launch puppeteer and point it to CT running on a server for 15 minutes.
  * @deprecated
+ * // TODO: Delete this file, https://github.com/phetsims/aqua/issues/221
  * @author Michael Kauzmann (PhET Interactive Simulations)
  */
 

@@ -92,20 +92,20 @@ Typically, you can run `pm2 list` to display the running processes, and it will 
 ├────┼─────────────────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
 │ 0  │ ct-main                     │ default     │ N/A     │ fork    │ 722866   │ 14D    │ 3    │ online    │ 125%     │ 1.0gb    │ phet     │ disabled │
 │ 1  │ ct-quick                    │ default     │ N/A     │ fork    │ 1499044  │ 14D    │ 167  │ online    │ 50%      │ 147.8mb  │ phet     │ disabled │
-│ 4  │ ct-node-firefox-client      │ default     │ N/A     │ cluster │ 723037   │ 14D    │ 2    │ online    │ 0%       │ 76.6mb   │ phet     │ disabled │
-│ 6  │ ct-node-firefox-client      │ default     │ N/A     │ cluster │ 723038   │ 14D    │ 2    │ online    │ 0%       │ 91.0mb   │ phet     │ disabled │
-│ 8  │ ct-node-firefox-client      │ default     │ N/A     │ cluster │ 724765   │ 14D    │ 2    │ online    │ 0%       │ 104.1mb  │ phet     │ disabled │
-│ 10 │ ct-node-firefox-client      │ default     │ N/A     │ cluster │ 724785   │ 14D    │ 2    │ online    │ 0%       │ 113.5mb  │ phet     │ disabled │
-│ 12 │ ct-node-firefox-client      │ default     │ N/A     │ cluster │ 727279   │ 14D    │ 2    │ online    │ 0%       │ 109.9mb  │ phet     │ disabled │
-│ 14 │ ct-node-firefox-client      │ default     │ N/A     │ cluster │ 727313   │ 14D    │ 2    │ online    │ 0%       │ 103.3mb  │ phet     │ disabled │
-│ 16 │ ct-node-firefox-client      │ default     │ N/A     │ cluster │ 728946   │ 14D    │ 2    │ online    │ 0%       │ 114.7mb  │ phet     │ disabled │
-│ 18 │ ct-node-firefox-client      │ default     │ N/A     │ cluster │ 728974   │ 14D    │ 2    │ online    │ 0%       │ 84.2mb   │ phet     │ disabled │
-│ 48 │ ct-node-firefox-client      │ default     │ N/A     │ cluster │ 740100   │ 14D    │ 2    │ online    │ 0%       │ 97.6mb   │ phet     │ disabled │
-│ 50 │ ct-node-firefox-client      │ default     │ N/A     │ cluster │ 740117   │ 14D    │ 2    │ online    │ 0%       │ 96.7mb   │ phet     │ disabled │
-│ 52 │ ct-node-firefox-client      │ default     │ N/A     │ cluster │ 741709   │ 14D    │ 2    │ online    │ 0%       │ 97.0mb   │ phet     │ disabled │
-│ 3  │ ct-node-puppeteer-client    │ default     │ N/A     │ cluster │ 395012   │ 18h    │ 3    │ online    │ 0%       │ 130.9mb  │ phet     │ disabled │
-│ 9  │ ct-node-puppeteer-client    │ default     │ N/A     │ cluster │ 395073   │ 18h    │ 3    │ online    │ 0%       │ 124.0mb  │ phet     │ disabled │
-│ 11 │ ct-node-puppeteer-client    │ default     │ N/A     │ cluster │ 395186   │ 18h    │ 3    │ online    │ 0%       │ 132.1mb  │ phet     │ disabled │
+│ 4  │ ct-firefox-client      │ default     │ N/A     │ cluster │ 723037   │ 14D    │ 2    │ online    │ 0%       │ 76.6mb   │ phet     │ disabled │
+│ 6  │ ct-firefox-client      │ default     │ N/A     │ cluster │ 723038   │ 14D    │ 2    │ online    │ 0%       │ 91.0mb   │ phet     │ disabled │
+│ 8  │ ct-firefox-client      │ default     │ N/A     │ cluster │ 724765   │ 14D    │ 2    │ online    │ 0%       │ 104.1mb  │ phet     │ disabled │
+│ 10 │ ct-firefox-client      │ default     │ N/A     │ cluster │ 724785   │ 14D    │ 2    │ online    │ 0%       │ 113.5mb  │ phet     │ disabled │
+│ 12 │ ct-firefox-client      │ default     │ N/A     │ cluster │ 727279   │ 14D    │ 2    │ online    │ 0%       │ 109.9mb  │ phet     │ disabled │
+│ 14 │ ct-firefox-client      │ default     │ N/A     │ cluster │ 727313   │ 14D    │ 2    │ online    │ 0%       │ 103.3mb  │ phet     │ disabled │
+│ 16 │ ct-firefox-client      │ default     │ N/A     │ cluster │ 728946   │ 14D    │ 2    │ online    │ 0%       │ 114.7mb  │ phet     │ disabled │
+│ 18 │ ct-firefox-client      │ default     │ N/A     │ cluster │ 728974   │ 14D    │ 2    │ online    │ 0%       │ 84.2mb   │ phet     │ disabled │
+│ 48 │ ct-firefox-client      │ default     │ N/A     │ cluster │ 740100   │ 14D    │ 2    │ online    │ 0%       │ 97.6mb   │ phet     │ disabled │
+│ 50 │ ct-firefox-client      │ default     │ N/A     │ cluster │ 740117   │ 14D    │ 2    │ online    │ 0%       │ 96.7mb   │ phet     │ disabled │
+│ 52 │ ct-firefox-client      │ default     │ N/A     │ cluster │ 741709   │ 14D    │ 2    │ online    │ 0%       │ 97.0mb   │ phet     │ disabled │
+│ 3  │ ct-puppeteer-client    │ default     │ N/A     │ cluster │ 395012   │ 18h    │ 3    │ online    │ 0%       │ 130.9mb  │ phet     │ disabled │
+│ 9  │ ct-puppeteer-client    │ default     │ N/A     │ cluster │ 395073   │ 18h    │ 3    │ online    │ 0%       │ 124.0mb  │ phet     │ disabled │
+│ 11 │ ct-puppeteer-client    │ default     │ N/A     │ cluster │ 395186   │ 18h    │ 3    │ online    │ 0%       │ 132.1mb  │ phet     │ disabled │
 . . . 
 Use `pm2 show <id|name>` to get more details about an app
 ```

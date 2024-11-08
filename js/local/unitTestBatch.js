@@ -1,6 +1,8 @@
 // Copyright 2018-2024, University of Colorado Boulder
 // @author Michael Kauzmann (PhET Interactive Simulations)
 
+// TODO: Delete this file, https://github.com/phetsims/aqua/issues/221
+
 
 const fs = require( 'fs' );
 const puppeteer = require( 'puppeteer' );
