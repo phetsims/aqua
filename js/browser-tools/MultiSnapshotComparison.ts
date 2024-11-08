@@ -137,6 +137,7 @@ type Row = {
   } ) ).filter( ( item, i ) => i % options.stride === options.offset );
 
   const resetEmitter = new Emitter();
+  // eslint-disable-next-line require-atomic-updates
   window.resetEmitter = resetEmitter;
 
   class Snapshot {

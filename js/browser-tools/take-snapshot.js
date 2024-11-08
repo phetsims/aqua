@@ -249,6 +249,7 @@ async function handleFrame() {
         voicing: voicingResponseData
       } ), '*' );
 
+      // eslint-disable-next-line require-atomic-updates
       received = true;
       frameHashes += concatHash;
       if ( count === options.numFrames ) {
