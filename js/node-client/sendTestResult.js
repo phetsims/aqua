@@ -7,7 +7,7 @@
  */
 
 const _ = require( 'lodash' );
-const axios = require( 'axios' );
+const axios = require( '../../../perennial/js/npm-dependencies/axios' ).default;
 const winston = require( 'winston' );
 
 /**
