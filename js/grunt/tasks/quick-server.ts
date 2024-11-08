@@ -11,7 +11,7 @@
  * @author Sam Reid (PhET Interactive Simulations)
  */
 
-import getOption from '../../../../perennial/js/grunt/tasks/util/getOption';
+import getOption from '../../../../perennial/js/grunt/tasks/util/getOption.js';
 import QuickServer from '../../server/QuickServer.js';
 
 const port = getOption( 'port' ) ? Number( getOption( 'port' ) ) : 45367;

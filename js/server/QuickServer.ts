@@ -27,7 +27,7 @@ import withServer from '../../../perennial/js/common/withServer.js';
 import _ from '../../../perennial/js/npm-dependencies/lodash.js';
 import puppeteer from '../../../perennial/js/npm-dependencies/puppeteer.js';
 import winston from '../../../perennial/js/npm-dependencies/winston.js';
-import sendSlackMessage from './sendSlackMessage';
+import sendSlackMessage from './sendSlackMessage.js';
 
 
 type TestData = {
