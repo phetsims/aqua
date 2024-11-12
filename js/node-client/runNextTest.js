@@ -39,6 +39,7 @@ module.exports = async function( options ) {
       }
     }
     catch( e ) {
+      winston.debug( `failure in test attempt loop: ${e}` );
       lastFailure = e;
     }
   }
