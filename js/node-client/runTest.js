@@ -32,7 +32,13 @@ module.exports = async function( testInfo, options ) {
   let receivedPassFail = false; // When received a test result
   let gotNextTest = false; // When received the next-test command.
 
-  const allowedTimeToLoad = 400000;
+  // Test must be totally complete. This is needed because we set resolveFromLoad:false below, see https://github.com/phetsims/aqua/issues/222
+  const allowedTimeToComplete = 20 * 60000; // in ms
+  const allowedTimeToLoad = 6.5 * 60000; // in ms, page must load and be testing
+
+  const completionTimeoutID = setTimeout( () => {
+    throw new Error( `runTest did not complete its test in ${Number.toFixedNumber( allowedTimeToComplete / 60000, 1 )} minutes: ${JSON.stringify( testInfo )}` );
+  }, allowedTimeToComplete );
 
   // The whole log of the browser run. Keep this as one string to send it as a CT result.
   let log = '';
@@ -170,6 +176,7 @@ ${log}`,
 
   try {
     await browserPageLoad( options.browserCreator, url, options );
+    clearTimeout( completionTimeoutID );
   }
   catch( e ) {
     throw new Error( `${e}\n${log}` ); // Post the error with the log from the browser run
