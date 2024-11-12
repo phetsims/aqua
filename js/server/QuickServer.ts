@@ -266,7 +266,7 @@ class QuickServer {
 
   private async testLint(): Promise<ExecuteResult> {
     winston.info( 'QuickServer: linting' );
-    // @ts-expect-error TODO: remove this once execute is in TypeScript, https://github.com/phetsims/perennial/issues/369
+    // @ts-expect-error TODO: remove this once execute is in TypeScript, https://github.com/phetsims/perennial/issues/403
     return execute( gruntCommand, [ 'lint', '--all', '--hide-progress-bar' ], `${this.rootDir}/perennial`, EXECUTE_OPTIONS );
   }
 
@@ -275,19 +275,19 @@ class QuickServer {
 
     // Use grunt so that it works across platforms, launching `tsc` as the command on windows results in ENOENT -4058.
     // Pretty false will make the output more machine readable.
-    // @ts-expect-error TODO: remove this once execute is in TypeScript, https://github.com/phetsims/perennial/issues/369
+    // @ts-expect-error TODO: remove this once execute is in TypeScript, https://github.com/phetsims/perennial/issues/403
     return execute( gruntCommand, [ 'check', '--all', '--pretty', 'false' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
   }
 
   private async testPhetioCompare(): Promise<ExecuteResult> {
     winston.info( 'QuickServer: phet-io compare' );
-    // @ts-expect-error TODO: remove this once execute is in TypeScript, https://github.com/phetsims/perennial/issues/369
+    // @ts-expect-error TODO: remove this once execute is in TypeScript, https://github.com/phetsims/perennial/issues/403
     return execute( gruntCommand, [ 'compare-phet-io-api', '--simList=../perennial/data/phet-io-api-stable' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
   }
 
   private async transpile(): Promise<ExecuteResult> {
     winston.info( 'QuickServer: transpiling' );
-    // @ts-expect-error TODO: remove this once execute is in TypeScript, https://github.com/phetsims/perennial/issues/369
+    // @ts-expect-error TODO: remove this once execute is in TypeScript, https://github.com/phetsims/perennial/issues/403
     return execute( gruntCommand, [ 'transpile', '--all' ], `${this.rootDir}/perennial`, EXECUTE_OPTIONS );
   }
 
