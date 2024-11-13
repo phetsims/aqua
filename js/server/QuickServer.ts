@@ -86,7 +86,7 @@ type QuickServerOptions = {
 };
 
 
-// TODO: Delete this once execute is converted to typescript https://github.com/phetsims/perennial/issues/369
+// TODO: Delete this once execute is converted to typescript https://github.com/phetsims/perennial/issues/403
 type ExecuteResult = {
   code: number;
   stdout: string;
