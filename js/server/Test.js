@@ -12,10 +12,15 @@ const assert = require( 'assert' );
 const _ = require( 'lodash' );
 
 // constants
-const TEST_TYPES = [
+const LOCAL_TEST_TYPES = [
   'lint',
   'lint-everything',
   'build',
+  'npm-run'
+];
+
+const TEST_TYPES = [
+  ...LOCAL_TEST_TYPES,
   'sim-test',
   'qunit-test',
   'pageload-test',
@@ -72,7 +77,7 @@ class Test {
     // @public {string|null}
     this.repo = null;
 
-    if ( this.type === 'lint' || this.type === 'build' ) {
+    if ( this.type === 'lint' || this.type === 'build' || this.type === 'npm-run' ) {
       assert( typeof description.repo === 'string', `${this.type} tests should have a repo` );
 
       this.repo = description.repo;
@@ -138,6 +143,11 @@ class Test {
     this.count = 0;
   }
 
+  get testCommand() {
+    assert( this.type === 'npm run', 'command only supported for npm running' );
+    return this.description.command;
+  }
+
   /**
    * Records a test result
    * @public
@@ -157,7 +167,7 @@ class Test {
    * @returns {boolean}
    */
   isLocallyAvailable() {
-    return !this.complete && ( this.type === 'lint' || this.type === 'lint-everything' || this.type === 'build' );
+    return !this.complete && LOCAL_TEST_TYPES.includes( this.type );
   }
 
   /**

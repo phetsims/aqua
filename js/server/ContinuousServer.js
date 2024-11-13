@@ -13,6 +13,7 @@ const getRepoList = require( '../../../perennial/js/common/getRepoList.js' );
 const gitPull = require( '../../../perennial/js/common/gitPull.js' );
 const gitRevParse = require( '../../../perennial/js/common/gitRevParse.js' );
 const gruntCommand = require( '../../../perennial/js/common/gruntCommand.js' );
+const npmCommand = require( '../../../perennial/js/common/npmCommand.js' );
 const isStale = require( '../../../perennial/js/common/isStale.js' );
 const npmUpdate = require( '../../../perennial/js/common/npmUpdate.js' );
 const transpileAll = require( '../../../perennial/js/common/transpileAll.js' );
@@ -653,6 +654,17 @@ class ContinuousServer {
           test.complete = true;
           try {
             const output = await execute( gruntCommand, [ 'lint', '--all', '--hide-progress-bar', '--disable-eslint-cache' ], `${snapshot.directory}/perennial` );
+
+            ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
+          }
+          catch( e ) {
+            ContinuousServer.testFail( test, Date.now() - startTimestamp, `Lint-everything failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
+          }
+        }
+        else if ( test.type === 'npm-run' ) {
+          test.complete = true;
+          try {
+            const output = await execute( npmCommand, [ 'run', ...test.testCommand.split( ' ' ) ], `${snapshot.directory}/${test.repo}` );
 
             ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
           }
