@@ -97,7 +97,7 @@ class Snapshot {
     for ( const repo of getRepoList( 'active-runnables' ) ) {
       this.setStatus( `Scanning dependencies for timestamps: ${repo}` );
       try {
-        const output = await execute( tsxCommand, [ 'js/scripts/print-dependencies.js', repo ], `${this.rootDir}/chipper` );
+        const output = await execute( tsxCommand, [ 'js/scripts/print-dependencies.ts', repo ], `${this.rootDir}/chipper` );
         const dependencies = output.trim().split( ',' );
         let timestamp = 0;
         for ( const dependency of dependencies ) {
