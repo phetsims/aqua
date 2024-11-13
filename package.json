@@ -6,6 +6,10 @@
     "type": "git",
     "url": "https://github.com/phetsims/aqua.git"
   },
+  "scripts": {
+    "test-ctq": "grunt quick-server --testing",
+    "test-ct": "grunt continuous-server --useRootDir --localCount=1"
+  },
   "devDependencies": {
     "@slack/bolt": "~3.11.0",
     "dotenv": "^16.0.3",
