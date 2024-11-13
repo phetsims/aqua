@@ -35,7 +35,7 @@ class Test {
    * @param {number} repoCommitTimestamp
    * @param {number} dependenciesCommitTimestamp
    */
-  constructor( snapshot, description, repoCommitTimestamp, dependenciesCommitTimestamp ) {
+  constructor( snapshot, description, repoCommitTimestamp, dependenciesCommitTimestamp = 0 ) {
     assert( Array.isArray( description.test ), 'Test descriptions should have a test-name array' );
     assert( typeof description.type === 'string', 'Test descriptions should have a type' );
     assert( TEST_TYPES.includes( description.type ), `Unknown type: ${description.type}` );

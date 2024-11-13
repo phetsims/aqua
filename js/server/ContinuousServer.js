@@ -509,10 +509,12 @@ class ContinuousServer {
     }
 
     // initial NPM checks, so that all repos will have node_modules that need them
+    this.setStatus( 'Running initial node_modules checks on all repos' );
     for ( const repo of getRepoList( 'active-repos' ) ) {
-      this.setStatus( `Running initial node_modules checks: ${repo}` );
       if ( fs.existsSync( `../${repo}/package.json` ) && !fs.existsSync( `../${repo}/node_modules` ) ) {
+        this.setStatus( `Initial npm update: ${repo}` );
         await npmUpdate( repo );
+        this.setStatus( 'Running initial node_modules checks on all repos' );
       }
     }
 
@@ -691,7 +693,8 @@ class ContinuousServer {
           }
         }
         else {
-          // uhhh, don't know what happened? Don't loop here without sleeping
+          // uhhh, don't know what happened? Don't loop here without sleeping please
+          ContinuousServer.testFail( test, Date.now() - startTimestamp, `Unsupported local test type "${test.type}" for ${test.names}` );
           await sleep( 1000 );
         }
       }
