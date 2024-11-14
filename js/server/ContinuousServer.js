@@ -655,6 +655,7 @@ class ContinuousServer {
         else if ( test.type === 'lint-everything' ) {
           test.complete = true;
           try {
+            // TODO: Delete unused lint options globally, https://github.com/phetsims/chipper/issues/1498
             const output = await execute( gruntCommand, [ 'lint', '--all', '--hide-progress-bar', '--disable-eslint-cache' ], `${snapshot.directory}/perennial` );
 
             ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
