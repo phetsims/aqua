@@ -7,7 +7,7 @@
  */
 
 const _ = require( 'lodash' );
-const axios = require( '../../../perennial/js/npm-dependencies/axios.js' ).default;
+const axios = require( '../../../perennial/js/npm-dependencies/axios' ).default;
 
 /**
  * Returns CT data for the next test to run (for browser-based testing)

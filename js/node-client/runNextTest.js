@@ -6,10 +6,10 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-const getNextTestInfo = require( './getNextTestInfo.js' );
-const runTest = require( './runTest.js' );
-const sendTestResult = require( './sendTestResult.js' );
-const winston = require( '../../../perennial/js/npm-dependencies/winston.js' ).default;
+const getNextTestInfo = require( './getNextTestInfo' );
+const runTest = require( './runTest' );
+const sendTestResult = require( './sendTestResult' );
+const winston = require( '../../../perennial/js/npm-dependencies/winston' ).default;
 
 /**
  * Runs the next browser CT test

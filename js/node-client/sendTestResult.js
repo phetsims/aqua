@@ -7,8 +7,8 @@
  */
 
 const _ = require( 'lodash' );
-const axios = require( '../../../perennial/js/npm-dependencies/axios.js' ).default;
-const winston = require( '../../../perennial/js/npm-dependencies/winston.js' ).default;
+const axios = require( '../../../perennial/js/npm-dependencies/axios' ).default;
+const winston = require( '../../../perennial/js/npm-dependencies/winston' ).default;
 
 /**
  * Sends a CT test result
