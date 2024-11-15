@@ -9,7 +9,7 @@
 // AQUA wants to opt out of global SIGINT handling so that it can handle it itself.
 global.processEventOptOut = true;
 
-const Gruntfile = require( '../chipper/Gruntfile' );
+const Gruntfile = require( '../chipper/Gruntfile.cjs' );
 const registerTasks = require( '../perennial-alias/js/grunt/commonjs/registerTasks' );
 
 // Stream winston logging to the console
