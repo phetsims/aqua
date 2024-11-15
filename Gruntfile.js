@@ -10,7 +10,7 @@
 global.processEventOptOut = true;
 
 const Gruntfile = require( '../chipper/Gruntfile' );
-const registerTasks = require( '../perennial-alias/js/grunt/util/registerTasks' );
+const registerTasks = require( '../perennial-alias/js/grunt/commonjs/registerTasks' );
 
 // Stream winston logging to the console
 module.exports = grunt => {
