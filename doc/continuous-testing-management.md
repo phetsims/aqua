@@ -39,7 +39,7 @@ running that test browser tests. See `aqua/js/config/bayes.pm2.config` and `aqua
 ## The Continuous Server (ct-main)
 
 The CT server runs from the `continuous-server` grunt task, and on sparky is kept running (and logging) with pm2 (more
-information below). The code is under `aqua/js/server`, and launches from aqua's `Gruntfile.js`.
+information below). The code is under `aqua/js/server`, and launches from aqua's `Gruntfile.cjs`.
 
 The server by default will scan the (clean) working copy (pulling/cloning repos as needed), and when changes are
 detected will (by default) copy things over into a snapshot directory (under `ct-snapshots/`). Browser-based testing
@@ -210,7 +210,7 @@ run `grunt`. This will build the interface under `aqua/build` which is used by `
 
 ## Running the server locally
 
-The documentation under `aqua/js/Gruntfile.js` specifies more details for running, but if you want to run some CT tests
+The documentation under `aqua/js/Gruntfile.cjs` specifies more details for running, but if you want to run some CT tests
 locally (without the full server experience) it's best to use the `--useRootDir` flag (it will not copy files into
 snapshots, but will use your working copy, creating only one "CT" column, and without saving state to disk).
 The `--localCount` parameter is required, and specifies how many concurrent build/lint tasks should happen (which can be
