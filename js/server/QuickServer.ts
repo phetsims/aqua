@@ -14,7 +14,7 @@ import path from 'path';
 import url from 'url';
 import cloneMissingRepos from '../../../perennial/js/common/cloneMissingRepos.js';
 import deleteDirectory from '../../../perennial/js/common/deleteDirectory.js';
-import execute from '../../../perennial/js/common/execute.js';
+import execute, { ExecuteResult } from '../../../perennial/js/common/execute.js';
 import getRepoList from '../../../perennial/js/common/getRepoList.js';
 import gitPull from '../../../perennial/js/common/gitPull.js';
 import gitRevParse from '../../../perennial/js/common/gitRevParse.js';
@@ -76,21 +76,13 @@ const WAIT_BETWEEN_RUNS = 20000; // in ms
 const EXECUTE_OPTIONS = {
   errors: 'resolve',
   childProcessEnv: { NODE_OPTIONS: '--max-old-space-size=8192' }
-};
+} as const;
 
 type Dependencies = Record<Repo, string>;
 
 type QuickServerOptions = {
   rootDir: string;
   isTestMode: boolean;
-};
-
-
-// TODO: Delete this once execute is converted to typescript https://github.com/phetsims/perennial/issues/403
-type ExecuteResult = {
-  code: number;
-  stdout: string;
-  stderr: string;
 };
 
 
@@ -266,7 +258,6 @@ class QuickServer {
 
   private async testLint(): Promise<ExecuteResult> {
     winston.info( 'QuickServer: linting' );
-    // @ts-expect-error TODO: remove this once execute is in TypeScript, https://github.com/phetsims/perennial/issues/403
     return execute( gruntCommand, [ 'lint', '--all', '--hide-progress-bar' ], `${this.rootDir}/perennial`, EXECUTE_OPTIONS );
   }
 
@@ -275,19 +266,16 @@ class QuickServer {
 
     // Use grunt so that it works across platforms, launching `tsc` as the command on windows results in ENOENT -4058.
     // Pretty false will make the output more machine readable.
-    // @ts-expect-error TODO: remove this once execute is in TypeScript, https://github.com/phetsims/perennial/issues/403
     return execute( gruntCommand, [ 'check', '--all', '--pretty', 'false' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
   }
 
   private async testPhetioCompare(): Promise<ExecuteResult> {
     winston.info( 'QuickServer: phet-io compare' );
-    // @ts-expect-error TODO: remove this once execute is in TypeScript, https://github.com/phetsims/perennial/issues/403
     return execute( gruntCommand, [ 'compare-phet-io-api', '--simList=../perennial/data/phet-io-api-stable' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
   }
 
   private async transpile(): Promise<ExecuteResult> {
     winston.info( 'QuickServer: transpiling' );
-    // @ts-expect-error TODO: remove this once execute is in TypeScript, https://github.com/phetsims/perennial/issues/403
     return execute( gruntCommand, [ 'transpile', '--all' ], `${this.rootDir}/perennial`, EXECUTE_OPTIONS );
   }
 
