@@ -37,7 +37,7 @@ module.exports = async function( testInfo, options ) {
   const allowedTimeToLoad = 6.5 * 60000; // in ms, page must load and be testing
 
   const completionTimeoutID = setTimeout( () => {
-    throw new Error( `runTest did not complete its test in ${Number.toFixedNumber( allowedTimeToComplete / 60000, 1 )} minutes: ${JSON.stringify( testInfo )}` );
+    throw new Error( `runTest did not complete its test in ${( allowedTimeToComplete / 60000 ).toFixed( 1 )} minutes: ${JSON.stringify( testInfo )}` );
   }, allowedTimeToComplete );
 
   // The whole log of the browser run. Keep this as one string to send it as a CT result.
