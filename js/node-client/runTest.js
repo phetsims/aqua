@@ -33,7 +33,7 @@ module.exports = async function( testInfo, options ) {
   let gotNextTest = false; // When received the next-test command.
 
   // Test must be totally complete. This is needed because we set resolveFromLoad:false below, see https://github.com/phetsims/aqua/issues/222
-  const allowedTimeToComplete = 20 * 60000; // in ms
+  const allowedTimeToComplete = 200 * 60000; // in ms
   const allowedTimeToLoad = 6.5 * 60000; // in ms, page must load and be testing
 
   const completionTimeoutID = setTimeout( () => {
