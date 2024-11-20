@@ -42,7 +42,7 @@ export default [
       }
     },
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off' // use any instead of IntentionalAny, see https://github.com/phetsims/perennial/issues/371
+      '@typescript-eslint/no-explicit-any': 'off' // TODO: use IntentionalAny, see https://github.com/phetsims/chipper/issues/1465
     }
   }
 ];
