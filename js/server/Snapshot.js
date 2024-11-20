@@ -7,17 +7,17 @@
  */
 
 
-const copyDirectory = require( '../../../perennial/js/common/copyDirectory' );
-const createDirectory = require( '../../../perennial/js/common/createDirectory' );
-const deleteDirectory = require( '../../../perennial/js/common/deleteDirectory' );
+const copyDirectory = require( '../../../perennial/js/common/copyDirectory.js' );
+const createDirectory = require( '../../../perennial/js/common/createDirectory.js' );
+const deleteDirectory = require( '../../../perennial/js/common/deleteDirectory.js' );
 const execute = require( '../../../perennial/js/common/execute' ).default;
-const getRepoList = require( '../../../perennial/js/common/getRepoList' );
-const gitLastCommitTimestamp = require( '../../../perennial/js/common/gitLastCommitTimestamp' );
-const gitRevParse = require( '../../../perennial/js/common/gitRevParse' );
-const Test = require( './Test' );
+const getRepoList = require( '../../../perennial/js/common/getRepoList.js' );
+const gitLastCommitTimestamp = require( '../../../perennial/js/common/gitLastCommitTimestamp.js' );
+const gitRevParse = require( '../../../perennial/js/common/gitRevParse.js' );
+const Test = require( './Test.js' );
 const fs = require( 'fs' );
 const winston = require( '../../../perennial/js/npm-dependencies/winston' ).default;
-const tsxCommand = require( '../../../perennial/js/common/tsxCommand' );
+const tsxCommand = require( '../../../perennial/js/common/tsxCommand.js' );
 
 class Snapshot {
   /**

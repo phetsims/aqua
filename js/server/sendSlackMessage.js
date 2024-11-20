@@ -6,7 +6,7 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-const buildLocal = require( '../../../perennial/js/common/buildLocal' );
+const buildLocal = require( '../../../perennial/js/common/buildLocal.js' );
 
 const { App } = require( '@slack/bolt' );
 

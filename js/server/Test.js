@@ -7,7 +7,7 @@
  */
 
 
-const TestResult = require( './TestResult' );
+const TestResult = require( './TestResult.js' );
 const assert = require( 'assert' );
 const _ = require( 'lodash' );
 
