@@ -14,7 +14,6 @@ const _ = require( 'lodash' );
 // constants
 const LOCAL_TEST_TYPES = [
   'lint',
-  'lint-everything',
   'build',
   'npm-run'
 ];

@@ -662,17 +662,6 @@ class ContinuousServer {
             ContinuousServer.testFail( test, Date.now() - startTimestamp, `Lint failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
           }
         }
-        else if ( test.type === 'lint-everything' ) {
-          test.complete = true;
-          try {
-            const output = await execute( gruntCommand, [ 'lint', '--all', '--clean' ], `${snapshot.directory}/perennial` );
-
-            ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
-          }
-          catch( e ) {
-            ContinuousServer.testFail( test, Date.now() - startTimestamp, `Lint-everything failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
-          }
-        }
         else if ( test.type === 'npm-run' ) {
           test.complete = true;
           try {
