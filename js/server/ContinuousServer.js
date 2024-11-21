@@ -43,6 +43,16 @@ const linear = ( a1, a2, b1, b2, a3 ) => {
   return ( b2 - b1 ) / ( a2 - a1 ) * ( a3 - a1 ) + b1;
 };
 
+// List of repos that are allowed to run tests with `npm run`
+const NPM_RUN_SUPPORTED = [
+  'aqua',
+  'chipper',
+  'perennial',
+  'perennial-alias',
+  'rosetta',
+  'yotta'
+];
+
 // {number} - in milliseconds
 const twoHours = 1000 * 60 * 60 * 2;
 const twelveHours = 1000 * 60 * 60 * 12;
@@ -666,12 +676,13 @@ class ContinuousServer {
         else if ( test.type === 'npm-run' ) {
           test.complete = true;
           try {
+            assert( NPM_RUN_SUPPORTED.includes( test.repo ), `Cannot test \`npm run\` in unsupported repo: ${test.repo}` );
             const output = await execute( npmCommand, [ 'run', ...test.testCommand.split( ' ' ) ], `${snapshot.directory}/${test.repo}` );
 
             ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
           }
           catch( e ) {
-            ContinuousServer.testFail( test, Date.now() - startTimestamp, `Lint-everything failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
+            ContinuousServer.testFail( test, Date.now() - startTimestamp, `npm run failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
           }
         }
         else if ( test.type === 'build' ) {
