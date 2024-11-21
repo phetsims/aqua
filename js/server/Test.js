@@ -143,7 +143,7 @@ class Test {
   }
 
   get testCommand() {
-    assert( this.type === 'npm run', 'command only supported for npm running' );
+    assert( this.type === 'npm-run', 'command only supported for npm running' );
     return this.description.command;
   }
 
