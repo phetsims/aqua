@@ -353,7 +353,6 @@ class QuickServer {
    * Starts the HTTP server part (that will connect with any reporting features).
    */
   public startServer( port: number ): void {
-    assert( typeof port === 'number', 'port should be a number' );
 
     // Main server creation
     http.createServer( ( req, res ) => {
