@@ -547,7 +547,8 @@ class ContinuousServer {
 
         const staleRepos = await asyncFilter( reposToCheck, async repo => {
           this.setStatus( `${staleMessage}; checking ${repo}` );
-          return isStale( repo );
+          const doesNotExist = !fs.existsSync( `../${repo}/` ); // let's call a lack of a repo "stale" to move onto a new snapshot.
+          return doesNotExist || isStale( repo );
         } );
 
         if ( staleRepos.length ) {
