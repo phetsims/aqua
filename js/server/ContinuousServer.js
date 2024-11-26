@@ -679,12 +679,12 @@ class ContinuousServer {
           test.complete = true;
           try {
 
-            // --noTranspile: We don't want to transpile because we have already done so for this snapshot, and don't
+            // --transpile=false: We don't want to transpile because we have already done so for this snapshot, and don't
             //     want to do any writing to chipper/dist while tests are potentially reading from it
-            // --lint=false and --noTSC: It will just save time to not repeat this step when other tests will handle
+            // --lint=false and --tsc=false: It will just save time to not repeat this step when other tests will handle
             //     linting type checking.
             const output = await execute( gruntCommand, [ `--brands=${test.brands.join( ',' )}`,
-              '--noTranspile', '--lint=false', '--noTSC' ], `${snapshot.directory}/${test.repo}` );
+              '--transpile=false', '--lint=false', '--tsc=false' ], `${snapshot.directory}/${test.repo}` );
 
             ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
             test.success = true;
