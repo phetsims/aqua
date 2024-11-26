@@ -5,7 +5,7 @@
  * --port=PORT : specify a custom port for the server interface
  *
  * Run internal tests for the Gruntfile. Note the output is reported over console.log, so be careful what you output.
- * The command invoked is something like this: execSync( `${gruntCommand} test-grunt --brands=a,b,c --lint=false --noTSC` )
+ * The command invoked is something like this: execSync( `${gruntCommand} test-grunt --brands=a,b,c --lint=false --tsc=false` )
  *
  * @author Michael Kauzmann (PhET Interactive Simulations)
  * @author Sam Reid (PhET Interactive Simulations)
