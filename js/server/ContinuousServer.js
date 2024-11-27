@@ -111,6 +111,21 @@ class ContinuousServer {
       this.cleanupOrphanedSnapshots();
       // }, 10 * 60000 ); // wait 10 minutes to focus on more important parts of CT on startup
     }
+
+    this.wireUpSaveOnExit();
+  }
+
+  /**
+   * @private
+   */
+  wireUpSaveOnExit() {
+    [ 'SIGINT', 'SIGHUP', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT', 'SIGBUS', 'SIGFPE', 'SIGUSR1',
+      'SIGSEGV', 'SIGUSR2', 'SIGTERM', 'beforeExit', 'uncaughtException', 'unhandledRejection'
+    ].forEach( sig => process.on( sig, e => {
+      winston.info( 'saving before exiting' );
+      this.saveToFile();
+      throw e;
+    } ) );
   }
 
   /**
