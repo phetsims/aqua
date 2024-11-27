@@ -108,7 +108,7 @@ class ContinuousServer {
     // Prune older snapshots that may have been lost from restarts during state save.
     if ( !this.useRootDir ) {
       setTimeout( () => {
-      this.cleanupOrphanedSnapshots();
+        this.cleanupOrphanedSnapshots();
       }, 5 * 60000 ); // wait 5 minutes to focus on more important parts of CT on startup
     }
 
@@ -151,7 +151,7 @@ class ContinuousServer {
 
         req.on( 'end', () => {
           try {
-            console.log( 'body', body );
+            body && winston.info( 'body', body );
             const parsedBody = body ? JSON.parse( body ) : body;
             this.dispatchRequest( pathname, requestInfo, parsedBody, res );
           }
