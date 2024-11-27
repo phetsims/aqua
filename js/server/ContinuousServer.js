@@ -25,7 +25,7 @@ const http = require( 'http' );
 const _ = require( 'lodash' );
 const path = require( 'path' );
 const url = require( 'url' );
-// const deleteDirectory = require( '../../../perennial/js/common/deleteDirectory' );
+const deleteDirectory = require( '../../../perennial/js/common/deleteDirectory' );
 const winston = require( '../../../perennial/js/npm-dependencies/winston' ).default;
 
 // in days, any snapshots that are older will be removed from the continuous report
@@ -107,9 +107,9 @@ class ContinuousServer {
 
     // Prune older snapshots that may have been lost from restarts during state save.
     if ( !this.useRootDir ) {
-      // setTimeout( () => {
+      setTimeout( () => {
       this.cleanupOrphanedSnapshots();
-      // }, 10 * 60000 ); // wait 10 minutes to focus on more important parts of CT on startup
+      }, 5 * 60000 ); // wait 5 minutes to focus on more important parts of CT on startup
     }
 
     this.wireUpSaveOnExit();
@@ -867,10 +867,10 @@ class ContinuousServer {
       const snapshotDir = `${this.rootDir}/ct-snapshots`;
       const snapshotNames = fs.readdirSync( snapshotDir );
       for ( let i = 0; i < snapshotNames.length; i++ ) {
-        const name = snapshotNames[ i ];
-        if ( !_.find( this.snapshots, snapshot => `${snapshot.timestamp}` === name ) ) {
-          winston.info( `deleting orphaned snapshot: ${name}` );
-          // deleteDirectory( `${snapshotDir}/${name}` ).catch( e => winston.error( e ) );
+        const timestamp = snapshotNames[ i ];
+        if ( !_.find( this.snapshots, snapshot => `${snapshot.timestamp}` === timestamp ) ) {
+          winston.info( `deleting orphaned snapshot: ${timestamp}` );
+          deleteDirectory( `${snapshotDir}/${timestamp}` ).catch( e => winston.error( e ) );
         }
       }
     }
