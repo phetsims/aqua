@@ -13,8 +13,8 @@
 import assert from 'assert';
 import sleep from '../../../../perennial/js/common/sleep.js';
 import getOption from '../../../../perennial/js/grunt/tasks/util/getOption.js';
-import winston from '../../../../perennial/js/npm-dependencies/winston.js';
 import playwright from '../../../../perennial/js/npm-dependencies/playwright.js';
+import winston from '../../../../perennial/js/npm-dependencies/winston.js';
 import runNextTest from '../../node-client/runNextTest.js';
 
 winston.default.transports.console.level = 'info';
