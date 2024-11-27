@@ -25,11 +25,12 @@ const http = require( 'http' );
 const _ = require( 'lodash' );
 const path = require( 'path' );
 const url = require( 'url' );
+// const deleteDirectory = require( '../../../perennial/js/common/deleteDirectory' );
 const winston = require( '../../../perennial/js/npm-dependencies/winston' ).default;
 
-// in days, any shapshots that are older will be removed from the continuous report
-const NUMBER_OF_DAYS_TO_KEEP_SNAPSHOTS = 4;
-const MAX_SNAPSHOTS = 70;
+// in days, any snapshots that are older will be removed from the continuous report
+const NUMBER_OF_DAYS_TO_KEEP_FULL_SNAPSHOTS = 4;
+const MAX_SNAPSHOTS = 70; // Memory to keep test results, but not the full checkout
 const NUMBER_OF_FULL_SNAPSHOTS = 20;
 
 // Headers that we'll include in all server replies
@@ -102,6 +103,13 @@ class ContinuousServer {
     }
     catch( e ) {
       this.setError( `error loading from file: ${e}` );
+    }
+
+    // Prune older snapshots that may have been lost from restarts during state save.
+    if ( !this.useRootDir ) {
+      // setTimeout( () => {
+      this.cleanupOrphanedSnapshots();
+      // }, 10 * 60000 ); // wait 10 minutes to focus on more important parts of CT on startup
     }
   }
 
@@ -594,8 +602,10 @@ class ContinuousServer {
               this.snapshots.unshift( snapshot );
               this.pendingSnapshot = null;
 
-              const cutoffTimestamp = Date.now() - 1000 * 60 * 60 * 24 * NUMBER_OF_DAYS_TO_KEEP_SNAPSHOTS;
-              while ( this.snapshots.length > MAX_SNAPSHOTS || this.snapshots[ this.snapshots.length - 1 ].timestamp < cutoffTimestamp && !this.snapshots[ this.snapshots.length - 1 ].exists ) {
+              const cutoffTimestamp = Date.now() - 1000 * 60 * 60 * 24 * NUMBER_OF_DAYS_TO_KEEP_FULL_SNAPSHOTS;
+              while ( ( this.snapshots.length > MAX_SNAPSHOTS ||
+                        this.snapshots[ this.snapshots.length - 1 ].timestamp < cutoffTimestamp ) &&
+                      !this.snapshots[ this.snapshots.length - 1 ].exists ) {
                 this.snapshots.pop();
               }
 
@@ -830,6 +840,27 @@ class ContinuousServer {
       }
 
       await sleep( 5000 );
+    }
+  }
+
+  /**
+   * @private
+   */
+  cleanupOrphanedSnapshots() {
+    winston.info( 'cleaning up orphaned snapshot directories' );
+    try {
+      const snapshotDir = `${this.rootDir}/ct-snapshots`;
+      const snapshotNames = fs.readdirSync( snapshotDir );
+      for ( let i = 0; i < snapshotNames.length; i++ ) {
+        const name = snapshotNames[ i ];
+        if ( !_.find( this.snapshots, snapshot => snapshot.timestamp === name ) ) {
+          winston.info( `deleting orphaned snapshot: ${name}` );
+          // deleteDirectory( `${snapshotDir}/${name}` ).catch( e => winston.error( e ) );
+        }
+      }
+    }
+    catch( e ) {
+      winston.error( e );
     }
   }
 }
