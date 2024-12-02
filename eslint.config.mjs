@@ -7,26 +7,10 @@
  * @author Michael Kauzmann (PhET Interactive Simulations)
  */
 
-import { getBrowserConfiguration } from '../perennial-alias/js/eslint/config/browser.eslint.config.mjs';
-import rootEslintConfig from '../perennial-alias/js/eslint/config/root.eslint.config.mjs';
-import getNodeConfiguration from '../perennial-alias/js/eslint/config/util/getNodeConfiguration.mjs';
+import browserEslintConfig from '../perennial-alias/js/eslint/config/browser.eslint.config.mjs';
 
-const nodeJSDirs = [
-  'js/config/**',
-  'js/grunt/**',
-  'js/local/**',
-  'js/node-client/**',
-  'js/server/**'
-];
 export default [
-  ...rootEslintConfig,
-  ...getBrowserConfiguration( {
-    files: [ '**/*' ],
-    ignores: nodeJSDirs
-  } ),
-  ...getNodeConfiguration( {
-    files: nodeJSDirs
-  } ),
+  ...browserEslintConfig,
   {
     languageOptions: {
       globals: {
