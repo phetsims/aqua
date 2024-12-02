@@ -630,8 +630,9 @@ class ContinuousServer {
               // files under ct-snapshots.
               this.saveToFile();
 
-              this.setStatus( 'Removing old snapshot files' );
-              for ( const snapshot of this.snapshots.slice( NUMBER_OF_FULL_SNAPSHOTS ) ) {
+              const toRemove = this.snapshots.slice( NUMBER_OF_FULL_SNAPSHOTS );
+              this.setStatus( `Removing ${toRemove.length} old full snapshots` );
+              for ( const snapshot of toRemove ) {
                 if ( snapshot.exists && !this.trashSnapshots.includes( snapshot ) ) {
                   this.trashSnapshots.push( snapshot );
 
