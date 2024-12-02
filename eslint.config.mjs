@@ -40,9 +40,6 @@ export default [
         scenery: 'readonly',
         __dirname: 'readonly'
       }
-    },
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'off' // TODO: use IntentionalAny, see https://github.com/phetsims/chipper/issues/1465
     }
   }
 ];

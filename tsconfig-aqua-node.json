@@ -5,7 +5,8 @@
     "js/grunt/**/*",
     "js/local/**/*",
     "js/node-client/**/*",
-    "js/server/**/*"
+    "js/server/**/*",
+    "../phet-core/js/types/**/*"
   ],
   "references": [
     {
