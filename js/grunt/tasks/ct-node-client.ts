@@ -19,7 +19,12 @@ import runNextTest from '../../node-client/runNextTest.js';
 
 winston.default.transports.console.level = 'info';
 
-const options: any = {};
+const options: {
+  browserCreator?: playwright.BrowserType<unknown>;
+  ctID?: string;
+  serverURL?: string;
+  fileServerURL?: string;
+} = {};
 const browser = getOption( 'browser' );
 if ( browser ) {
 
