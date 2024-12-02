@@ -12,7 +12,7 @@ import nodeEslintConfig from '../../../perennial-alias/js/eslint/config/node.esl
 export default [
   ...nodeEslintConfig,
   {
-    // TODO: remove once the path works in root config againt, https://github.com/phetsims/chipper/issues/1483/
+    // TODO: remove once the path works in root config again, https://github.com/phetsims/chipper/issues/1483/
     rules: {
       '@typescript-eslint/no-floating-promises': 'off'
     }
