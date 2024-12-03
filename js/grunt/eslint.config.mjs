@@ -11,11 +11,5 @@ import nodeEslintConfig from '../../../perennial-alias/js/eslint/config/node.esl
 import { mutateForNestedConfig } from '../../../perennial-alias/js/eslint/config/root.eslint.config.mjs';
 
 export default [
-  ...mutateForNestedConfig( nodeEslintConfig ),
-  {
-    // TODO: remove once the path works in root config again, https://github.com/phetsims/chipper/issues/1483/
-    rules: {
-      '@typescript-eslint/no-floating-promises': 'off'
-    }
-  }
+  ...mutateForNestedConfig( nodeEslintConfig )
 ];
