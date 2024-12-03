@@ -21,7 +21,7 @@ import gitRevParse from '../../../perennial/js/common/gitRevParse.js';
 import gruntCommand from '../../../perennial/js/common/gruntCommand.js';
 import isStale from '../../../perennial/js/common/isStale.js';
 import npmUpdate from '../../../perennial/js/common/npmUpdate.js';
-import { Repo } from '../../../perennial/js/common/PerennialTypes.js';
+import { Repo } from '../../../perennial/js/browser-and-node/PerennialTypes.js';
 import puppeteerLoad from '../../../perennial/js/common/puppeteerLoad.js';
 import withServer from '../../../perennial/js/common/withServer.js';
 import _ from '../../../perennial/js/npm-dependencies/lodash.js';
