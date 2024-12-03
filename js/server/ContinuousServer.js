@@ -90,6 +90,9 @@ class ContinuousServer {
     // before they're fully removed.
     this.trashSnapshots = [];
 
+    // Lock writing to save file so two loops don't try to write at the same time.
+    this.saveFileLocked = false;
+
     // @public {string}
     this.reportJSON = '{}';
 
@@ -346,12 +349,20 @@ class ContinuousServer {
     if ( this.useRootDir ) {
       return;
     }
+    if ( this.saveFileLocked ) {
+      winston.info( 'Trying to save state while already saving, skipping second save' );
+      return;
+    }
+
+    this.saveFileLocked = true;
 
     fs.writeFileSync( this.saveFile, JSON.stringify( {
       snapshots: this.snapshots.map( snapshot => snapshot.serialize() ),
       pendingSnapshot: this.pendingSnapshot ? this.pendingSnapshot.serializeStub() : null,
       trashSnapshots: this.trashSnapshots.map( snapshot => snapshot.serializeStub() )
     }, null, 2 ), 'utf-8' );
+
+    this.saveFileLocked = false;
   }
 
   /**
@@ -365,11 +376,20 @@ class ContinuousServer {
     }
 
     if ( fs.existsSync( this.saveFile ) ) {
-      const serialization = JSON.parse( fs.readFileSync( this.saveFile, 'utf-8' ) );
+      let serialization;
+      try {
+        serialization = JSON.parse( fs.readFileSync( this.saveFile, 'utf-8' ) );
+      }
+      catch( e ) {
+        winston.error( 'cannot parse saved state file, deleting it.' );
+        fs.rmSync( this.saveFile );
+        return;
+      }
+
       this.snapshots = serialization.snapshots.map( Snapshot.deserialize );
       this.trashSnapshots = serialization.trashSnapshots ? serialization.trashSnapshots.map( Snapshot.deserializeStub ) : [];
       if ( serialization.pendingSnapshot && serialization.pendingSnapshot.directory ) {
-        this.trashSnapshots.push( Snapshot.deserializeStub( serialization.pendingSnapshot ) );
+        this.deleteTrashSnapshot( Snapshot.deserializeStub( serialization.pendingSnapshot ) );
       }
     }
   }
@@ -507,11 +527,14 @@ class ContinuousServer {
    */
   async deleteTrashSnapshot( snapshot ) {
     winston.info( `Deleting snapshot files: ${snapshot.directory}` );
+    !this.trashSnapshots.includes( snapshot ) && this.trashSnapshots.push( snapshot );
 
     await snapshot.remove();
 
     // Remove it from the snapshots
     this.trashSnapshots = this.trashSnapshots.filter( snap => snap !== snapshot );
+
+    this.saveToFile();
   }
 
   /**
@@ -621,29 +644,39 @@ class ContinuousServer {
               this.snapshots.unshift( snapshot );
               this.pendingSnapshot = null;
 
-              const cutoffTimestamp = Date.now() - 1000 * 60 * 60 * 24 * NUMBER_OF_DAYS_TO_KEEP_FULL_SNAPSHOTS;
+              const cutoffTimestamp = Date.now() - daysToMS( NUMBER_OF_DAYS_TO_KEEP_FULL_SNAPSHOTS );
+
               while ( ( this.snapshots.length > MAX_SNAPSHOTS ||
                         this.snapshots[ this.snapshots.length - 1 ].timestamp < cutoffTimestamp ) &&
-                      !this.snapshots[ this.snapshots.length - 1 ].exists ) {
-                this.snapshots.pop();
+
+                      // Exit the loop if the oldest snapshot is currently getting deleted, but not gone yet
+                      !this.trashSnapshots.includes( this.snapshots[ this.snapshots.length - 1 ] ) ) {
+
+                // Don't remove from the snapshots list until it is fully deleted
+                if ( this.snapshots[ this.snapshots.length - 1 ].exists ) {
+                  // NOTE: NO await here, we're going to do that asynchronously so we don't block
+                  this.deleteTrashSnapshot( snapshot );
+                }
+                else {
+                  this.snapshots.pop();
+                }
               }
 
               this.computeRecentTestWeights();
-
-              // Save after creating the snapshot, so that if we crash here, we won't be creating permanent garbage
-              // files under ct-snapshots.
-              this.saveToFile();
 
               const toRemove = this.snapshots.slice( NUMBER_OF_FULL_SNAPSHOTS );
               this.setStatus( `Removing ${toRemove.length} old full snapshots` );
               for ( const snapshot of toRemove ) {
                 if ( snapshot.exists && !this.trashSnapshots.includes( snapshot ) ) {
-                  this.trashSnapshots.push( snapshot );
 
                   // NOTE: NO await here, we're going to do that asynchronously so we don't block
-                  this.deleteTrashSnapshot( snapshot ).then( () => this.saveToFile() );
+                  this.deleteTrashSnapshot( snapshot );
                 }
               }
+
+              // Save after creating the snapshot, so that if we crash here, we won't be creating permanent garbage
+              // files under ct-snapshots.
+              this.saveToFile();
             }
           }
         }
@@ -766,7 +799,7 @@ class ContinuousServer {
       catch( e ) {
         this.setError( `autosave error: ${e} ${e.stack}` );
       }
-      await sleep( 5 * 60 * 1000 ); // Run this every 5 minutes
+      await sleep( minutesToMS( 5 ) ); // Run this every 5 minutes
     }
   }
 
