@@ -264,7 +264,7 @@ class QuickServer {
   private async testTypeCheck(): Promise<ExecuteResult> {
     winston.info( 'QuickServer: type-check' );
 
-    // Use grunt so that it works across platforms, launching `tsc` as the command on windows results in ENOENT -4058.
+    // Use grunt so that it works across platforms, launching `tsc` directly as the command on windows results in ENOENT -4058.
     // Pretty false will make the output more machine readable.
     return execute( gruntCommand, [ 'type-check', '--all', '--pretty', 'false' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
   }
@@ -530,7 +530,7 @@ class QuickServer {
       return errorMessages;
     }
 
-    // most lint and tsc errors have a file associated with them. look for them in a line via 4 sets of slashes
+    // most lint and type check errors have a file associated with them. look for them in a line via 4 sets of slashes
     // Extensions should match those found in CHIPPER/lint
     // Don't match to the end of the line ($),  because tsc puts the file and error on the same line.
     const fileNameRegex = /^[^\s]*([\\/][^/\\]+){4}[^\s]*(\.js|\.ts|\.jsx|\.tsx|\.cjs|\.mjs)/;
@@ -590,7 +590,7 @@ class QuickServer {
       addCurrentError();
     }
 
-    // if we are not a lint or tsc error, or if those errors were not able to be parsed above, send the whole message
+    // if we are not a lint or type check error, or if those errors were not able to be parsed above, send the whole message
     if ( !errorMessages.length ) {
       errorMessages.push( `${name}: ${message}` );
     }
