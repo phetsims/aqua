@@ -54,9 +54,13 @@ const NPM_RUN_SUPPORTED = [
   'yotta'
 ];
 
+const minutesToMS = minutes => 1000 * 60 * minutes;
+const hoursToMS = hours => minutesToMS( hours * 60 );
+const daysToMS = days => hoursToMS( days * 24 );
+
 // {number} - in milliseconds
-const twoHours = 1000 * 60 * 60 * 2;
-const twelveHours = 1000 * 60 * 60 * 12;
+const twoHours = hoursToMS( 2 );
+const twelveHours = hoursToMS( 12 );
 
 class ContinuousServer {
   /**
@@ -109,7 +113,7 @@ class ContinuousServer {
     if ( !this.useRootDir ) {
       setTimeout( () => {
         this.cleanupOrphanedSnapshots();
-      }, 5 * 60000 ); // wait 5 minutes to focus on more important parts of CT on startup
+      }, minutesToMS( 5 ) ); // wait 5 minutes to focus on more important parts of CT on startup
     }
 
     this.wireUpSaveOnExit();
