@@ -43,7 +43,7 @@ type TestData = {
 
 type Tests = {
   lint: TestData;
-  tsc: TestData;
+  typeCheck: TestData;
   simFuzz: TestData;
   studioFuzz: TestData;
   phetioCompare: TestData;
@@ -58,7 +58,7 @@ type TestingState = {
 
 const ctqType: Record<string, TestName> = {
   LINT: 'lint',
-  TSC: 'tsc',
+  TYPE_CHECK: 'typeCheck',
   SIM_FUZZ: 'simFuzz', // Should end with "Fuzz"
   STUDIO_FUZZ: 'studioFuzz', // Should end with "Fuzz"
   PHET_IO_COMPARE: 'phetioCompare'
@@ -226,7 +226,7 @@ class QuickServer {
         this.testingState = {
           tests: {
             lint: this.executeResultToTestData( await this.testLint(), ctqType.LINT ),
-            tsc: this.executeResultToTestData( await this.testTSC(), ctqType.TSC ),
+            typeCheck: this.executeResultToTestData( await this.testTypeCheck(), ctqType.TYPE_CHECK ),
             simFuzz: this.fuzzResultToTestData( await this.testSimFuzz(), ctqType.SIM_FUZZ ),
             studioFuzz: this.fuzzResultToTestData( await this.testStudioFuzz(), ctqType.STUDIO_FUZZ ),
             phetioCompare: this.executeResultToTestData( await this.testPhetioCompare(), ctqType.PHET_IO_COMPARE )
@@ -261,12 +261,12 @@ class QuickServer {
     return execute( gruntCommand, [ 'lint', '--all', '--hide-progress-bar' ], `${this.rootDir}/perennial`, EXECUTE_OPTIONS );
   }
 
-  private async testTSC(): Promise<ExecuteResult> {
-    winston.info( 'QuickServer: tsc' );
+  private async testTypeCheck(): Promise<ExecuteResult> {
+    winston.info( 'QuickServer: type-check' );
 
     // Use grunt so that it works across platforms, launching `tsc` as the command on windows results in ENOENT -4058.
     // Pretty false will make the output more machine readable.
-    return execute( gruntCommand, [ 'check', '--all', '--pretty', 'false' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
+    return execute( gruntCommand, [ 'type-check', '--all', '--pretty', 'false' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
   }
 
   private async testPhetioCompare(): Promise<ExecuteResult> {
@@ -560,7 +560,7 @@ class QuickServer {
         }
       } );
     }
-    else if ( name === ctqType.TSC ) {
+    else if ( name === ctqType.TYPE_CHECK ) {
 
       // split up the error message by line for parsing
       const messageLines = this.splitAndTrimMessage( message );
@@ -579,7 +579,7 @@ class QuickServer {
         if ( fileNameRegex.test( line ) ) {
           addCurrentError();
 
-          currentError = `tsc: ${line}`;
+          currentError = `type-check: ${line}`;
         }
         else {
           currentError += `\n${line}`;

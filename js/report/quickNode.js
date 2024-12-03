@@ -57,7 +57,7 @@ const quickNode = new HBox( {
   children: [
     quickTimestampText,
     createQuickResult( 'lint', 'lint' ),
-    createQuickResult( 'tsc', 'tsc' ),
+    createQuickResult( 'type-check', 'type-check' ),
     createQuickResult( 'simFuzz', 'simFuzz' ),
     createQuickResult( 'studioFuzz', 'studioFuzz' ),
     createQuickResult( 'phetioCompare', 'phetioCompare' )
