@@ -5,12 +5,14 @@
     "js/grunt/**/*",
     "js/local/**/*",
     "js/node-client/**/*",
-    "js/server/**/*",
-    "../phet-core/js/types/**/*"
+    "js/server/**/*"
   ],
   "references": [
     {
       "path": "../perennial/tsconfig.json"
+    },
+    {
+      "path": "../phet-core/tsconfig-browser-and-node.json"
     }
   ]
 }
