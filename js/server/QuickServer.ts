@@ -290,7 +290,7 @@ class QuickServer {
 
   private async transpile(): Promise<ExecuteResult> {
     winston.info( 'QuickServer: transpiling' );
-    return execute( gruntCommand, [ 'transpile', '--all' ], `${this.rootDir}/perennial`, EXECUTE_OPTIONS );
+    return execute( gruntCommand, [ 'transpile' ], `${this.rootDir}/perennial`, EXECUTE_OPTIONS );
   }
 
   private async testSimFuzz(): Promise<string | null> {
