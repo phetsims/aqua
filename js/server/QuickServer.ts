@@ -229,13 +229,15 @@ class QuickServer {
           timestamp: timestamp
         };
 
-        const broken = this.isBroken( this.testingState );
+        const brokenTests = _.filter( Object.keys( this.testingState.tests ), ( name: keyof TestingState['tests'] ) => !this.testingState.tests[ name ].passed );
+        const isBroken = brokenTests.length > 0;
 
-        winston.info( `QuickServer broken: ${broken}` );
+        winston.info( `QuickServer broken: ${isBroken}` );
+        isBroken && winston.info( `QuickServer broken tests: ${brokenTests}` );
 
-        await this.reportErrorStatus( broken );
+        await this.reportErrorStatus( isBroken );
 
-        this.lastBroken = broken;
+        this.lastBroken = isBroken;
       }
       this.forceTests = this.isTestMode;
     }
@@ -258,10 +260,6 @@ class QuickServer {
     ] );
 
     return results as Tests;
-  }
-
-  private isBroken( testingState = this.testingState ): boolean {
-    return _.some( Object.keys( testingState.tests ), ( name: keyof TestingState['tests'] ) => !testingState.tests[ name ].passed );
   }
 
   private async testLint(): Promise<ExecuteResult> {
