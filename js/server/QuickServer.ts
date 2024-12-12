@@ -12,6 +12,7 @@ import assert from 'assert';
 import http from 'http';
 import path from 'path';
 import url from 'url';
+import { Repo } from '../../../perennial/js/browser-and-node/PerennialTypes.js';
 import cloneMissingRepos from '../../../perennial/js/common/cloneMissingRepos.js';
 import deleteDirectory from '../../../perennial/js/common/deleteDirectory.js';
 import execute, { ExecuteResult } from '../../../perennial/js/common/execute.js';
@@ -21,7 +22,6 @@ import gitRevParse from '../../../perennial/js/common/gitRevParse.js';
 import gruntCommand from '../../../perennial/js/common/gruntCommand.js';
 import isStale from '../../../perennial/js/common/isStale.js';
 import npmUpdate from '../../../perennial/js/common/npmUpdate.js';
-import { Repo } from '../../../perennial/js/browser-and-node/PerennialTypes.js';
 import puppeteerLoad from '../../../perennial/js/common/puppeteerLoad.js';
 import withServer from '../../../perennial/js/common/withServer.js';
 import _ from '../../../perennial/js/npm-dependencies/lodash.js';
@@ -224,13 +224,7 @@ class QuickServer {
 
         // Run the tests and get the results
         this.testingState = {
-          tests: {
-            lint: this.executeResultToTestData( await this.testLint(), ctqType.LINT ),
-            typeCheck: this.executeResultToTestData( await this.testTypeCheck(), ctqType.TYPE_CHECK ),
-            simFuzz: this.fuzzResultToTestData( await this.testSimFuzz(), ctqType.SIM_FUZZ ),
-            studioFuzz: this.fuzzResultToTestData( await this.testStudioFuzz(), ctqType.STUDIO_FUZZ ),
-            phetioCompare: this.executeResultToTestData( await this.testPhetioCompare(), ctqType.PHET_IO_COMPARE )
-          },
+          tests: await this.getTestingResults(),
           shas: shas,
           timestamp: timestamp
         };
@@ -252,26 +246,46 @@ class QuickServer {
     }
   }
 
+  private async getTestingResults(): Promise<Tests> {
+    const results: Partial<Tests> = {};
+
+    await Promise.all( [
+      this.testLint().then( result => { results.lint = this.executeResultToTestData( result, ctqType.LINT ); } ),
+      this.testTypeCheck().then( result => { results.typeCheck = this.executeResultToTestData( result, ctqType.TYPE_CHECK ); } ),
+      this.testSimFuzz().then( result => { results.simFuzz = this.fuzzResultToTestData( result, ctqType.SIM_FUZZ );} ),
+      this.testStudioFuzz().then( result => { results.studioFuzz = this.fuzzResultToTestData( result, ctqType.STUDIO_FUZZ ); } ),
+      this.testPhetioCompare().then( result => { results.phetioCompare = this.executeResultToTestData( result, ctqType.PHET_IO_COMPARE ); } )
+    ] );
+
+    return results as Tests;
+  }
+
   private isBroken( testingState = this.testingState ): boolean {
     return _.some( Object.keys( testingState.tests ), ( name: keyof TestingState['tests'] ) => !testingState.tests[ name ].passed );
   }
 
   private async testLint(): Promise<ExecuteResult> {
-    winston.info( 'QuickServer: linting' );
-    return execute( gruntCommand, [ 'lint', '--all', '--hide-progress-bar' ], `${this.rootDir}/perennial`, EXECUTE_OPTIONS );
+    winston.info( 'QuickServer: start linting' );
+    const result = await execute( gruntCommand, [ 'lint', '--all', '--hide-progress-bar' ], `${this.rootDir}/perennial`, EXECUTE_OPTIONS );
+    winston.info( 'QuickServer: end linting' );
+    return result;
   }
 
   private async testTypeCheck(): Promise<ExecuteResult> {
-    winston.info( 'QuickServer: type-check' );
+    winston.info( 'QuickServer: start type-check' );
 
     // Use grunt so that it works across platforms, launching `tsc` directly as the command on windows results in ENOENT -4058.
-    // Pretty false will make the output more machine readable.
-    return execute( gruntCommand, [ 'type-check', '--all', '--pretty', 'false' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
+    // Pretty false will make the output more machine-readable.
+    const result = await execute( gruntCommand, [ 'type-check', '--all', '--pretty', 'false' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
+    winston.info( 'QuickServer: end type-check' );
+    return result;
   }
 
   private async testPhetioCompare(): Promise<ExecuteResult> {
-    winston.info( 'QuickServer: phet-io compare' );
-    return execute( gruntCommand, [ 'compare-phet-io-api', '--simList=../perennial/data/phet-io-api-stable' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
+    winston.info( 'QuickServer: start phet-io compare' );
+    const result = await execute( gruntCommand, [ 'compare-phet-io-api', '--simList=../perennial/data/phet-io-api-stable' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
+    winston.info( 'QuickServer: end phet-io compare' );
+    return result;
   }
 
   private async transpile(): Promise<ExecuteResult> {
@@ -280,7 +294,7 @@ class QuickServer {
   }
 
   private async testSimFuzz(): Promise<string | null> {
-    winston.info( 'QuickServer: sim fuzz' );
+    winston.info( 'QuickServer: start sim fuzz' );
 
     let simFuzz: string | null = null;
     try {
@@ -295,11 +309,12 @@ class QuickServer {
       }
     }
 
+    winston.info( 'QuickServer: end sim fuzz' );
     return simFuzz;
   }
 
   private async testStudioFuzz(): Promise<string | null> {
-    winston.info( 'QuickServer: studio fuzz' );
+    winston.info( 'QuickServer: start studio fuzz' );
 
     let studioFuzz: string | null = null;
     try {
@@ -313,6 +328,8 @@ class QuickServer {
         studioFuzz = e.toString();
       }
     }
+
+    winston.info( 'QuickServer: end studio fuzz' );
     return studioFuzz;
   }
 
