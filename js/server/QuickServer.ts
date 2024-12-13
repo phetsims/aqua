@@ -286,9 +286,12 @@ class QuickServer {
     return result;
   }
 
-  private async transpile(): Promise<ExecuteResult> {
+  private async transpile(): Promise<void> {
     winston.info( 'QuickServer: transpiling' );
-    return execute( gruntCommand, [ 'transpile' ], `${this.rootDir}/perennial`, EXECUTE_OPTIONS );
+    const result = await execute( gruntCommand, [ 'transpile' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
+    if ( result.code !== 0 ) {
+      winston.error( result.stderr + result.stdout );
+    }
   }
 
   private async testSimFuzz(): Promise<string | null> {
