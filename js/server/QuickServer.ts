@@ -281,7 +281,7 @@ class QuickServer {
 
   private async testPhetioCompare(): Promise<ExecuteResult> {
     winston.info( 'QuickServer: start phet-io compare' );
-    const result = await execute( gruntCommand, [ 'compare-phet-io-api', '--transpile=false', '--simList=../perennial/data/phet-io-api-stable' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
+    const result = await execute( gruntCommand, [ 'compare-phet-io-api', '--transpile=false', '--workers=10', '--simList=../perennial/data/phet-io-api-stable' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
     winston.info( 'QuickServer: end phet-io compare' );
     return result;
   }
