@@ -12,9 +12,12 @@
  */
 
 import getOption from '../../../../perennial/js/grunt/tasks/util/getOption.js';
+import winston from '../../../../perennial/js/npm-dependencies/winston.js';
 import QuickServer from '../../server/QuickServer.js';
 
 const port = getOption( 'port' ) ? Number( getOption( 'port' ) ) : 45367;
+
+winston.default.transports.console.level = 'info';
 
 const testing = getOption( 'testing' );
 const server = new QuickServer( {

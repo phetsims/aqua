@@ -70,6 +70,8 @@ const jsonHeaders = {
   'Access-Control-Allow-Origin': '*'
 };
 
+const MAX_SLACK_MESSAGE_CHARS = 3900;
+
 const FUZZ_SIM = 'my-solar-system';
 const STUDIO_FUZZ_SIM = 'greenhouse-effect';
 const WAIT_BETWEEN_RUNS = 20000; // in ms
@@ -281,7 +283,13 @@ class QuickServer {
 
   private async testPhetioCompare(): Promise<ExecuteResult> {
     winston.info( 'QuickServer: start phet-io compare' );
-    const result = await execute( gruntCommand, [ 'compare-phet-io-api', '--transpile=false', '--workers=10', '--simList=../perennial/data/phet-io-api-stable' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
+    const args = [
+      'compare-phet-io-api',
+      '--transpile=false',
+      `--workers=${this.isTestMode ? 4 : 10}`,
+      ...[ this.isTestMode ? '--repo=projectile-data-lab' : '--simList=../perennial/data/phet-io-api-stable' ]
+    ];
+    const result = await execute( gruntCommand, args, `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
     winston.info( 'QuickServer: end phet-io compare' );
     return result;
   }
@@ -484,7 +492,11 @@ class QuickServer {
       }
       else {
         winston.info( 'passing -> broken, sending CTQ failure message to Slack' );
-        message = 'CTQ failing:\n```' + message + '```';
+        message = `CTQ failing:
+\`\`\`
+${message.slice( 0, MAX_SLACK_MESSAGE_CHARS )}
+${message.length > MAX_SLACK_MESSAGE_CHARS ? '\n(truncated) . . .' : ''}
+\`\`\``;
       }
 
       await this.slackMessage( message );
