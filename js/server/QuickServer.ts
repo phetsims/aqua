@@ -77,7 +77,9 @@ const STUDIO_FUZZ_SIM = 'greenhouse-effect';
 const WAIT_BETWEEN_RUNS = 20000; // in ms
 const EXECUTE_OPTIONS = {
   errors: 'resolve',
-  childProcessEnv: { NODE_OPTIONS: '--max-old-space-size=8192' }
+  childProcessOptions: {
+    env: { NODE_OPTIONS: '--max-old-space-size=8192' }
+  }
 } as const;
 
 type Dependencies = Record<Repo, string>;
