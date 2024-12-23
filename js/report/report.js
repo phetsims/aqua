@@ -140,7 +140,7 @@ if ( options.full ) {
     spacing: 5,
     children: [
       new Text( 'Filter:', { font: constants.interfaceFont } ),
-      new DOM( filterElement )
+      new DOM( filterElement, { allowInput: true } )
     ]
   } );
 
