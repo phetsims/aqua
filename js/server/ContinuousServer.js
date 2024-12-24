@@ -606,10 +606,10 @@ class ContinuousServer {
 
           this.setStatus( `Stale repos (pulling/npm): ${staleRepos.join( ', ' )}` );
 
+          const clonedRepos = await cloneMissingRepos();
           for ( const repo of staleRepos ) {
             await gitPull( repo );
           }
-          const clonedRepos = await cloneMissingRepos();
 
           // Run the following updates on any changed repos, so we can keep our npm status good in our checked out version
           // npm prune/update first
