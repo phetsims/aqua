@@ -653,9 +653,10 @@ class ContinuousServer {
                       !this.trashSnapshots.includes( this.snapshots[ this.snapshots.length - 1 ] ) ) {
 
                 // Don't remove from the snapshots list until it is fully deleted
-                if ( this.snapshots[ this.snapshots.length - 1 ].exists ) {
+                const lastSnapshot = this.snapshots[ this.snapshots.length - 1 ];
+                if ( lastSnapshot.exists ) {
                   // NOTE: NO await here, we're going to do that asynchronously so we don't block
-                  this.deleteTrashSnapshot( snapshot );
+                  this.deleteTrashSnapshot( lastSnapshot );
                 }
                 else {
                   this.snapshots.pop();
