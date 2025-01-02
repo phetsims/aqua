@@ -12,7 +12,7 @@
       "path": "../perennial/tsconfig.json"
     },
     {
-      "path": "../phet-core/tsconfig-browser-and-node.json"
+      "path": "../phet-core/tsconfig-module.json"
     }
   ]
 }
