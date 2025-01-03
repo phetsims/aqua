@@ -85,8 +85,8 @@ const EXECUTE_OPTIONS = {
 type Dependencies = Record<Repo, string>;
 
 type QuickServerOptions = {
-  rootDir: string;
-  isTestMode: boolean;
+  rootDir?: string;
+  isTestMode?: boolean;
 };
 
 
@@ -116,9 +116,9 @@ class QuickServer {
   // Passed to puppeteerLoad()
   private puppeteerOptions = {};
 
-  public constructor( providedOptions?: Partial<QuickServerOptions> ) {
+  public constructor( providedOptions?: QuickServerOptions ) {
 
-    const options: QuickServerOptions = _.assignIn( {
+    const options: Required<QuickServerOptions> = _.assignIn( {
       rootDir: path.normalize( `${__dirname}/../../../` ),
       isTestMode: false
     }, providedOptions );
