@@ -51,7 +51,8 @@ const NPM_RUN_SUPPORTED = [
   'perennial',
   'perennial-alias',
   'rosetta',
-  'yotta'
+  'yotta',
+  'scenerystack'
 ];
 
 const minutesToMS = minutes => 1000 * 60 * minutes;
@@ -719,7 +720,7 @@ class ContinuousServer {
         if ( test.type === 'lint' ) {
           test.complete = true;
           try {
-            const output = await execute( gruntCommand, [ 'lint', '--disable-eslint-cache' ], `${snapshot.directory}/${test.repo}` );
+            const output = await execute( gruntCommand, [ 'lint', `--repo=${test.repo}`, '--disable-eslint-cache' ], `${snapshot.directory}/perennial` );
 
             ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
           }
@@ -731,7 +732,15 @@ class ContinuousServer {
           test.complete = true;
           try {
             assert( NPM_RUN_SUPPORTED.includes( test.repo ), `Cannot test \`npm run\` in unsupported repo: ${test.repo}` );
-            const output = await execute( npmCommand, [ 'run', ...test.testCommand.split( ' ' ) ], `${snapshot.directory}/${test.repo}` );
+
+            const executePromise = execute( npmCommand, [ 'run', ...test.testCommand.split( ' ' ) ], `${snapshot.directory}/${test.repo}` );
+            const timeoutPromise = ( async () => {
+              await sleep( 3600000 ); // 1 hour
+
+              throw new Error( 'npm run timeout' );
+            } )();
+
+            const output = await Promise.race( [ executePromise, timeoutPromise ] );
 
             ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
           }
