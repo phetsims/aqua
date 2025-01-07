@@ -132,7 +132,7 @@ class ContinuousServer {
     ].forEach( sig => process.on( sig, e => {
       winston.info( 'saving before exiting' );
       this.saveToFile();
-      throw e;
+      process.exit( 1 );
     } ) );
   }
 
