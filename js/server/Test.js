@@ -18,12 +18,16 @@ const LOCAL_TEST_TYPES = [
   'npm-run'
 ];
 
-const TEST_TYPES = [
-  ...LOCAL_TEST_TYPES,
+const BROWSER_TEST_TYPES = [
   'sim-test',
   'qunit-test',
   'pageload-test',
-  'wrapper-test',
+  'wrapper-test'
+];
+
+const TEST_TYPES = [
+  ...LOCAL_TEST_TYPES,
+  ...BROWSER_TEST_TYPES,
   'internal' // Used for tests that aqua itself generates
 ];
 
@@ -76,7 +80,7 @@ class Test {
     // @public {string|null}
     this.repo = null;
 
-    if ( this.type === 'lint' || this.type === 'build' || this.type === 'npm-run' ) {
+    if ( LOCAL_TEST_TYPES.includes( this.type ) ) {
       assert( typeof description.repo === 'string', `${this.type} tests should have a repo` );
 
       this.repo = description.repo;
@@ -94,7 +98,7 @@ class Test {
     // @public {string|null}
     this.url = null;
 
-    if ( this.type === 'sim-test' || this.type === 'qunit-test' || this.type === 'pageload-test' || this.type === 'wrapper-test' ) {
+    if ( BROWSER_TEST_TYPES.includes( this.type ) ) {
       assert( typeof description.url === 'string', `${this.type} tests should have a url` );
 
       this.url = description.url;
@@ -114,13 +118,6 @@ class Test {
     if ( description.testQueryParameters ) {
       assert( typeof description.testQueryParameters === 'string', 'testQueryParameters should be a string if provided' );
       this.testQueryParameters = description.testQueryParameters;
-    }
-
-    // @public {boolean} - If false, we won't send this test to browsers that only support es5 (IE11, etc.)
-    this.es5 = false;
-
-    if ( description.es5 ) {
-      this.es5 = true;
     }
 
     // @public {Array.<string>} - The repos that need to be built before this test will be provided
@@ -173,15 +170,10 @@ class Test {
    * Whether this test can be run in a browser.
    * @public
    *
-   * @param {booealn} es5Only
    * @returns {boolean}
    */
-  isBrowserAvailable( es5Only ) {
-    if ( this.type !== 'sim-test' && this.type !== 'qunit-test' && this.type !== 'pageload-test' && this.type !== 'wrapper-test' ) {
-      return false;
-    }
-
-    if ( es5Only && !this.es5 ) {
+  isBrowserAvailable() {
+    if ( !BROWSER_TEST_TYPES.includes( this.type ) ) {
       return false;
     }
 
@@ -205,7 +197,7 @@ class Test {
    * @returns {Object}
    */
   getObjectForBrowser() {
-    assert( this.type === 'sim-test' || this.type === 'qunit-test' || this.type === 'pageload-test' || this.type === 'wrapper-test', 'Needs to be a browser test' );
+    assert( BROWSER_TEST_TYPES.includes( this.type ), 'Needs to be a browser test' );
 
     const baseURL = this.snapshot.useRootDir ? '../..' : `../../ct-snapshots/${this.snapshot.timestamp}`;
     let url;

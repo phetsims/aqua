@@ -21,11 +21,6 @@ const options = QueryStringMachine.getAll( {
     type: 'string'
   },
 
-  // ?old=true or ?old=false, determines whether ES6 or other newer features can be run directly in the browser
-  old: {
-    type: 'flag'
-  },
-
   // What server do you want to hit with your testing. Defaults to the same server you are loading continuous-loop from.
   server: {
     type: 'string',
@@ -95,7 +90,7 @@ function nextTest() {
     // On connection failure, just try again with a delay (don't hammer the server)
     setTimeout( nextTest, 60000 ); // 1min
   };
-  req.open( 'get', `${options.server}/aquaserver/next-test?old=${options.old}`, true );
+  req.open( 'get', `${options.server}/aquaserver/next-test`, true );
   req.send();
   resetTimer();
 }

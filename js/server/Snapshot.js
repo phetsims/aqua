@@ -187,14 +187,13 @@ class Snapshot {
   }
 
   /**
-   * Returns all of the available browser tests.
+   * Returns all available browser tests.
    * @public
    *
-   * @param {boolean} es5Only
    * @returns {Array.<Object>}
    */
-  getAvailableBrowserTests( es5Only ) {
-    return this.tests.filter( test => test.isBrowserAvailable( es5Only ) );
+  getAvailableBrowserTests() {
+    return this.tests.filter( test => test.isBrowserAvailable() );
   }
 
   /**

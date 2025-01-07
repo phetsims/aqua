@@ -28,7 +28,7 @@ const useRootDir = !!getOption( 'useRootDir' );
 const serverQueryParameter = encodeURIComponent( `http://localhost:${port}` );
 const unbuiltReportURL = `http://localhost:${port}/aqua/html/continuous-unbuilt-report.html?server=${serverQueryParameter}`;
 const builtReportURL = `http://localhost:${port}/aqua/html/continuous-report.html?server=${serverQueryParameter}`;
-const loopURL = `http://localhost:${port}/aqua/html/continuous-loop.html?server=${serverQueryParameter}&id=replaceme`;
+const loopURL = `http://localhost:${port}/aqua/html/continuous-loop.html?server=${serverQueryParameter}&id=REPLACE_ME`;
 
 console.log( unbuiltReportURL );
 console.log( builtReportURL );

@@ -18,14 +18,12 @@ const axios = require( '../../../perennial/js/npm-dependencies/axios' ).default;
  */
 module.exports = async function( options ) {
   options = _.assignIn( {
-    serverURL: 'https://sparky.colorado.edu', // {string} - The server to use
-    old: false // {boolean} - Provided for compatibility/testing, anything using this should be new enough
-
+    serverURL: 'https://sparky.colorado.edu' // {string} - The server to use
   }, options );
 
   let response = null;
   try {
-    response = await axios( `${options.serverURL}/aquaserver/next-test?old=${options.old}` );
+    response = await axios( `${options.serverURL}/aquaserver/next-test` );
   }
   catch( e ) {
     throw new Error( `axios failure code ${e.response.status} getting next-test: ${e.message}` );

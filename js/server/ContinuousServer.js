@@ -194,8 +194,7 @@ class ContinuousServer {
   dispatchRequest( pathname, requestInfo, body, response ) {
 
     if ( pathname === '/aquaserver/next-test' ) {
-      // ?old=true or ?old=false, determines whether ES6 or other newer features can be run directly in the browser
-      this.deliverBrowserTest( response, requestInfo.query.old === 'true' );
+      this.deliverBrowserTest( response );
     }
     if ( pathname === '/aquaserver/test-result' ) {
       const result = body;
@@ -283,18 +282,17 @@ class ContinuousServer {
    * @private
    *
    * @param {ServerResponse} res
-   * @param {boolean} es5Only
    */
-  deliverBrowserTest( res, es5Only ) {
+  deliverBrowserTest( res ) {
     if ( this.snapshots.length === 0 ) {
       ContinuousServer.deliverEmptyTest( res );
       return;
     }
 
     // Pick from one of the first two snapshots
-    let queue = this.snapshots[ 0 ].getAvailableBrowserTests( es5Only );
+    let queue = this.snapshots[ 0 ].getAvailableBrowserTests();
     if ( this.snapshots.length > 1 ) {
-      queue = queue.concat( this.snapshots[ 1 ].getAvailableBrowserTests( es5Only ) );
+      queue = queue.concat( this.snapshots[ 1 ].getAvailableBrowserTests() );
     }
 
     let lowestCount = Infinity;
