@@ -587,6 +587,10 @@ if ( options.full ) {
       reportNode
     ]
   } );
+
+  // Update the Display synchronously because we just generated a ton of garbage (Scenery Nodes/Instances) when setting
+  // the reportNode.children, and the animation frame won't fire if the webpage isn't active, see https://github.com/phetsims/aqua/issues/95
+  reportProperty.lazyLink( () => display.updateDisplay() );
 }
 else {
   contentNode = quickNode;
