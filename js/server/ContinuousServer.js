@@ -914,7 +914,9 @@ class ContinuousServer {
       const snapshotNames = fs.readdirSync( snapshotDir );
       for ( let i = 0; i < snapshotNames.length; i++ ) {
         const timestamp = snapshotNames[ i ];
-        if ( !_.find( this.snapshots, snapshot => `${snapshot.timestamp}` === timestamp ) ) {
+        const asNumber = Number.parseInt( timestamp, 10 );
+        if ( asNumber < Date.now() - hoursToMS( 24 ) && // Don't delete the currently creating snapshot, if applicable
+             !_.find( this.snapshots, snapshot => snapshot.timestamp === timestamp ) ) {
           winston.info( `deleting orphaned snapshot: ${timestamp}` );
           deleteDirectory( `${snapshotDir}/${timestamp}` ).catch( e => winston.error( e ) );
         }
