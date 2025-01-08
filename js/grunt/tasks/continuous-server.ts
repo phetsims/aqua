@@ -1,4 +1,4 @@
-// Copyright 2024, University of Colorado Boulder
+// Copyright 2024-2025, University of Colorado Boulder
 /**
  * Launches a continuous testing server with the following options:
  * --localCount=COUNT : [REQUIRED] specifies how many local build/grunt/etc. tasks should run in the background
