@@ -528,9 +528,23 @@ class ContinuousServer {
     winston.info( `Deleting snapshot files: ${snapshot.directory}` );
     !this.trashSnapshots.includes( snapshot ) && this.trashSnapshots.push( snapshot );
 
-    await snapshot.remove();
+    try {
+      await snapshot.remove();
+    }
+    catch( e ) {
+      if ( e instanceof Error && e.toString().includes( 'Directory not empty' ) ) {
 
-    // Remove it from the snapshots
+        winston.error( e );
+
+        // Still exists if we weren't able to remove it.
+        snapshot.exists = true; // eslint-disable-line require-atomic-updates
+      }
+      else {
+        throw e;
+      }
+    }
+
+    // Remove it from the active trashed snapshots even if failed above, which will trigger another attempt next loop.
     this.trashSnapshots = this.trashSnapshots.filter( snap => snap !== snapshot );
 
     this.saveToFile();
