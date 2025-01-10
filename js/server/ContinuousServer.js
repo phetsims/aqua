@@ -63,6 +63,8 @@ const daysToMS = days => hoursToMS( days * 24 );
 const twoHours = hoursToMS( 2 );
 const twelveHours = hoursToMS( 12 );
 
+const jsonExtension = '.json';
+
 class ContinuousServer {
   /**
    * @param {boolean} useRootDir - If true, we won't create/copy, and we'll just use the files there instead
@@ -79,7 +81,7 @@ class ContinuousServer {
     this.rootDir = path.normalize( `${__dirname}/../../../` );
 
     // @public {string} - Where we'll load/save our state
-    this.saveFile = `${this.rootDir}/aqua/.continuous-testing-state.json`;
+    this.saveFile = `${this.rootDir}/aqua/.continuous-testing-state${jsonExtension}`;
 
     // @public {Array.<Snapshot>} - All of our snapshots
     this.snapshots = [];
@@ -129,9 +131,9 @@ class ContinuousServer {
   wireUpSaveOnExit() {
     [ 'SIGINT', 'SIGHUP', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT', 'SIGBUS', 'SIGFPE', 'SIGUSR1',
       'SIGSEGV', 'SIGUSR2', 'SIGTERM', 'beforeExit', 'uncaughtException', 'unhandledRejection'
-    ].forEach( sig => process.on( sig, e => {
-      winston.info( 'saving before exiting' );
-      this.saveToFile();
+    ].forEach( sig => process.on( sig, () => {
+      winston.info( 'saving forcefully before exiting' );
+      this.saveToFile( true, true );
       process.exit( 1 );
     } ) );
   }
@@ -343,23 +345,29 @@ class ContinuousServer {
    * Saves the state of snapshots to our save file.
    * @public
    */
-  saveToFile() {
+  saveToFile( force = false, withBackup = false ) {
     // Don't save or load state if useRootDir is true
     if ( this.useRootDir ) {
       return;
     }
-    if ( this.saveFileLocked ) {
+
+    if ( this.saveFileLocked && !force ) {
       winston.info( 'Trying to save state while already saving, skipping second save' );
       return;
+    }
+    else if ( force ) {
+      winston.info( 'Forcing another save while saveFile locked' );
     }
 
     this.saveFileLocked = true;
 
-    fs.writeFileSync( this.saveFile, JSON.stringify( {
+    const data = JSON.stringify( {
       snapshots: this.snapshots.map( snapshot => snapshot.serialize() ),
       pendingSnapshot: this.pendingSnapshot ? this.pendingSnapshot.serializeStub() : null,
       trashSnapshots: this.trashSnapshots.map( snapshot => snapshot.serializeStub() )
-    }, null, 2 ), 'utf-8' );
+    }, null, 2 );
+    withBackup && fs.writeFileSync( this.saveFile.replace( jsonExtension, `-backup${jsonExtension}` ), data, 'utf-8' );
+    fs.writeFileSync( this.saveFile, data, 'utf-8' );
 
     this.saveFileLocked = false;
   }
