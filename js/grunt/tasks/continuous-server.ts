@@ -16,7 +16,7 @@ import _ from '../../../../perennial/js/npm-dependencies/lodash.js';
 import winston from '../../../../perennial/js/npm-dependencies/winston.js';
 import ContinuousServer from '../../server/ContinuousServer.js';
 
-winston.default.transports.console.level = 'debug';
+winston.default.transports.console.level = 'info';
 
 assert( getOption( 'localCount' ), 'Please specify --localCount=NUMBER, for specifying the number of local threads running things like grunt tasks' );
 
