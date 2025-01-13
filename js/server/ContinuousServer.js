@@ -63,8 +63,6 @@ const daysToMS = days => hoursToMS( days * 24 );
 const twoHours = hoursToMS( 2 );
 const twelveHours = hoursToMS( 12 );
 
-const jsonExtension = '.json';
-
 class ContinuousServer {
   /**
    * @param {boolean} useRootDir - If true, we won't create/copy, and we'll just use the files there instead
@@ -81,7 +79,7 @@ class ContinuousServer {
     this.rootDir = path.normalize( `${__dirname}/../../../` );
 
     // @public {string} - Where we'll load/save our state
-    this.saveFile = `${this.rootDir}/aqua/.continuous-testing-state${jsonExtension}`;
+    this.saveFile = `${this.rootDir}/aqua/.continuous-testing-state.json`;
 
     // @public {Array.<Snapshot>} - All of our snapshots
     this.snapshots = [];
@@ -133,7 +131,7 @@ class ContinuousServer {
       'SIGSEGV', 'SIGUSR2', 'SIGTERM', 'beforeExit', 'uncaughtException', 'unhandledRejection'
     ].forEach( sig => process.on( sig, () => {
       winston.info( 'saving forcefully before exiting' );
-      this.saveToFile( true, true );
+      this.saveToFile( true );
       process.exit( 1 );
     } ) );
   }
@@ -345,7 +343,7 @@ class ContinuousServer {
    * Saves the state of snapshots to our save file.
    * @public
    */
-  saveToFile( force = false, withBackup = false ) {
+  saveToFile( force = false ) {
     // Don't save or load state if useRootDir is true
     if ( this.useRootDir ) {
       return;
@@ -366,7 +364,6 @@ class ContinuousServer {
       pendingSnapshot: this.pendingSnapshot ? this.pendingSnapshot.serializeStub() : null,
       trashSnapshots: this.trashSnapshots.map( snapshot => snapshot.serializeStub() )
     }, null, 2 );
-    withBackup && fs.writeFileSync( this.saveFile.replace( jsonExtension, `-backup${jsonExtension}` ), data, 'utf-8' );
     fs.writeFileSync( this.saveFile, data, 'utf-8' );
 
     this.saveFileLocked = false;
@@ -828,6 +825,7 @@ class ContinuousServer {
       }
       catch( e ) {
         this.setError( `autosave error: ${e} ${e.stack}` );
+        this.saveFileLocked = false; // unlock the file so we can try again
       }
       await sleep( minutesToMS( 5 ) ); // Run this every 5 minutes
     }
