@@ -26,6 +26,7 @@ const _ = require( 'lodash' );
 const path = require( 'path' );
 const url = require( 'url' );
 const deleteDirectory = require( '../../../perennial/js/common/deleteDirectory' );
+const EventEmitter = require( 'events' ); // eslint-disable-line phet/require-statement-match
 const winston = require( '../../../perennial/js/npm-dependencies/winston' ).default;
 
 // in days, any snapshots that are older will be removed from the continuous report
@@ -746,14 +747,22 @@ class ContinuousServer {
           }
         }
         else if ( test.type === 'npm-run' ) {
-          test.complete = true;
+          test.complete = true; // Mark first to ensure it doesn't get started again before this one completes
+
+          const processKillEmitter = new EventEmitter();
+          let fromTimeout = false;
+          const npmRunTimeoutLength = hoursToMS( 1 );
+
           try {
             assert( NPM_RUN_SUPPORTED.includes( test.repo ), `Cannot test \`npm run\` in unsupported repo: ${test.repo}` );
 
-            const executePromise = execute( npmCommand, [ 'run', ...test.testCommand.split( ' ' ) ], `${snapshot.directory}/${test.repo}` );
-            const timeoutPromise = ( async () => {
-              await sleep( 3600000 ); // 1 hour
+            const executePromise = execute( npmCommand, [ 'run', ...test.testCommand.split( ' ' ) ], `${snapshot.directory}/${test.repo}`, {
+              killEmitter: processKillEmitter
+            } );
 
+            const timeoutPromise = ( async () => {
+              await sleep( npmRunTimeoutLength );
+              fromTimeout = true;
               throw new Error( 'npm run timeout' );
             } )();
 
@@ -762,7 +771,15 @@ class ContinuousServer {
             ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
           }
           catch( e ) {
-            ContinuousServer.testFail( test, Date.now() - startTimestamp, `npm run failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim() );
+            let message = '';
+            if ( fromTimeout ) {
+              processKillEmitter.emit( 'kill' );
+              message = `npm run timeout. Failed to complete in ${npmRunTimeoutLength}ms`;
+            }
+            else {
+              message = `npm run failed with status code ${e.code}:\n${e.stdout}\n${e.stderr}`.trim();
+            }
+            ContinuousServer.testFail( test, Date.now() - startTimestamp, message );
           }
         }
         else if ( test.type === 'build' ) {
