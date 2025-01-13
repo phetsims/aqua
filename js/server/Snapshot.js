@@ -18,6 +18,7 @@ const Test = require( './Test' );
 const fs = require( 'fs' );
 const winston = require( '../../../perennial/js/npm-dependencies/winston' ).default;
 const tsxCommand = require( '../../../perennial/js/common/tsxCommand' );
+const zlib = require( 'zlib' );
 
 class Snapshot {
   /**
@@ -217,7 +218,7 @@ class Snapshot {
         directory: this.directory,
         repos: this.repos,
         shas: this.shas,
-        tests: this.tests.map( test => test.serialize() )
+        tests: this.serializeTests()
       };
     }
   }
@@ -255,13 +256,30 @@ class Snapshot {
     snapshot.directory = serialization.directory;
     snapshot.repos = serialization.repos;
     snapshot.shas = serialization.shas;
-    snapshot.tests = serialization.tests.map( testSerialization => Test.deserialize( snapshot, testSerialization ) );
+    snapshot.tests = Snapshot.deserializeTests( serialization.tests, snapshot );
+
     snapshot.testMap = {};
     snapshot.tests.forEach( test => {
       snapshot.testMap[ test.nameString ] = test;
     } );
 
     return snapshot;
+  }
+
+  /**
+   * @private
+   */
+  serializeTests() {
+    const serialized = this.tests.map( test => test.serialize() );
+    return zlib.deflateSync( JSON.stringify( serialized ) ).toString( 'base64' );
+  }
+
+  /**
+   * @private
+   */
+  static deserializeTests( serializedTests, snapshot ) {
+    const uncompressed = JSON.parse( zlib.inflateSync( Buffer.from( serializedTests, 'base64' ) ).toString() );
+    return uncompressed.map( testSerialization => Test.deserialize( snapshot, testSerialization ) );
   }
 
   /**
