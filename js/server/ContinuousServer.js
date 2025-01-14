@@ -31,8 +31,8 @@ const winston = require( '../../../perennial/js/npm-dependencies/winston' ).defa
 
 // in days, any snapshots that are older will be removed from the continuous report
 const NUMBER_OF_DAYS_TO_KEEP_FULL_SNAPSHOTS = 4;
-const MAX_SNAPSHOTS = 70; // Memory to keep test results, but not the full checkout
-const NUMBER_OF_FULL_SNAPSHOTS = 20;
+const MAX_SNAPSHOTS = 100; // Memory to keep test results, but not the full checkout
+const NUMBER_OF_FULL_SNAPSHOTS = 15;
 
 // Headers that we'll include in all server replies
 const jsonHeaders = {
@@ -692,6 +692,9 @@ class ContinuousServer {
                   // NOTE: NO await here, we're going to do that asynchronously so we don't block
                   this.deleteTrashSnapshot( snapshot );
                 }
+                else {
+                  winston.info( `snapshot already getting deleted: ${snapshot.directory}. Exists: ${snapshot.exists}; In trash list: ${this.trashSnapshots.includes( snapshot )}` );
+                }
               }
 
               // Save after creating the snapshot, so that if we crash here, we won't be creating permanent garbage
@@ -952,7 +955,7 @@ class ContinuousServer {
       for ( let i = 0; i < snapshotNames.length; i++ ) {
         const timestamp = snapshotNames[ i ];
         const asNumber = Number.parseInt( timestamp, 10 );
-        if ( asNumber < Date.now() - hoursToMS( 24 ) && // Don't delete the currently creating snapshot, if applicable
+        if ( asNumber < Date.now() - hoursToMS( 1 ) && // Don't delete the currently creating snapshot, if applicable
              !_.find( this.snapshots, snapshot => snapshot.timestamp === timestamp ) ) {
           winston.info( `deleting orphaned snapshot: ${timestamp}` );
           deleteDirectory( `${snapshotDir}/${timestamp}` ).catch( e => winston.error( e ) );
