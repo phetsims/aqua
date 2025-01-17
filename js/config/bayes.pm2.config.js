@@ -19,6 +19,13 @@
 module.exports = {
   apps: [
     {
+      name: 'phet-studio',
+      cwd: '/data/share/phet/phet-studio',
+      script: 'node_modules/webpack/bin/webpack.js',
+      args: 'serve --mode development --config webpack.config.js',
+      time: true
+    },
+    {
       name: 'yotta-server',
       cwd: '/data/share/phet/yotta-statistics/yotta/',
       interpreter: '/bin/bash',
