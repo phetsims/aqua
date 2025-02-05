@@ -15,6 +15,7 @@ const gitRevParse = require( '../../../perennial/js/common/gitRevParse' );
 const gruntCommand = require( '../../../perennial/js/common/gruntCommand' );
 const npmCommand = require( '../../../perennial/js/common/npmCommand' );
 const isStale = require( '../../../perennial/js/common/isStale' );
+const asyncTimeout = require( '../../../perennial/js/common/asyncTimeout' );
 const npmUpdate = require( '../../../perennial/js/common/npmUpdate' );
 const transpileAll = require( '../../../perennial/js/common/transpileAll' );
 const sleep = require( '../../../perennial/js/common/sleep' );
@@ -617,7 +618,7 @@ class ContinuousServer {
         const staleRepos = await asyncFilter( reposToCheck, async repo => {
           this.setStatus( `${staleMessage}; checking ${repo}` );
           const doesNotExist = !fs.existsSync( `../${repo}/` ); // let's call a lack of a repo "stale" to move onto a new snapshot.
-          return doesNotExist || isStale( repo );
+          return doesNotExist || asyncTimeout.default( minutesToMS( 5 ), isStale( repo ) );
         } );
 
         if ( staleRepos.length ) {
@@ -753,7 +754,6 @@ class ContinuousServer {
           test.complete = true; // Mark first to ensure it doesn't get started again before this one completes
 
           const processKillEmitter = new EventEmitter();
-          let fromTimeout = false;
           const npmRunTimeoutLength = hoursToMS( 1 );
 
           try {
@@ -763,19 +763,13 @@ class ContinuousServer {
               killEmitter: processKillEmitter
             } );
 
-            const timeoutPromise = ( async () => {
-              await sleep( npmRunTimeoutLength );
-              fromTimeout = true;
-              throw new Error( 'npm run timeout' );
-            } )();
-
-            const output = await Promise.race( [ executePromise, timeoutPromise ] );
+            const output = await asyncTimeout.default( npmRunTimeoutLength, executePromise );
 
             ContinuousServer.testPass( test, Date.now() - startTimestamp, output );
           }
           catch( e ) {
             let message = '';
-            if ( fromTimeout ) {
+            if ( e.message && e.message.includes( asyncTimeout.timeoutErrorMessage ) ) {
               processKillEmitter.emit( 'kill' );
               message = `npm run timeout. Failed to complete in ${npmRunTimeoutLength}ms`;
             }
