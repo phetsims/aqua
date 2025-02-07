@@ -24,7 +24,7 @@ import FlowBox from '../../../scenery/js/nodes/FlowBox.js';
 import GridBackgroundNode from '../../../scenery/js/nodes/GridBackgroundNode.js';
 import GridBox from '../../../scenery/js/nodes/GridBox.js';
 import GridCell from '../../../scenery/js/nodes/GridCell.js';
-import HBox from '../../../scenery/js/nodes/HBox.js';
+import HBox from '../../../scenery/js/layout/nodes/HBox.js';
 import Image from '../../../scenery/js/nodes/Image.js';
 
 type Frame = {
