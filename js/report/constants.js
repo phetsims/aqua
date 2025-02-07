@@ -7,7 +7,7 @@
  */
 
 import PhetFont from '../../../scenery-phet/js/PhetFont.js';
-import { Color } from '../../../scenery/js/imports.js';
+import Color from '../../../scenery/js/util/Color.js';
 
 export default {
   passColor: new Color( 60, 255, 60 ),

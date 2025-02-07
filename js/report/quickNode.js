@@ -6,7 +6,10 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-import { FireListener, HBox, Rectangle, Text } from '../../../scenery/js/imports.js';
+import HBox from '../../../scenery/js/layout/nodes/HBox.js';
+import FireListener from '../../../scenery/js/listeners/FireListener.js';
+import Rectangle from '../../../scenery/js/nodes/Rectangle.js';
+import Text from '../../../scenery/js/nodes/Text.js';
 import constants from './constants.js';
 import popup from './popup.js';
 import quickStatusProperty from './quickStatusProperty.js';
