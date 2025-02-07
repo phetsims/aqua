@@ -8,7 +8,12 @@
 
 import ScreenView from '../../joist/js/ScreenView.js';
 import { EmptySelfOptions } from '../../phet-core/js/optionize.js';
-import { Circle, Color, Font, Node, NodeOptions, Rectangle, Text } from '../../scenery/js/imports.js';
+import Circle from '../../scenery/js/nodes/Circle.js';
+import Node, { NodeOptions } from '../../scenery/js/nodes/Node.js';
+import Rectangle from '../../scenery/js/nodes/Rectangle.js';
+import Text from '../../scenery/js/nodes/Text.js';
+import Color from '../../scenery/js/util/Color.js';
+import Font from '../../scenery/js/util/Font.js';
 
 // colors
 const phetBlue = '#6acdf5';

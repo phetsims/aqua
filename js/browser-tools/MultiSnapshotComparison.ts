@@ -12,7 +12,20 @@ import Emitter from '../../../axon/js/Emitter.js';
 import Multilink from '../../../axon/js/Multilink.js';
 import NumberProperty from '../../../axon/js/NumberProperty.js';
 import Property from '../../../axon/js/Property.js';
-import { Color, Display, DOM, FireListener, FlowBox, Font, GridBackgroundNode, GridBox, GridCell, HBox, Image, Node, Rectangle, Text } from '../../../scenery/js/imports.js';
+import Node from '../../../scenery/js/nodes/Node.js';
+import Rectangle from '../../../scenery/js/nodes/Rectangle.js';
+import Text from '../../../scenery/js/nodes/Text.js';
+import Color from '../../../scenery/js/util/Color.js';
+import Font from '../../../scenery/js/util/Font.js';
+import Display from '../../../scenery/js/display/Display.js';
+import DOM from '../../../scenery/js/nodes/DOM.js';
+import FireListener from '../../../scenery/js/listeners/FireListener.js';
+import FlowBox from '../../../scenery/js/nodes/FlowBox.js';
+import GridBackgroundNode from '../../../scenery/js/nodes/GridBackgroundNode.js';
+import GridBox from '../../../scenery/js/nodes/GridBox.js';
+import GridCell from '../../../scenery/js/nodes/GridCell.js';
+import HBox from '../../../scenery/js/nodes/HBox.js';
+import Image from '../../../scenery/js/nodes/Image.js';
 
 type Frame = {
   number: number;
