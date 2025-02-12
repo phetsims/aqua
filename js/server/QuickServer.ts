@@ -256,11 +256,11 @@ class QuickServer {
     const results: Partial<Tests> = {};
 
     await Promise.all( [
-      this.testLint().then( result => { results.lint = this.executeResultToTestData( result, ctqType.LINT ); } )
-      // this.testTypeCheck().then( result => { results.typeCheck = this.executeResultToTestData( result, ctqType.TYPE_CHECK ); } ),
-      // this.testSimFuzz().then( result => { results.simFuzz = this.fuzzResultToTestData( result, ctqType.SIM_FUZZ );} ),
-      // this.testStudioFuzz().then( result => { results.studioFuzz = this.fuzzResultToTestData( result, ctqType.STUDIO_FUZZ ); } ),
-      // this.testPhetioCompare().then( result => { results.phetioCompare = this.executeResultToTestData( result, ctqType.PHET_IO_COMPARE ); } )
+      this.testLint().then( result => { results.lint = this.executeResultToTestData( result, ctqType.LINT ); } ),
+      this.testTypeCheck().then( result => { results.typeCheck = this.executeResultToTestData( result, ctqType.TYPE_CHECK ); } ),
+      this.testSimFuzz().then( result => { results.simFuzz = this.fuzzResultToTestData( result, ctqType.SIM_FUZZ );} ),
+      this.testStudioFuzz().then( result => { results.studioFuzz = this.fuzzResultToTestData( result, ctqType.STUDIO_FUZZ ); } ),
+      this.testPhetioCompare().then( result => { results.phetioCompare = this.executeResultToTestData( result, ctqType.PHET_IO_COMPARE ); } )
     ] );
 
     return results as Tests;
