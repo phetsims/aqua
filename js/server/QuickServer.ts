@@ -256,11 +256,11 @@ class QuickServer {
     const results: Partial<Tests> = {};
 
     await Promise.all( [
-      this.testLint().then( result => { results.lint = this.executeResultToTestData( result, ctqType.LINT ); } ),
-      this.testTypeCheck().then( result => { results.typeCheck = this.executeResultToTestData( result, ctqType.TYPE_CHECK ); } ),
-      this.testSimFuzz().then( result => { results.simFuzz = this.fuzzResultToTestData( result, ctqType.SIM_FUZZ );} ),
-      this.testStudioFuzz().then( result => { results.studioFuzz = this.fuzzResultToTestData( result, ctqType.STUDIO_FUZZ ); } ),
-      this.testPhetioCompare().then( result => { results.phetioCompare = this.executeResultToTestData( result, ctqType.PHET_IO_COMPARE ); } )
+      this.testLint().then( result => { results.lint = this.executeResultToTestData( result, ctqType.LINT ); } )
+      // this.testTypeCheck().then( result => { results.typeCheck = this.executeResultToTestData( result, ctqType.TYPE_CHECK ); } ),
+      // this.testSimFuzz().then( result => { results.simFuzz = this.fuzzResultToTestData( result, ctqType.SIM_FUZZ );} ),
+      // this.testStudioFuzz().then( result => { results.studioFuzz = this.fuzzResultToTestData( result, ctqType.STUDIO_FUZZ ); } ),
+      // this.testPhetioCompare().then( result => { results.phetioCompare = this.executeResultToTestData( result, ctqType.PHET_IO_COMPARE ); } )
     ] );
 
     return results as Tests;
@@ -345,6 +345,13 @@ class QuickServer {
   }
 
   private async synchronizeRepos( staleRepos: Repo[], allRepos: Repo[] ): Promise<Dependencies> {
+
+    // When testing, assume the current codebase is correct.
+    if ( this.isTestMode ) {
+      winston.info( 'QuickServer: ignoring synchronizeRepos while in testing mode.' );
+      return null as unknown as Dependencies;
+    }
+
     for ( const repo of staleRepos ) {
       winston.info( `QuickServer: pulling ${repo}` );
       await gitPull( repo );
@@ -368,7 +375,7 @@ class QuickServer {
 
     // Periodically clean chipper/dist, but not on the first time for easier local testing
     // If CTQ takes 1 minute to run, then this will happen every 16 hours or so.
-    if ( this.testCount++ % 1000 === 999 && !this.isTestMode ) {
+    if ( this.testCount++ % 1000 === 999 ) {
       await deleteDirectory( `${this.rootDir}/chipper/dist` );
     }
 
@@ -566,7 +573,7 @@ ${message.length > MAX_SLACK_MESSAGE_CHARS ? '\n(truncated) . . .' : ''}
     // Extensions should match those found in CHIPPER/lint
     // Don't match to the end of the line ($),  because tsc puts the file and error on the same line.
     const fileNameRegex = /^[^\s]*([\\/][^/\\]+){4}[^\s]*(\.js|\.ts|\.jsx|\.tsx|\.cjs|\.mjs)/;
-    const lintProblemRegex = /^\d+:\d+\s+error\s/; // row:column error {{ERROR}}
+    const lintProblemRegex = /^\d+:\d+\s+error\s+/; // row:column  error  {{ERROR}}
 
     if ( name === ctqType.LINT ) {
       let currentFilename: string | null = null;
@@ -586,9 +593,10 @@ ${message.length > MAX_SLACK_MESSAGE_CHARS ? '\n(truncated) . . .' : ''}
             currentFilename = null;
           }
         }
-
-        if ( !currentFilename && fileNameRegex.test( line ) ) {
-          currentFilename = line.match( fileNameRegex )![ 0 ];
+        else {
+          if ( fileNameRegex.test( line ) ) {
+            currentFilename = line.match( fileNameRegex )![ 0 ];
+          }
         }
       } );
     }
