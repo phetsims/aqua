@@ -32,7 +32,7 @@ const winston = require( '../../../perennial/js/npm-dependencies/winston' ).defa
 
 // in days, any snapshots that are older will be removed from the continuous report
 const NUMBER_OF_DAYS_TO_KEEP_FULL_SNAPSHOTS = 4;
-const MAX_SNAPSHOTS = 100; // Memory to keep test results, but not the full checkout
+const MAX_SNAPSHOTS = 50; // Memory to keep test results, but not the full checkout
 const NUMBER_OF_FULL_SNAPSHOTS = 15;
 
 // Headers that we'll include in all server replies
