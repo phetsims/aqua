@@ -34,6 +34,7 @@ const winston = require( '../../../perennial/js/npm-dependencies/winston' ).defa
 const NUMBER_OF_DAYS_TO_KEEP_FULL_SNAPSHOTS = 4;
 const MAX_SNAPSHOTS = 50; // Memory to keep test results, but not the full checkout
 const NUMBER_OF_FULL_SNAPSHOTS = 15;
+const MAX_TEST_MESSAGE_LENGTH = 4000000; // Prevent excessive messages from bogging down CT.
 
 // Headers that we'll include in all server replies
 const jsonHeaders = {
@@ -401,6 +402,16 @@ class ContinuousServer {
   }
 
   /**
+   * Some chaotic test failures can include giant messages that can break V8's string max length, so truncate it. See https://github.com/phetsims/aqua/issues/233
+   * @private
+   * @param {string} message
+   * @returns {string}
+   */
+  static truncateMessage( message ) {
+    return message.length > MAX_TEST_MESSAGE_LENGTH ? message.slice( 0, MAX_TEST_MESSAGE_LENGTH ) + ' . . .' : message;
+  }
+
+  /**
    * Records a test pass from any source.
    * @private
    *
@@ -410,7 +421,7 @@ class ContinuousServer {
    */
   static testPass( test, milliseconds, message ) {
     winston.info( `[PASS] ${test.snapshot.name} ${test.names.join( ',' )} ${milliseconds}` );
-    test.recordResult( true, milliseconds, message );
+    test.recordResult( true, milliseconds, ContinuousServer.truncateMessage( message ) );
   }
 
   /**
@@ -423,7 +434,7 @@ class ContinuousServer {
    */
   static testFail( test, milliseconds, message ) {
     winston.info( `[FAIL] ${test.snapshot.name} ${test.names.join( ',' )} ${milliseconds}` );
-    test.recordResult( false, milliseconds, message );
+    test.recordResult( false, milliseconds, ContinuousServer.truncateMessage( message ) );
   }
 
   /**
