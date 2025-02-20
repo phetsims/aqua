@@ -34,7 +34,7 @@ const winston = require( '../../../perennial/js/npm-dependencies/winston' ).defa
 const NUMBER_OF_DAYS_TO_KEEP_FULL_SNAPSHOTS = 4;
 const MAX_SNAPSHOTS = 50; // Memory to keep test results, but not the full checkout
 const NUMBER_OF_FULL_SNAPSHOTS = 15;
-const MAX_TEST_MESSAGE_LENGTH = 4000000; // Prevent excessive messages from bogging down CT.
+const MAX_TEST_MESSAGE_LENGTH = 150000; // Prevent excessive messages from bogging down CT.
 
 // Headers that we'll include in all server replies
 const jsonHeaders = {
