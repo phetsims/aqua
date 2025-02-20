@@ -85,6 +85,14 @@ class Snapshot {
         this.setStatus( `Copying snapshot files: ${repo}` );
         await copyDirectory( `${this.rootDir}/${repo}`, `${this.directory}/${repo}`, {} );
       }
+      try {
+        this.setStatus( 'Deleting lint and tsc caches' );
+        await deleteDirectory( `${this.directory}/chipper/dist/eslint/` );
+        await deleteDirectory( `${this.directory}/chipper/dist/tsc/` );
+      }
+      catch( e ) {
+        winston.error( `Could not delete chipper dist cache directory: ${e}` );
+      }
     }
 
     this.setStatus( 'Scanning commit timestamps' );
