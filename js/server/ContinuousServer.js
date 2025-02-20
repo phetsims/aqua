@@ -408,7 +408,7 @@ class ContinuousServer {
    * @returns {string}
    */
   static truncateMessage( message ) {
-    return message.length > MAX_TEST_MESSAGE_LENGTH ? message.slice( 0, MAX_TEST_MESSAGE_LENGTH ) + ' . . .' : message;
+    return message?.length > MAX_TEST_MESSAGE_LENGTH ? message.slice( 0, MAX_TEST_MESSAGE_LENGTH ) + ' . . .' : message;
   }
 
   /**
