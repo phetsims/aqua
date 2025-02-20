@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test-ctq": "grunt quick-server --testing",
-    "test-ct": "grunt continuous-server --useRootDir --localCount=1"
+    "test-ct": "grunt continuous-server --useRootDir --localCount=1",
+    "test-ct-client": "grunt ct-node-client --ctID=\"locale dev aqua testing\""
   },
   "devDependencies": {
     "@slack/bolt": "~3.11.0",

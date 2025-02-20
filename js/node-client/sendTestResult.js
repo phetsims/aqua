@@ -37,9 +37,17 @@ module.exports = async function( message, testInfo, passed, options ) {
     id: options.ctID
   };
 
-  return ( await axios( {
-    method: 'post',
-    url: `${options.serverURL}/aquaserver/test-result`,
-    data: result
-  } ) ).data;
+  try {
+    const response = await axios( {
+      method: 'post',
+      url: `${options.serverURL}/aquaserver/test-result`,
+      data: result
+    } );
+    return response.data;
+  }
+  catch( e ) {
+    winston.error( 'Error sending test-result' );
+    winston.error( e );
+  }
+  return null;
 };

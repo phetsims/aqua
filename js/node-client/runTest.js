@@ -116,7 +116,7 @@ module.exports = async function( testInfo, options ) {
           const serverMessage = await sendTestResult( event.message, testInfo, true, options );
           currentSendingCount--;
 
-          winston.info( `Server receipt: ${JSON.stringify( serverMessage )}` );
+          winston.info( `Server receipt: ${serverMessage ? JSON.stringify( serverMessage ) : serverMessage}` );
           resolveIfReady();
         }
         else if ( event.type === 'test-fail' ) {
@@ -131,7 +131,7 @@ ${log}`,
             testInfo, false, options );
           currentSendingCount--;
 
-          winston.info( `Server receipt: ${JSON.stringify( serverMessage )}` );
+          winston.info( `Server receipt: ${serverMessage ? JSON.stringify( serverMessage ) : serverMessage}` );
           resolveIfReady();
         }
         else if ( event.type === 'test-next' ) {
