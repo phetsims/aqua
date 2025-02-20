@@ -229,7 +229,7 @@ if ( options.full ) {
     ( report, expandedRepos, sort, filterString, showAverageTime, showWeights ) => {
       let tests = [];
 
-      let snapshots = report.snapshots;
+      let snapshots = report.snapshots || [];
       if ( options.maxColumns !== -1 ) {
         snapshots = snapshots.filter( ( snapshot, index ) => index < options.maxColumns );
       }
