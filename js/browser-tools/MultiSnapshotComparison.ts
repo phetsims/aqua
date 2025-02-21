@@ -20,10 +20,10 @@ import Font from '../../../scenery/js/util/Font.js';
 import Display from '../../../scenery/js/display/Display.js';
 import DOM from '../../../scenery/js/nodes/DOM.js';
 import FireListener from '../../../scenery/js/listeners/FireListener.js';
-import FlowBox from '../../../scenery/js/nodes/FlowBox.js';
-import GridBackgroundNode from '../../../scenery/js/nodes/GridBackgroundNode.js';
-import GridBox from '../../../scenery/js/nodes/GridBox.js';
-import GridCell from '../../../scenery/js/nodes/GridCell.js';
+import FlowBox from '../../../scenery/js/layout/nodes/FlowBox.js';
+import GridBackgroundNode from '../../../scenery/js/layout/nodes/GridBackgroundNode.js';
+import GridBox from '../../../scenery/js/layout/nodes/GridBox.js';
+import GridCell from '../../../scenery/js/layout/nodes/GridCell.js';
 import HBox from '../../../scenery/js/layout/nodes/HBox.js';
 import Image from '../../../scenery/js/nodes/Image.js';
 
