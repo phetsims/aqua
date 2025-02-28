@@ -298,7 +298,7 @@ class QuickServer {
 
   private async transpile(): Promise<void> {
     winston.info( 'QuickServer: transpiling' );
-    const result = await execute( gruntCommand, [ 'transpile' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
+    const result = await execute( gruntCommand, [ 'transpile', '--all' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
     if ( result.code !== 0 ) {
       winston.error( result.stderr + result.stdout );
     }
