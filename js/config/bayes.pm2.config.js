@@ -20,7 +20,7 @@ module.exports = {
   apps: [
     {
       name: 'phet-studio',
-      cwd: '/data/share/phet/phet-studio',
+      cwd: '/data/share/phet/phet-studio-test/phet-studio',
       script: 'node_modules/webpack/bin/webpack.js',
       args: 'serve --mode development --config webpack.config.js',
       time: true
