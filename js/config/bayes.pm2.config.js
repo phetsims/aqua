@@ -36,9 +36,8 @@ module.exports = {
     {
       name: 'phettest-server',
       cwd: '/data/web/htdocs/dev/phettest/phettest',
-      interpreter: '/bin/bash',
-      script: '../perennial/bin/sage',
-      args: 'run phettest-server.js',
+      script: 'npm',
+      args: 'run server',
       time: true
     },
     {
