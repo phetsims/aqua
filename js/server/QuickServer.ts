@@ -31,6 +31,10 @@ import sendSlackMessage from './sendSlackMessage.js';
 
 
 type TestData = {
+
+  // Same as the keyof Tests
+  name: TestName;
+
   passed: boolean;
 
   // full length message, used when someone clicks on a quickNode in CT for error details
@@ -253,38 +257,42 @@ class QuickServer {
   }
 
   private async getTestingResults(): Promise<Tests> {
+    winston.info( 'QuickServer: Starting all tests' );
+
     const results: Partial<Tests> = {};
 
+    const populate = async ( testPromise: Promise<TestData> ) => {
+      const start = Date.now();
+      const testData = await testPromise;
+      results[ testData.name ] = testData;
+      winston.info( `QuickServer: finished ${testData.name} in ${Date.now() - start}ms` );
+    };
+
     await Promise.all( [
-      this.testLint().then( result => { results.lint = this.executeResultToTestData( result, ctqType.LINT ); } ),
-      this.testTypeCheck().then( result => { results.typeCheck = this.executeResultToTestData( result, ctqType.TYPE_CHECK ); } ),
-      this.testSimFuzz().then( result => { results.simFuzz = this.fuzzResultToTestData( result, ctqType.SIM_FUZZ );} ),
-      this.testStudioFuzz().then( result => { results.studioFuzz = this.fuzzResultToTestData( result, ctqType.STUDIO_FUZZ ); } ),
-      this.testPhetioCompare().then( result => { results.phetioCompare = this.executeResultToTestData( result, ctqType.PHET_IO_COMPARE ); } )
+      populate( this.testLint() ),
+      populate( this.testTypeCheck() ),
+      populate( this.testSimFuzz() ),
+      populate( this.testStudioFuzz() ),
+      populate( this.testPhetioCompare() )
     ] );
 
     return results as Tests;
   }
 
-  private async testLint(): Promise<ExecuteResult> {
-    winston.info( 'QuickServer: start linting' );
+  private async testLint(): Promise<TestData> {
     const result = await execute( gruntCommand, [ 'lint', '--all', '--hide-progress-bar' ], `${this.rootDir}/perennial`, EXECUTE_OPTIONS );
-    winston.info( 'QuickServer: end linting' );
-    return result;
+    return this.executeResultToTestData( ctqType.LINT, result );
   }
 
-  private async testTypeCheck(): Promise<ExecuteResult> {
-    winston.info( 'QuickServer: start type-check' );
+  private async testTypeCheck(): Promise<TestData> {
 
     // Use grunt so that it works across platforms, launching `tsc` directly as the command on windows results in ENOENT -4058.
     // Pretty false will make the output more machine-readable.
     const result = await execute( gruntCommand, [ 'type-check', '--all', '--pretty', 'false' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
-    winston.info( 'QuickServer: end type-check' );
-    return result;
+    return this.executeResultToTestData( ctqType.TYPE_CHECK, result );
   }
 
-  private async testPhetioCompare(): Promise<ExecuteResult> {
-    winston.info( 'QuickServer: start phet-io compare' );
+  private async testPhetioCompare(): Promise<TestData> {
     const args = [
       'compare-phet-io-api',
       '--transpile=false',
@@ -292,21 +300,17 @@ class QuickServer {
       ...[ this.isTestMode ? '--repo=projectile-data-lab' : '--simList=../perennial/data/phet-io-api-stable' ]
     ];
     const result = await execute( gruntCommand, args, `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
-    winston.info( 'QuickServer: end phet-io compare' );
-    return result;
+    return this.executeResultToTestData( ctqType.PHET_IO_COMPARE, result );
   }
 
   private async transpile(): Promise<void> {
-    winston.info( 'QuickServer: transpiling' );
     const result = await execute( gruntCommand, [ 'transpile', '--all' ], `${this.rootDir}/chipper`, EXECUTE_OPTIONS );
     if ( result.code !== 0 ) {
       winston.error( result.stderr + result.stdout );
     }
   }
 
-  private async testSimFuzz(): Promise<string | null> {
-    winston.info( 'QuickServer: start sim fuzz' );
-
+  private async testSimFuzz(): Promise<TestData> {
     let simFuzz: string | null = null;
     try {
       await withServer( async ( port: number ) => {
@@ -320,13 +324,10 @@ class QuickServer {
       }
     }
 
-    winston.info( 'QuickServer: end sim fuzz' );
-    return simFuzz;
+    return this.fuzzResultToTestData( ctqType.SIM_FUZZ, simFuzz );
   }
 
-  private async testStudioFuzz(): Promise<string | null> {
-    winston.info( 'QuickServer: start studio fuzz' );
-
+  private async testStudioFuzz(): Promise<TestData> {
     let studioFuzz: string | null = null;
     try {
       await withServer( async ( port: number ) => {
@@ -340,8 +341,7 @@ class QuickServer {
       }
     }
 
-    winston.info( 'QuickServer: end studio fuzz' );
-    return studioFuzz;
+    return this.fuzzResultToTestData( ctqType.STUDIO_FUZZ, studioFuzz );
   }
 
   private async synchronizeRepos( staleRepos: Repo[], allRepos: Repo[] ): Promise<Dependencies> {
@@ -533,24 +533,24 @@ ${message.length > MAX_SLACK_MESSAGE_CHARS ? '\n(truncated) . . .' : ''}
     }
   }
 
-  private executeResultToTestData( result: ExecuteResult, name: TestName ): TestData {
+  private executeResultToTestData( name: TestName, result: ExecuteResult ): TestData {
     return {
+      name: name,
       passed: result.code === 0,
       message: `code: ${result.code}\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`,
       errorMessages: result.code === 0 ? [] : this.parseCompositeError( result.stdout, name, result.stderr )
     };
   }
 
-
-  private fuzzResultToTestData( result: string | null, name: TestName ): TestData {
+  private fuzzResultToTestData( name: TestName, result: string | null ): TestData {
     if ( result === null ) {
-      return { passed: true, message: '', errorMessages: [] };
+      return { name: name, passed: true, message: '', errorMessages: [] };
     }
     else {
 
       // We want to remove the "port" variation so that the same sim error has the same error message
       result = result.replace( /localhost:\d+/g, 'localhost:8080' );
-      return { passed: false, message: '' + result, errorMessages: this.parseCompositeError( result, name ) };
+      return { name: name, passed: false, message: '' + result, errorMessages: this.parseCompositeError( result, name ) };
     }
   }
 
