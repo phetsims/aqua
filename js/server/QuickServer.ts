@@ -360,8 +360,10 @@ class QuickServer {
     winston.info( 'QuickServer: cloning missing repos' );
     const clonedRepos = await cloneMissingRepos();
 
+    const npmUpdateList = getRepoList( 'npm-update' );
+
     for ( const repo of [ ...staleRepos, ...clonedRepos ] ) {
-      if ( getRepoList( 'npm-update' ).includes( repo ) ) {
+      if ( npmUpdateList.includes( repo ) ) {
         winston.info( `QuickServer: npm update ${repo}` );
         await npmUpdate( repo );
       }
