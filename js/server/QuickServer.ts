@@ -361,7 +361,7 @@ class QuickServer {
     const clonedRepos = await cloneMissingRepos();
 
     for ( const repo of [ ...staleRepos, ...clonedRepos ] ) {
-      if ( [ 'chipper', 'perennial', 'perennial-alias' ].includes( repo ) ) {
+      if ( getRepoList( 'npm-update' ).includes( repo ) ) {
         winston.info( `QuickServer: npm update ${repo}` );
         await npmUpdate( repo );
       }
