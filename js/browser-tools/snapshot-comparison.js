@@ -88,6 +88,11 @@ function setup( repoNames ) {
     compareDescription: {
       type: 'boolean',
       defaultValue: false
+    },
+
+    // Log hash information to console
+    logHash: {
+      type: 'flag'
     }
   } );
 
@@ -223,7 +228,9 @@ function setup( repoNames ) {
     snapshot[ sim ].hash = hash;
     const td = document.createElement( 'td' );
     td.textContent = hash.slice( 0, 6 ) + ( options.showTime ? ` ${Date.now() - globalStartTime}` : '' );
+    options.logHash && console.log( `Creating td for sim "${sim}": hash=${hash.slice( 0, 6 )}, full hash=${hash}, time=${options.showTime ? Date.now() - globalStartTime : 'not shown'}` );
     if ( snapshots.length > 1 && hash !== snapshots[ snapshots.length - 2 ][ sim ].hash ) {
+      options.logHash && console.log( `  -> Hash changed! Previous hash was ${snapshots[ snapshots.length - 2 ][ sim ].hash}` );
       td.style.fontWeight = 'bold';
       td.style.cursor = 'pointer';
       td.addEventListener( 'click', () => {
@@ -305,6 +312,7 @@ function setup( repoNames ) {
     else if ( data.type === 'error' ) {
       const errorTd = document.createElement( 'td' );
       errorTd.textContent = 'err';
+      options.logHash && console.log( `Creating error td for sim "${currentSim}"` );
       rowMap[ currentSim ].appendChild( errorTd );
       nextSim();
     }
