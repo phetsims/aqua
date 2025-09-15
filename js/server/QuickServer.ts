@@ -97,7 +97,7 @@ type QuickServerOptions = {
 class QuickServer {
 
   // the tests object stores the results of tests so that they can be iterated through for "all results"
-  private testingState!: TestingState;
+  declare private testingState: TestingState;
 
   // root of your GitHub working copy, relative to the name of the directory that the
   // currently-executing script resides in
