@@ -210,7 +210,7 @@ run `grunt`. This will build the interface under `aqua/build` which is used by `
 
 ## Running the server locally
 
-The documentation under `aqua/js/Gruntfile.cjs` specifies more details for running, but if you want to run some CT tests
+The documentation under `aqua/js/grunt/tasks/continuous-server.ts` specifies more details for running, but if you want to run some CT tests
 locally (without the full server experience) it's best to use the `--useRootDir` flag (it will not copy files into
 snapshots, but will use your working copy, creating only one "CT" column, and without saving state to disk).
 The `--localCount` parameter is required, and specifies how many concurrent build/lint tasks should happen (which can be
@@ -224,7 +224,7 @@ grunt continuous-server --useRootDir --localCount=2
 
 which will launch on the default port `45366`.
 
-See all options and details in `js/Gruntfile`.
+See all options and details in `aqua/js/grunt/tasks/continuous-server.ts`.
 
 Then for testing server changes with the report, the report and loop interfaces can be given the query
 parameter `?server=http%3A%2F%2Flocalhost%3A45366` to specify the server location (for API access). Depending on your
