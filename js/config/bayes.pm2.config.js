@@ -49,6 +49,14 @@ module.exports = {
       time: true
     },
     {
+      name: 'launchpad',
+      cwd: '/data/share/phet/launchpad/launchpad',
+      interpreter: '/bin/bash',
+      script: '../perennial/bin/sage',
+      args: 'run js/server/launchpad-server.ts --logLevel=debug --numAutoBuildThreads=4',
+      time: true
+    },
+    {
       name: 'ct-chrome-client',
       cwd: '/data/share/phet/continuous-testing/ct-node-clients/aqua',
 
