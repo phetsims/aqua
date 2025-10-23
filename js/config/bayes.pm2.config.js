@@ -53,7 +53,7 @@ module.exports = {
       cwd: '/data/share/phet/launchpad/launchpad',
       interpreter: '/bin/bash',
       script: '../perennial/bin/sage',
-      args: 'run js/server/launchpad-server.ts --logLevel=debug --numAutoBuildThreads=4',
+      args: 'run js/server/launchpad-server.ts --logLevel=debug',
       time: true
     },
     {
