@@ -1,6 +1,6 @@
 // Copyright 2024, University of Colorado Boulder
 // @author Michael Kauzmann (PhET Interactive Simulations)
-// @author Jonathan Olson <jonathan.olson@colorado.edu>
+// @author Jonathan Olson (PhET Interactive Simulations)
 
 self.phet = self.phet || {};
 self.phet.chipper = self.phet.chipper || {};

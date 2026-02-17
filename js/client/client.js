@@ -3,7 +3,7 @@
 /*
  * Common functions used to communicate from test wrappers to continuous-loop.html (assumed to be the parent frame).
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 

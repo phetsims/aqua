@@ -3,7 +3,7 @@
 /**
  * Functions supporting taking two image data URLs and comparing them, and providing a "comparison" image that shows
  * the differences. It also provides other stats in the div returned from the callback, see compareImages();
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  * @author Michael Kauzmann (PhET Interactive Simulations)
  */
 

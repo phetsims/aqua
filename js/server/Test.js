@@ -3,7 +3,7 @@
 /**
  * Holds data related to a specific test.
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 

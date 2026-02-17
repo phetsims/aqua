@@ -3,7 +3,7 @@
 /**
  * CT constants
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 import PhetFont from '../../../scenery-phet/js/PhetFont.js';

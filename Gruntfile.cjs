@@ -3,7 +3,7 @@
 /**
  * Aqua-specific grunt configuration
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 // AQUA wants to opt out of global SIGINT handling so that it can handle it itself.

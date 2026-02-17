@@ -3,7 +3,7 @@
 /*
  * Runs QUnit tests in an iframe, and passes results to our parent frame (continuous-loop.html).
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 

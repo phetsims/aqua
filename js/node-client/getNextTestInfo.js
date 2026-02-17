@@ -3,7 +3,7 @@
 /**
  * Returns CT data for the next test to run (for browser-based testing)
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 const _ = require( 'lodash' );

@@ -4,7 +4,7 @@
  * Runs arbitrary content in an iframe (that presumably loads pageload-connector.js) and reports if it successfully
  * loads and runs for a short amount of time without erroring
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 

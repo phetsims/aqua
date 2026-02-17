@@ -10,7 +10,7 @@
  * On bayes, can open with:
  * xvfb-run --server-args='-screen 0, 1024x768x16' google-chrome -start-maximized -ignore-certificate-errors -new-window -disable-gpu https://bayes.colorado.edu/continuous-testing/aqua/html/continuous-loop.html
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 

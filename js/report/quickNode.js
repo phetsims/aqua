@@ -3,7 +3,7 @@
 /**
  * Shows a quick-server status visually
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 import HBox from '../../../scenery/js/layout/nodes/HBox.js';

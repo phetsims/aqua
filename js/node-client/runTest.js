@@ -3,7 +3,7 @@
 /**
  * Runs a CT test
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 const _ = require( 'lodash' );

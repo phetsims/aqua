@@ -3,7 +3,7 @@
 /**
  * Coordinates continuous testing, and provides HTTP APIs for reports or clients that run browser tests.
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 const asyncFilter = require( '../../../perennial/js/common/asyncFilter' );

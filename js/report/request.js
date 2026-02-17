@@ -3,7 +3,7 @@
 /**
  * Sends requests to the CT server
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 const options = QueryStringMachine.getAll( {

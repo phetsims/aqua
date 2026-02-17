@@ -3,7 +3,7 @@
 /**
  * Properties based on status (auto-updating from /aquaserver/status)
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 import NumberProperty from '../../../axon/js/NumberProperty.js';
