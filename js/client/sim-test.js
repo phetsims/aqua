@@ -1,4 +1,4 @@
-// Copyright 2020-2024, University of Colorado Boulder
+// Copyright 2020-2026, University of Colorado Boulder
 
 /**
  * Runs simulation tests in an iframe, and passes results to our parent frame (continuous-loop.html).

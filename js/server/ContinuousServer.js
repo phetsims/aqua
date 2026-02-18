@@ -1,4 +1,4 @@
-// Copyright 2020-2025, University of Colorado Boulder
+// Copyright 2020-2026, University of Colorado Boulder
 
 /**
  * Coordinates continuous testing, and provides HTTP APIs for reports or clients that run browser tests.
