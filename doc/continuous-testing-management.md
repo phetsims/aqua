@@ -114,7 +114,7 @@ If operating on all pm2 processes, use `aqua/js/config/sparky.pm2.config.js` to 
 processes are run.
 
 If you need to just restart or temporarily change a single process, you can do so like:
-`pm2 start ct-main` and `pm2 stop ct-main`. Be patient after starting CT; it make take 10 minutes for data to appear
+`pm2 start ct-main` and `pm2 stop ct-main`. Be patient after starting CT; it may take 10 minutes for data to appear
 at https://sparky.colorado.edu/continuous-testing.
 
 `pm2 logs` will show recent log lines (stored in files), and will show a stream of logs from that point on (exit with
