@@ -269,3 +269,12 @@ We'll add any future ways of fixing things as we run across them here.
 # Troubleshooting
 
 In general please create issues in `aqua/` when there are CT problems.
+
+# Tokens
+
+One problem that happens from time to time is that you need to refresh tokens for GitHub access. Log into sparky and
+verify you can pull with git in a private repo. If there is a permission failure, refresh the token. See
+https://github.com/phetsims/website-common/blob/main/.github/README.md for information on creating a new token. When
+GitHub prompts for credentials during a `git pull`, provide the new token.
+
+Note that a failure to pull a private repo may cause pull failures for all repos.
