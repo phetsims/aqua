@@ -7,7 +7,7 @@ VPN may be required to reach sparky.colorado.edu if off campus.
 At a high level, there is:
 
 - The server process hosting CT (ct-main), serving browser tests and the report, and running local node tests.
-- Browser client instances (we run Puppeteer and Playright browser instances via node processes on sparky). (
+- Browser client instances (we run Puppeteer and Playwright browser instances via node processes on sparky). (
   ct-node-BROWSER-client)
 - The report interface (e.g. https://sparky.colorado.edu/) which displays the CT state.
 
