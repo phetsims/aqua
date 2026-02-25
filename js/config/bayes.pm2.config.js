@@ -57,6 +57,20 @@ module.exports = {
       time: true
     },
     {
+      name: 'totality-dev-server',
+      cwd: '/data/share/phet/totality/chipper',
+      script: 'grunt',
+      args: 'dev-server --port=45392',
+      time: true
+    },
+    {
+      name: 'totality-control',
+      cwd: '/data/share/phet/totality',
+      script: 'node',
+      args: '.service/totality-server.mjs',
+      time: true
+    },
+    {
       name: 'ct-chrome-client',
       cwd: '/data/share/phet/continuous-testing/ct-node-clients/aqua',
 
